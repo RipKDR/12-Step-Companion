@@ -1,0 +1,98 @@
+export interface Profile {
+  id: string;
+  name: string;
+  cleanDate: string; // ISO 8601
+  timezone: string;
+  hasPasscode: boolean;
+}
+
+export interface StepQuestion {
+  id: string;
+  prompt: string;
+  help?: string;
+}
+
+export interface StepContent {
+  step: number;
+  title: string;
+  overviewLabels: string[];
+  questions: StepQuestion[];
+}
+
+export interface StepAnswer {
+  questionId: string;
+  stepNumber: number;
+  answer: string;
+  tags?: string[];
+  updatedAtISO: string;
+}
+
+export interface DailyCard {
+  id: string;
+  date: string; // YYYY-MM-DD
+  morningIntent?: string;
+  eveningReflection?: string;
+  morningCompleted: boolean;
+  eveningCompleted: boolean;
+  updatedAtISO: string;
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string; // ISO 8601
+  content: string;
+  mood?: number; // 0-10
+  tags: string[];
+  updatedAtISO: string;
+}
+
+export interface WorksheetField {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'number';
+  options?: string[];
+  required?: boolean;
+  help?: string;
+}
+
+export interface WorksheetTemplate {
+  id: string;
+  title: string;
+  description: string;
+  fields: WorksheetField[];
+}
+
+export interface WorksheetResponse {
+  id: string;
+  templateId: string;
+  responses: Record<string, any>;
+  createdAtISO: string;
+  updatedAtISO: string;
+}
+
+export interface EmergencyAction {
+  id: string;
+  label: string;
+  type: 'call' | 'timer' | 'exercise' | 'notes';
+  data: string; // tel: number, timer duration, exercise name, or notes text
+  icon: string;
+}
+
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'system';
+  highContrast: boolean;
+  reducedMotion: boolean;
+  cloudSync: boolean; // stub
+}
+
+export interface AppState {
+  version: number;
+  profile?: Profile;
+  stepAnswers: Record<string, StepAnswer>; // questionId -> answer
+  dailyCards: Record<string, DailyCard>; // date -> card
+  journalEntries: Record<string, JournalEntry>; // id -> entry
+  worksheetResponses: Record<string, WorksheetResponse>; // id -> response
+  emergencyActions: EmergencyAction[];
+  settings: AppSettings;
+  onboardingComplete: boolean;
+}
