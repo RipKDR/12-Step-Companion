@@ -1,0 +1,249 @@
+MVP Meta-Prompt for Replit (BMAD style, copy-paste ready)
+
+Paste this as the very first prompt to your AI pair-programmer/agent in Replit. It contains everything needed to scaffold, design, implement, test, and ship an installable PWA prototype of the Twelve-Step Recovery Companion. It uses the BMAD method (Background → Mission → Actions → Deliverables) and requires the agent to constantly challenge assumptions and pre-empt issues before committing.
+
+⸻
+
+B — Background (context, constraints, guardrails)
+
+You are my elite full-stack tech lead, UX engineer, and test engineer building a privacy-first Twelve-Step Recovery Companion as an installable PWA. The app helps members track clean time, complete personalized step work via user-provided question sets, journal, use emergency tools, and export/import their data securely.
+
+Hard constraints
+	•	Stack: Vite + React 18 + TypeScript + React Router + Tailwind CSS. State: Zustand with local persistence. No backend required for MVP. Prepare a pluggable data layer for optional Supabase later.
+	•	PWA: Installable + offline-first (service worker + manifest + app-shell caching).
+	•	A11y: WCAG 2.2 AA. Keyboard-first, visible focus, semantic roles, ARIA where needed, respects prefers-reduced-motion, high-contrast toggle.
+	•	Privacy: No trackers. All data local-only by default. “Cloud Sync (beta)” is a feature flag stub (no secrets).
+	•	IP/Copyright: Do not embed copyrighted fellowship literature. Provide empty content slots; load questions from /content/steps/*.json that I will supply. Use short factual labels only.
+	•	Time/Locale: Default Australia/Melbourne; show both relative (“3d 4h”) and absolute (“Mon 3 Nov 2025, 21:00”) timestamps.
+	•	Design language: Calm, low cognitive load, Google + Apple-inspired but original. Spacious layout, 12px radii, 150-200ms motion, large tap targets, high contrast option. Avoid “AI-generated” look.
+	•	Replit specifics: Project must run with no secrets, no interactive prompts. All scripts via npm. Keep console clean.
+
+Principles
+	•	BMAD: Operate in Background → Mission → Actions → Deliverables cycles for every task.
+	•	Challenge your thinking: Before creating files or code, list likely failure modes, platform quirks, and edge cases; choose the simplest robust solution and explain why.
+	•	Ship small, iterate: Feature flags for anything beyond core flows. Code-split heavy routes.
+
+⸻
+
+M — Mission (what to build in the MVP)
+
+Build a polished MVP with these screens and capabilities:
+	1.	Onboarding
+	•	Collect: preferred name, clean date/time, timezone autodetect (allow override), optional passcode, Cloud Sync (beta) toggle (disabled, stub only).
+	•	One “Why this app?” slide that promotes Add-to-Home-Screen.
+	2.	Home Dashboard
+	•	Live sobriety counter (years/days/hours/mins) with aria live region.
+	•	Daily cards: Morning Intent, Evening Reflection (quick jot + checkmarks).
+	•	Quick actions: Step Work, Journal, Emergency Help.
+	•	Progress ring for current Step (answered/total questions).
+	3.	Step Work
+	•	Step selector (1–12), each reading /content/steps/<n>.json (structure only).
+	•	Per-question editor: autosave, progress, tags, optional “Export to sponsor” (local export only).
+	•	Content Manager (in Settings) to import a full JSON set at runtime.
+	4.	Worksheets Library
+	•	JSON-defined templates rendered dynamically via a FormRenderer (e.g., Triggers & Cravings, HALT, Resentment inventory, Amends planner). Include 2 demo templates authored by us (no copyrighted text).
+	5.	Journal
+	•	Daily entries with mood slider (0–10), tags, search/filter.
+	6.	Emergency Help
+	•	Global floating panic FAB; screen with configurable actions: call a contact (tel:), open grounding exercise, start a 5-minute timer, show coping notes.
+	7.	Settings
+	•	Profile + clean-date edit; theme (light/dark/system + high-contrast); a11y controls; Export/Import JSON; Encrypted backup (.enc) with WebCrypto AES-GCM (passphrase). New-version banner when service worker updates.
+
+Non-UI capabilities
+	•	App-shell PWA caching; offline bootstrap.
+	•	Data layer abstraction with versioned schema + migrations.
+	•	Storage quotas/Incognito detection with graceful messaging.
+	•	Update notification (“A new version is available — Reload”).
+
+⸻
+
+A — Actions (step-by-step plan the agent must execute)
+
+A0. Sanity & risk pass (challenge your thinking)
+	•	List top risks before coding (PWA update loops, iOS storage quirks, DST issues for AU/Melbourne, quota exceeded, private mode limitations, Playwright in Replit, etc.). For each, write your mitigation.
+
+A1. Scaffold & tooling
+	•	Initialize Vite React TS app named recovery-companion.
+	•	Add: react-router-dom, zustand, zod (for schema), idb-keyval (optional IndexedDB fallback), workbox-window or vite-plugin-pwa.
+	•	Dev/test: vitest, @testing-library/react, playwright (or cypress if Playwright is problematic on Replit), eslint, prettier.
+	•	Tailwind: init + base styles, tokens for radius, spacing, shadows, high-contrast variant.
+
+A2. Project structure
+
+/public/manifest.webmanifest
+/src/main.tsx
+/src/App.tsx
+/src/routes/
+  Home.tsx  Onboarding.tsx  StepWork.tsx  Worksheets.tsx  Journal.tsx  Emergency.tsx  Settings.tsx
+/src/components/
+  NavBar.tsx  Card.tsx  ProgressCircle.tsx  Counter.tsx  Editor.tsx  Modal.tsx  FabPanic.tsx  FormRenderer.tsx
+/src/store/
+  useAppStore.ts  migrations.ts  featureFlags.ts
+/src/lib/
+  time.ts  storage.ts  crypto.ts  export.ts  import.ts  pwa.ts  a11y.ts  updateNotifier.ts  errors.ts
+/src/styles/tailwind.css
+/src/types.ts
+/content/steps/1.json ... /content/steps/12.json   (placeholders only)
+/content/worksheets/demo-triggers.json  demo-halt.json
+/tests/unit/  /tests/e2e/
+
+A3. Types & state (typed first)
+	•	Author types.ts (profile, step content, answers, journal, worksheet templates/responses, app settings).
+	•	Zustand store with persistence plugin:
+	•	Default to localStorage; if quota or private mode fails, fall back to IndexedDB (wrap both in storage.ts).
+	•	Add versioned schema and migrations.ts.
+
+A4. Core utilities
+	•	time.ts: TZ helpers using Intl.DateTimeFormat; sobriety delta calc that survives DST.
+	•	crypto.ts: AES-GCM encrypt/decrypt with salt + IV; include data version and subtle integrity check (e.g., embed a small HMAC or checksum field).
+	•	export.ts/import.ts: JSON export/import; merge strategy for duplicates (keep newest updatedAtISO).
+	•	pwa.ts/updateNotifier.ts: service worker registration + “new version available” banner.
+	•	a11y.ts: focus management, aria live, skip links helper.
+
+A5. PWA plumbing
+	•	vite-plugin-pwa config with app-shell strategy; cache static assets and fonts; fallback offline page.
+	•	manifest.webmanifest with icons, name, categories (“health”, “lifestyle”).
+
+A6. UI shell & navigation
+	•	Top app bar + bottom nav (Home, Step, Journal, Worksheets, Settings). Panic FAB is global.
+	•	Respect reduced-motion; ensure 44px+ tap targets; dark/light/high-contrast themes.
+
+A7. Screens
+	•	Onboarding: wizard (intro → profile → clean date/time → passcode optional → flags → finish).
+	•	Home: sobriety counter (live), daily cards (two inputs, autosave), progress ring.
+	•	Step Work: load JSON, list questions, editor with autosave, progress; “Export current step answers”.
+	•	Worksheets: render demo templates via FormRenderer; CRUD responses.
+	•	Journal: entries list, create/edit, filter by tag/mood; local search.
+	•	Emergency: large actions; configurable in Settings.
+	•	Settings: everything + Content Manager to import /content/steps/*.json.
+
+A8. Feature flags
+	•	featureFlags.ts with toggles: cloudSync, analytics, push, etc. All off in MVP.
+
+A9. Testing
+	•	Unit: sobriety calc (DST cases), storage wrapper (quota errors), crypto round-trip, migrations.
+	•	E2E: boot → onboarding → set clean date → answer 1 question → export JSON → reload offline → verify dashboard.
+
+A10. DX polish
+	•	ESLint/Prettier config; CI script (even if local). Document scripts in README.
+	•	Add helpful npm scripts (see below).
+
+⸻
+
+D — Deliverables (what must exist when you’re done)
+	1.	Running Vite+React+TS app in Replit with a clean console.
+	2.	Installable PWA; offline dashboard works (flight mode test).
+	3.	Onboarding completed stores profile; sobriety counter accurate for Australia/Melbourne including DST transitions.
+	4.	Step Work loads from JSON, no copyrighted text included; autosave + progress.
+	5.	Export/Import + Encrypted backup working; clear passphrase-loss warning.
+	6.	A11y pass (keyboard-only usable, visible focus, contrast, aria live for timers).
+	7.	Tests runnable: unit + one e2e smoke.
+
+⸻
+
+Required UX/Design specifics (Google + Apple-inspired, minimal cognitive load)
+	•	Layout: Generous spacing, cards with subtle elevation, 12px radii, readable typography (system fonts).
+	•	Motion: 150–200ms ease transitions; disable on reduced-motion.
+	•	Controls: Clear primary/secondary actions, large buttons, persistent bottom nav, global panic FAB.
+	•	Content density: Progressive disclosure; avoid walls of text; use short labels, helper text.
+	•	Empty states: Friendly guidance + “Add” CTAs.
+	•	Accessibility: Skip to content, landmarks, semantic HTML, color tokens with WCAG AA contrast.
+
+⸻
+
+Guardrails & edge-case mitigations (write these into code/UX)
+	•	Storage quota / private mode: Detect and display a non-blocking banner with backup advice; fall back to IndexedDB.
+	•	Update loop: Use updateNotifier.ts to show a banner and only activate new SW on user action.
+	•	Time math: Always compute sobriety from stored ISO + TZ; unit tests around DST boundaries.
+	•	Unrecoverable passphrase: Big warning in backup flow: encrypted backups can’t be recovered if passphrase is lost.
+	•	Device swap / future sync: Export/import merges by updatedAtISO; surface conflicts with “keep mine / keep imported”.
+
+⸻
+
+File seeds you must create now
+	•	/content/steps/1.json … /content/steps/12.json — structure only:
+
+{
+  "step": 1,
+  "title": "Step One",
+  "overviewLabels": ["powerlessness","honesty","surrender"],
+  "questions": [
+    { "id": "q1", "prompt": "Paste your permitted question text here", "help": "Optional hint" }
+  ]
+}
+
+	•	/content/worksheets/demo-triggers.json and demo-halt.json — simple, original templates demonstrating FormRenderer.
+
+⸻
+
+Exact commands & scripts (the agent must run/add)
+
+Dependencies
+
+npm create vite@latest recovery-companion -- --template react-ts
+cd recovery-companion
+npm i react-router-dom zustand zod idb-keyval
+npm i -D tailwindcss postcss autoprefixer vite-plugin-pwa workbox-window
+npm i -D vitest @testing-library/react @testing-library/user-event @types/testing-library__jest-dom
+npm i -D playwright eslint prettier
+npx tailwindcss init -p
+
+Package scripts (add to package.json)
+
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "format": "prettier --write .",
+    "lint": "eslint ."
+  }
+}
+
+Tailwind setup
+	•	Wire src/styles/tailwind.css with @tailwind base; @tailwind components; @tailwind utilities;
+	•	Configure dark/high-contrast variants and tokens.
+
+PWA plugin
+	•	Add VitePWA with app-shell caching, manifest, icons, and update notifications.
+
+⸻
+
+Acceptance tests (the agent must implement)
+	1.	Boot & Onboard
+	•	Enter name + clean date/time; finish wizard; verify sobriety counter shows correct absolute + relative time.
+	2.	Step Work
+	•	Load Step 1 JSON; answer q1; refresh; progress ring updates; export current step answers (JSON download).
+	3.	Offline
+	•	Register SW; go offline; reload; Home renders and sobriety counter still updates.
+	4.	Backup
+	•	Create encrypted backup with passphrase; clear local state; restore from backup; data returns.
+	5.	A11y
+	•	Keyboard-only navigation covers all interactive elements; contrast meets AA; live region announces counter changes.
+
+⸻
+
+What to output now (very important)
+	1.	A0 Sanity & risk list with mitigations (short bullets).
+	2.	The scaffolded project with the exact structure above, minimal viable components for each screen, and working navigation.
+	3.	PWA config, manifest, and service worker with update banner.
+	4.	The utilities and store (typed), with at least one unit test passing (time calc or crypto round-trip).
+	5.	Two worksheet demos rendering via FormRenderer.
+	6.	Clear README: how to run, how to import step JSON, how to create encrypted backup, known limitations.
+
+If any dependency fails in Replit, explain the failure, pick the simplest alternative (e.g., use Cypress instead of Playwright), and proceed — but keep the same acceptance tests conceptually.
+
+⸻
+
+Do not forget
+	•	Never embed copyrighted 12-step literature. Use placeholders and let me import /content/steps/*.json from my own licensed/allowed sources.
+	•	Default telemetry: off. No third-party analytics.
+	•	Keep the UI simple, touch-friendly, and “obvious.” Prefer clarity over cleverness.
+
+⸻
+
+Begin now.
+First, produce the A0 Sanity & risk list with your mitigations and then scaffold the project exactly as specified.
