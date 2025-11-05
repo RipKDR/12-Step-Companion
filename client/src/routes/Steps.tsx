@@ -1,34 +1,90 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import StepSelector from '@/components/StepSelector';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+import type { StepContent } from '@/types';
+import { exportStepAnswers } from '@/lib/export';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Steps() {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [answer, setAnswer] = useState('');
+  const [stepContent, setStepContent] = useState<StepContent | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  const saveStepAnswer = useAppStore((state) => state.saveStepAnswer);
+  const { toast } = useToast();
 
-  // TODO: Replace with actual step data from JSON files
-  const steps = Array.from({ length: 12 }, (_, i) => ({
-    number: i + 1,
-    title: `Step ${i + 1}`,
-    completed: i < 1,
-    progress: i === 0 ? 70 : i < 1 ? 100 : 0,
-  }));
+  const steps = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const stepNumber = i + 1;
+      const answers = getStepAnswers(stepNumber);
+      const totalQuestions = 10;
+      const progress = answers.length > 0 ? (answers.length / totalQuestions) * 100 : 0;
+      
+      return {
+        number: stepNumber,
+        title: `Step ${stepNumber}`,
+        completed: progress === 100,
+        progress: Math.round(progress),
+      };
+    });
+  }, [getStepAnswers]);
 
-  const mockQuestions = [
-    {
-      id: 'q1',
-      prompt: 'Describe a situation where you felt powerless over your addiction.',
-      help: 'Be specific and honest about your experiences.',
-    },
-    {
-      id: 'q2',
-      prompt: 'How has your life become unmanageable?',
-      help: 'Consider the impact on relationships, work, and health.',
-    },
-  ];
+  useEffect(() => {
+    if (selectedStep === null) return;
+
+    const loadStepContent = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/content/steps/step${selectedStep}.json`);
+        if (!response.ok) {
+          throw new Error(`Step ${selectedStep} content not found`);
+        }
+        const data: StepContent = await response.json();
+        setStepContent(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load step content');
+        toast({
+          title: 'Error loading step',
+          description: 'Could not load step content. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStepContent();
+  }, [selectedStep, toast]);
+
+  const handleAnswerChange = (questionId: string, value: string) => {
+    if (!selectedStep) return;
+    
+    saveStepAnswer({
+      questionId,
+      stepNumber: selectedStep,
+      answer: value,
+      updatedAtISO: new Date().toISOString(),
+    });
+  };
+
+  const handleExport = () => {
+    if (!selectedStep) return;
+    
+    const answers = getStepAnswers(selectedStep);
+    exportStepAnswers(selectedStep, answers);
+    
+    toast({
+      title: 'Exported successfully',
+      description: `Step ${selectedStep} answers have been downloaded.`,
+    });
+  };
 
   if (selectedStep === null) {
     return (
@@ -48,6 +104,51 @@ export default function Steps() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 flex items-center justify-center min-h-96">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading step content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
+        <header className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSelectedStep(null)}
+            data-testid="button-back"
+            aria-label="Back to step list"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Error</h1>
+        </header>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-destructive">{error}</p>
+            <Button
+              className="mt-4"
+              onClick={() => setSelectedStep(null)}
+              data-testid="button-back-to-list"
+            >
+              Back to Step List
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const savedAnswers = selectedStep ? getStepAnswers(selectedStep) : [];
+  const answerMap = new Map(savedAnswers.map(a => [a.questionId, a.answer]));
+
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
       <header className="flex items-center gap-3">
@@ -60,14 +161,35 @@ export default function Steps() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold">Step {selectedStep}</h1>
-          <p className="text-sm text-muted-foreground">Answer each question thoughtfully</p>
+          <p className="text-sm text-muted-foreground">{stepContent?.title}</p>
         </div>
       </header>
 
+      {stepContent?.overviewLabels && stepContent.overviewLabels.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Key Themes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {stepContent.overviewLabels.map((label) => (
+                <span
+                  key={label}
+                  className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm"
+                  data-testid={`theme-${label.toLowerCase()}`}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="space-y-6">
-        {mockQuestions.map((question, index) => (
+        {stepContent?.questions.map((question, index) => (
           <Card key={question.id} data-testid={`question-${question.id}`}>
             <CardHeader>
               <CardTitle className="text-lg">
@@ -85,8 +207,8 @@ export default function Steps() {
             <CardContent>
               <Textarea
                 placeholder="Write your answer..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
+                value={answerMap.get(question.id) || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                 className="min-h-32"
                 data-testid={`answer-${question.id}`}
               />
@@ -100,6 +222,7 @@ export default function Steps() {
         <Button
           variant="outline"
           className="w-full gap-2"
+          onClick={handleExport}
           data-testid="button-export"
         >
           <Download className="h-4 w-4" />

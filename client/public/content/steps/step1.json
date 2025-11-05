@@ -1,0 +1,62 @@
+{
+  "step": 1,
+  "title": "We admitted we were powerless over our addiction—that our lives had become unmanageable",
+  "overviewLabels": [
+    "Acceptance",
+    "Honesty",
+    "Powerlessness",
+    "Unmanageability"
+  ],
+  "questions": [
+    {
+      "id": "step1-q1",
+      "prompt": "Describe a situation where you felt powerless over your addiction.",
+      "help": "Be specific and honest about your experiences. What happened? How did you feel?"
+    },
+    {
+      "id": "step1-q2",
+      "prompt": "How has your life become unmanageable?",
+      "help": "Consider the impact on relationships, work, health, and daily responsibilities."
+    },
+    {
+      "id": "step1-q3",
+      "prompt": "What have you tried in the past to control your addiction?",
+      "help": "List all attempts you've made and why they didn't work."
+    },
+    {
+      "id": "step1-q4",
+      "prompt": "What consequences have you faced due to your addiction?",
+      "help": "Be thorough - physical, emotional, financial, legal, social consequences."
+    },
+    {
+      "id": "step1-q5",
+      "prompt": "How do you feel about admitting powerlessness?",
+      "help": "It's okay to have mixed feelings. Write honestly about your resistance or acceptance."
+    },
+    {
+      "id": "step1-q6",
+      "prompt": "What areas of your life are most affected by unmanageability?",
+      "help": "Think about work, relationships, finances, health, self-care, responsibilities."
+    },
+    {
+      "id": "step1-q7",
+      "prompt": "Describe a time when you lied to yourself about your addiction.",
+      "help": "What justifications or rationalizations did you use?"
+    },
+    {
+      "id": "step1-q8",
+      "prompt": "How has denial kept you sick?",
+      "help": "Reflect on how refusing to see the truth prevented you from getting help."
+    },
+    {
+      "id": "step1-q9",
+      "prompt": "What does acceptance mean to you?",
+      "help": "How is acceptance different from giving up?"
+    },
+    {
+      "id": "step1-q10",
+      "prompt": "What are you willing to do differently now?",
+      "help": "Based on this step, what changes are you ready to make?"
+    }
+  ]
+}

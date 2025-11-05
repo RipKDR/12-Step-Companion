@@ -1,0 +1,72 @@
+{
+  "id": "triggers",
+  "title": "Triggers & Cravings",
+  "description": "Identify and understand your triggers to develop better coping strategies",
+  "fields": [
+    {
+      "id": "trigger-situation",
+      "label": "Describe the triggering situation",
+      "type": "textarea",
+      "required": true,
+      "help": "What happened? Where were you? Who was there?"
+    },
+    {
+      "id": "trigger-type",
+      "label": "Type of trigger",
+      "type": "select",
+      "required": true,
+      "options": ["People", "Places", "Things", "Emotions", "Stress", "Success", "Celebration", "Other"]
+    },
+    {
+      "id": "emotional-response",
+      "label": "What emotions did you feel?",
+      "type": "textarea",
+      "required": true,
+      "help": "Anger, sadness, anxiety, excitement, loneliness, etc."
+    },
+    {
+      "id": "physical-response",
+      "label": "What physical sensations did you notice?",
+      "type": "textarea",
+      "help": "Racing heart, sweating, tension, restlessness, etc."
+    },
+    {
+      "id": "craving-intensity",
+      "label": "Craving intensity (1-10)",
+      "type": "number",
+      "required": true,
+      "help": "1 = barely noticeable, 10 = overwhelming"
+    },
+    {
+      "id": "coping-used",
+      "label": "What coping strategies did you use?",
+      "type": "textarea",
+      "required": true,
+      "help": "Called sponsor, attended meeting, exercised, journaled, etc."
+    },
+    {
+      "id": "coping-effectiveness",
+      "label": "How effective was your response? (1-10)",
+      "type": "number",
+      "required": true
+    },
+    {
+      "id": "what-learned",
+      "label": "What did you learn from this experience?",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "id": "future-plan",
+      "label": "What will you do differently next time?",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "id": "support-needed",
+      "label": "What support do you need?",
+      "type": "textarea",
+      "help": "What resources or people could help you manage this trigger?"
+    }
+  ]
+}
