@@ -1,0 +1,86 @@
+{
+  "id": "daily-reflection",
+  "title": "Daily Tenth Step",
+  "description": "End-of-day personal inventory and reflection",
+  "fields": [
+    {
+      "id": "did-well",
+      "label": "What did I do well today?",
+      "type": "textarea",
+      "required": true,
+      "help": "Acknowledge your positive actions and choices"
+    },
+    {
+      "id": "where-wrong",
+      "label": "Where was I wrong today?",
+      "type": "textarea",
+      "required": true,
+      "help": "Be honest but not harsh with yourself"
+    },
+    {
+      "id": "harmed-anyone",
+      "label": "Did I harm anyone today?",
+      "type": "select",
+      "required": true,
+      "options": ["No", "Yes - need to make amends", "Maybe - need to reflect more"]
+    },
+    {
+      "id": "amends-needed",
+      "label": "If yes, what amends do I need to make?",
+      "type": "textarea",
+      "help": "Be specific about what you'll do to make it right"
+    },
+    {
+      "id": "character-defects-today",
+      "label": "Which character defects showed up today?",
+      "type": "select",
+      "options": [
+        "None that I noticed",
+        "Selfishness",
+        "Dishonesty",
+        "Fear",
+        "Resentment",
+        "Pride",
+        "Anger",
+        "Impatience",
+        "Other"
+      ],
+      "required": true
+    },
+    {
+      "id": "spiritual-principles",
+      "label": "Did I practice spiritual principles today? (honesty, humility, compassion, etc.)",
+      "type": "select",
+      "required": true,
+      "options": ["Yes, consistently", "Yes, some of the time", "No, struggled today"]
+    },
+    {
+      "id": "prayer-meditation",
+      "label": "Did I pray and meditate today?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "Briefly", "No"]
+    },
+    {
+      "id": "gratitude-today",
+      "label": "Three things I'm grateful for today",
+      "type": "textarea",
+      "required": true,
+      "help": "Even on hard days, there's always something"
+    },
+    {
+      "id": "tomorrow-intention",
+      "label": "My intention for tomorrow",
+      "type": "textarea",
+      "required": true,
+      "help": "What will you focus on or work on tomorrow?"
+    },
+    {
+      "id": "serenity-rating",
+      "label": "My peace/serenity level today (1-10)",
+      "type": "number",
+      "required": true,
+      "help": "1 = very disturbed, 10 = very serene"
+    }
+  ]
+}

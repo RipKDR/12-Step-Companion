@@ -1,12 +1,145 @@
 {
   "step": 4,
-  "title": "Step 4",
-  "overviewLabels": ["step4"],
+  "title": "Step Four",
+  "overviewLabels": ["moral inventory", "self-examination", "honesty"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 4",
-      "help": "Optional hint"
+      "id": "s4-intro",
+      "section": "Introduction to Step Four",
+      "prompt": "What are your feelings about making a searching and fearless moral inventory?",
+      "help": "Consider both your fears and your willingness."
+    },
+    {
+      "id": "s4-q1",
+      "section": "Resentments",
+      "prompt": "List a resentment you have. Who or what is it against?",
+      "help": "Name the person, institution, or principle."
+    },
+    {
+      "id": "s4-q2",
+      "prompt": "What happened? Describe the situation that caused this resentment.",
+      "help": "Be specific about what occurred."
+    },
+    {
+      "id": "s4-q3",
+      "prompt": "How did this affect you? (self-esteem, security, relationships, etc.)",
+      "help": "Which part of your life was threatened or harmed?"
+    },
+    {
+      "id": "s4-q4",
+      "prompt": "What was your part in this? What did you contribute to the situation?",
+      "help": "Look at your own actions, attitudes, and behaviors."
+    },
+    {
+      "id": "s4-q5",
+      "section": "Resentments (continued)",
+      "prompt": "List another resentment. Who or what is it against?",
+      "help": "Continue with your inventory."
+    },
+    {
+      "id": "s4-q6",
+      "prompt": "What happened with this resentment?",
+      "help": "Describe the situation."
+    },
+    {
+      "id": "s4-q7",
+      "prompt": "How did this affect you?",
+      "help": "Consider your self-esteem, security, relationships, etc."
+    },
+    {
+      "id": "s4-q8",
+      "prompt": "What was your part?",
+      "help": "Focus on what you could control."
+    },
+    {
+      "id": "s4-q9",
+      "section": "Fears",
+      "prompt": "What is one of your greatest fears?",
+      "help": "Be honest about what scares you."
+    },
+    {
+      "id": "s4-q10",
+      "prompt": "How has this fear affected your life and your recovery?",
+      "help": "Consider the impact on your decisions and actions."
+    },
+    {
+      "id": "s4-q11",
+      "prompt": "List another fear you have.",
+      "help": "Continue examining your fears."
+    },
+    {
+      "id": "s4-q12",
+      "prompt": "How has this fear affected you?",
+      "help": "Look at the consequences."
+    },
+    {
+      "id": "s4-q13",
+      "section": "Sexual Conduct",
+      "prompt": "Describe a situation where your sexual conduct caused harm to yourself or others.",
+      "help": "Be honest about relationships and intimacy issues."
+    },
+    {
+      "id": "s4-q14",
+      "prompt": "Who was affected by your sexual conduct?",
+      "help": "Consider all parties involved."
+    },
+    {
+      "id": "s4-q15",
+      "prompt": "What were you seeking in this situation? (validation, escape, control, etc.)",
+      "help": "Look at your underlying motivations."
+    },
+    {
+      "id": "s4-q16",
+      "prompt": "What should you have done instead?",
+      "help": "Consider healthier alternatives."
+    },
+    {
+      "id": "s4-q17",
+      "section": "Character Defects",
+      "prompt": "What character defect shows up most often in your inventory? (selfishness, dishonesty, fear, etc.)",
+      "help": "Look for patterns in your resentments, fears, and harms."
+    },
+    {
+      "id": "s4-q18",
+      "prompt": "How has this character defect harmed you?",
+      "help": "Be specific about the consequences."
+    },
+    {
+      "id": "s4-q19",
+      "prompt": "How has this character defect harmed others?",
+      "help": "Consider the impact on relationships."
+    },
+    {
+      "id": "s4-q20",
+      "section": "Assets",
+      "prompt": "What positive qualities do you possess?",
+      "help": "Include strengths, talents, and good characteristics."
+    },
+    {
+      "id": "s4-q21",
+      "prompt": "What are you grateful for in your life today?",
+      "help": "List specific people, things, or circumstances."
+    },
+    {
+      "id": "s4-q22",
+      "prompt": "What gives you hope for your recovery?",
+      "help": "Reflect on positive signs of progress."
+    },
+    {
+      "id": "s4-q23",
+      "section": "Completion",
+      "prompt": "How do you feel about completing this inventory?",
+      "help": "Consider both relief and any remaining concerns."
+    },
+    {
+      "id": "s4-q24",
+      "prompt": "What have you learned about yourself through this process?",
+      "help": "Reflect on insights and self-awareness gained."
+    },
+    {
+      "id": "s4-q25",
+      "prompt": "Are you ready to share this inventory with another person in Step Five?",
+      "help": "Consider your willingness and readiness."
     }
   ]
 }

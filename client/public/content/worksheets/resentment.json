@@ -1,0 +1,88 @@
+{
+  "id": "resentment",
+  "title": "Resentment Inventory",
+  "description": "Work through resentments using the Fourth Step inventory format",
+  "fields": [
+    {
+      "id": "resentment-target",
+      "label": "I am resentful at (person, institution, or principle)",
+      "type": "text",
+      "required": true,
+      "help": "Who or what are you resentful toward?"
+    },
+    {
+      "id": "the-cause",
+      "label": "The Cause - What happened?",
+      "type": "textarea",
+      "required": true,
+      "help": "Describe the situation that caused this resentment"
+    },
+    {
+      "id": "affects-self-esteem",
+      "label": "Does this affect my self-esteem?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "No", "Somewhat"]
+    },
+    {
+      "id": "affects-security",
+      "label": "Does this affect my security (financial, emotional, physical)?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "No", "Somewhat"]
+    },
+    {
+      "id": "affects-relationships",
+      "label": "Does this affect my relationships?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "No", "Somewhat"]
+    },
+    {
+      "id": "affects-ambitions",
+      "label": "Does this affect my ambitions or goals?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "No", "Somewhat"]
+    },
+    {
+      "id": "my-part",
+      "label": "What was my part? (selfishness, dishonesty, fear, etc.)",
+      "type": "textarea",
+      "required": true,
+      "help": "Look at your own behavior, attitudes, and actions in this situation"
+    },
+    {
+      "id": "character-defect",
+      "label": "Which character defect(s) showed up?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "Selfishness/Self-centeredness",
+        "Dishonesty",
+        "Fear",
+        "Inconsideration",
+        "Pride",
+        "Greed",
+        "Jealousy",
+        "Envy",
+        "Anger",
+        "Other"
+      ]
+    },
+    {
+      "id": "prayer-willingness",
+      "label": "Am I willing to pray for this person?",
+      "type": "select",
+      "required": true,
+      "options": ["Yes", "Working on willingness", "Not yet", "N/A"]
+    },
+    {
+      "id": "action-step",
+      "label": "What action can I take to let go of this resentment?",
+      "type": "textarea",
+      "required": true,
+      "help": "Talk to sponsor, make amends, pray, accept what I cannot change, etc."
+    }
+  ]
+}

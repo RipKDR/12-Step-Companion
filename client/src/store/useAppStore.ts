@@ -52,6 +52,7 @@ const initialState: AppState = {
   dailyCards: {},
   journalEntries: {},
   worksheetResponses: {},
+  meetings: [],
   emergencyActions: defaultEmergencyActions,
   settings: {
     theme: 'system',

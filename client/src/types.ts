@@ -87,6 +87,16 @@ export interface AppSettings {
   cloudSync: boolean; // stub
 }
 
+export interface Meeting {
+  id: string;
+  name: string;
+  type: string;
+  location: string;
+  date: string;
+  notes?: string;
+  createdAtISO: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -94,6 +104,7 @@ export interface AppState {
   dailyCards: Record<string, DailyCard>; // date -> card
   journalEntries: Record<string, JournalEntry>; // id -> entry
   worksheetResponses: Record<string, WorksheetResponse>; // id -> response
+  meetings?: Meeting[]; // meeting log
   emergencyActions: EmergencyAction[];
   settings: AppSettings;
   onboardingComplete: boolean;

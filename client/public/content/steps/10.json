@@ -1,12 +1,122 @@
 {
   "step": 10,
-  "title": "Step 10",
-  "overviewLabels": ["step10"],
+  "title": "Step Ten",
+  "overviewLabels": ["daily inventory", "accountability", "maintenance"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 10",
-      "help": "Optional hint"
+      "id": "s10-q1",
+      "section": "Daily Practice",
+      "prompt": "Do you take a daily personal inventory?",
+      "help": "Step Ten is about maintaining what we've built."
+    },
+    {
+      "id": "s10-q2",
+      "prompt": "When during the day do you take your inventory? (morning, evening, both)",
+      "help": "Establish a consistent practice."
+    },
+    {
+      "id": "s10-q3",
+      "prompt": "What format do you use? (written, mental, prayer, etc.)",
+      "help": "Find what works best for you."
+    },
+    {
+      "id": "s10-q4",
+      "section": "Spot-Check Inventory",
+      "prompt": "Describe a situation today where you felt angry or afraid.",
+      "help": "When we're disturbed, we can pause and check ourselves."
+    },
+    {
+      "id": "s10-q5",
+      "prompt": "What was your part in this situation?",
+      "help": "Look at your own behavior, not others'."
+    },
+    {
+      "id": "s10-q6",
+      "prompt": "Which character defect showed up? (selfishness, dishonesty, fear, etc.)",
+      "help": "Awareness helps us change."
+    },
+    {
+      "id": "s10-q7",
+      "prompt": "What could you have done differently?",
+      "help": "Consider healthier responses."
+    },
+    {
+      "id": "s10-q8",
+      "prompt": "Do you need to make an immediate amend?",
+      "help": "Promptly admitting when we're wrong keeps us free."
+    },
+    {
+      "id": "s10-q9",
+      "section": "Evening Review",
+      "prompt": "What did you do well today?",
+      "help": "Acknowledge your successes and progress."
+    },
+    {
+      "id": "s10-q10",
+      "prompt": "Where did you fall short today?",
+      "help": "Honesty without harsh self-judgment."
+    },
+    {
+      "id": "s10-q11",
+      "prompt": "Did you harm anyone today?",
+      "help": "If so, plan to make amends promptly."
+    },
+    {
+      "id": "s10-q12",
+      "prompt": "Were you kind, loving, and helpful today?",
+      "help": "Consider how you treated others."
+    },
+    {
+      "id": "s10-q13",
+      "prompt": "Did you practice spiritual principles? (honesty, open-mindedness, willingness, etc.)",
+      "help": "Recovery is about how we live."
+    },
+    {
+      "id": "s10-q14",
+      "section": "Ongoing Vigilance",
+      "prompt": "What are your warning signs that you're getting off track?",
+      "help": "Restlessness, irritability, and discontent are common."
+    },
+    {
+      "id": "s10-q15",
+      "prompt": "What do you do when you notice these warning signs?",
+      "help": "Quick action prevents bigger problems."
+    },
+    {
+      "id": "s10-q16",
+      "prompt": "Are you holding onto any resentments?",
+      "help": "Resentments are the number one offender."
+    },
+    {
+      "id": "s10-q17",
+      "prompt": "What can you do to let go of this resentment?",
+      "help": "Prayer for the other person often helps."
+    },
+    {
+      "id": "s10-q18",
+      "section": "Growth and Progress",
+      "prompt": "How has your daily inventory practice helped your recovery?",
+      "help": "Reflect on the benefits."
+    },
+    {
+      "id": "s10-q19",
+      "prompt": "What patterns have you noticed through regular inventory?",
+      "help": "Self-awareness leads to change."
+    },
+    {
+      "id": "s10-q20",
+      "prompt": "How has Step Ten changed your relationships?",
+      "help": "Promptly admitting wrongs builds trust."
+    },
+    {
+      "id": "s10-q21",
+      "prompt": "Are you experiencing more peace and serenity?",
+      "help": "This is a promise of daily practice."
+    },
+    {
+      "id": "s10-q22",
+      "prompt": "What improvements do you want to make in your Step Ten practice?",
+      "help": "We can always deepen our spiritual practice."
     }
   ]
 }

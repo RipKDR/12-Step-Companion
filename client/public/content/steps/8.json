@@ -1,12 +1,111 @@
 {
   "step": 8,
-  "title": "Step 8",
-  "overviewLabels": ["step8"],
+  "title": "Step Eight",
+  "overviewLabels": ["amends list", "willingness", "accountability"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 8",
-      "help": "Optional hint"
+      "id": "s8-q1",
+      "section": "Creating Your List",
+      "prompt": "Who is the first person you harmed through your addiction?",
+      "help": "Be thorough and honest as you create your list."
+    },
+    {
+      "id": "s8-q2",
+      "prompt": "What harm did you cause this person?",
+      "help": "Be specific about your actions and their impact."
+    },
+    {
+      "id": "s8-q3",
+      "prompt": "How do you feel about making amends to this person?",
+      "help": "Consider your willingness and any fears."
+    },
+    {
+      "id": "s8-q4",
+      "prompt": "Who else did you harm? List another person.",
+      "help": "Continue building your comprehensive list."
+    },
+    {
+      "id": "s8-q5",
+      "prompt": "What harm did you cause them?",
+      "help": "Be specific and honest."
+    },
+    {
+      "id": "s8-q6",
+      "prompt": "List another person you harmed.",
+      "help": "Don't leave anyone out, including yourself."
+    },
+    {
+      "id": "s8-q7",
+      "prompt": "What harm did you cause them?",
+      "help": "Include emotional, financial, and other harms."
+    },
+    {
+      "id": "s8-q8",
+      "section": "Difficult Cases",
+      "prompt": "Who on your list are you most afraid to face?",
+      "help": "Fear is common but doesn't have to stop you."
+    },
+    {
+      "id": "s8-q9",
+      "prompt": "What are you afraid will happen if you make amends to this person?",
+      "help": "Name your specific fears."
+    },
+    {
+      "id": "s8-q10",
+      "prompt": "Who on your list do you feel justified in having harmed?",
+      "help": "Be honest about any resentments or justifications."
+    },
+    {
+      "id": "s8-q11",
+      "prompt": "Can you see your part in that situation, regardless of what they did?",
+      "help": "Focus on your own behavior, not theirs."
+    },
+    {
+      "id": "s8-q12",
+      "section": "Including Yourself",
+      "prompt": "Have you included yourself on your amends list?",
+      "help": "We often harm ourselves most through addiction."
+    },
+    {
+      "id": "s8-q13",
+      "prompt": "How have you harmed yourself through your addiction?",
+      "help": "Consider physical, emotional, and spiritual harm."
+    },
+    {
+      "id": "s8-q14",
+      "prompt": "What amends do you owe yourself?",
+      "help": "Self-care and self-forgiveness are part of recovery."
+    },
+    {
+      "id": "s8-q15",
+      "section": "Becoming Willing",
+      "prompt": "Is your amends list complete?",
+      "help": "Review your Fourth Step inventory for anyone you missed."
+    },
+    {
+      "id": "s8-q16",
+      "prompt": "Who on your list are you not yet willing to make amends to?",
+      "help": "Willingness, not action, is the requirement for Step Eight."
+    },
+    {
+      "id": "s8-q17",
+      "prompt": "What do you need to do to become willing to make amends to everyone?",
+      "help": "Prayer, time, or discussion with your sponsor may help."
+    },
+    {
+      "id": "s8-q18",
+      "prompt": "How has making this list affected you?",
+      "help": "Reflect on your feelings and insights."
+    },
+    {
+      "id": "s8-q19",
+      "prompt": "Are you willing to make amends to all persons you have harmed?",
+      "help": "This is the essence of Step Eight."
+    },
+    {
+      "id": "s8-q20",
+      "prompt": "Are you ready to begin Step Nine?",
+      "help": "Discuss your readiness with your sponsor."
     }
   ]
 }

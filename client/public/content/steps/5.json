@@ -1,12 +1,84 @@
 {
   "step": 5,
-  "title": "Step 5",
-  "overviewLabels": ["step5"],
+  "title": "Step Five",
+  "overviewLabels": ["sharing", "honesty", "humility"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 5",
-      "help": "Optional hint"
+      "id": "s5-q1",
+      "section": "Preparation",
+      "prompt": "Who have you chosen to hear your Fifth Step?",
+      "help": "This should be someone you trust who understands recovery."
+    },
+    {
+      "id": "s5-q2",
+      "prompt": "What concerns or fears do you have about sharing your inventory?",
+      "help": "It's normal to feel anxious about this step."
+    },
+    {
+      "id": "s5-q3",
+      "prompt": "What do you hope to gain from sharing your inventory?",
+      "help": "Consider the benefits of honesty and openness."
+    },
+    {
+      "id": "s5-q4",
+      "section": "Post-Fifth Step Reflection",
+      "prompt": "How did you feel during your Fifth Step?",
+      "help": "Describe your emotions during the sharing process."
+    },
+    {
+      "id": "s5-q5",
+      "prompt": "How do you feel now that you've completed your Fifth Step?",
+      "help": "Many people feel relief, freedom, or peace."
+    },
+    {
+      "id": "s5-q6",
+      "prompt": "What insights did you gain from hearing yourself say these things out loud?",
+      "help": "Speaking our truth often brings clarity."
+    },
+    {
+      "id": "s5-q7",
+      "prompt": "Did anything surprise you during the process?",
+      "help": "Consider unexpected realizations or emotions."
+    },
+    {
+      "id": "s5-q8",
+      "prompt": "How did the person hearing your Fifth Step respond?",
+      "help": "Consider their support, understanding, or guidance."
+    },
+    {
+      "id": "s5-q9",
+      "prompt": "What patterns or themes emerged from your inventory?",
+      "help": "Look for recurring issues or behaviors."
+    },
+    {
+      "id": "s5-q10",
+      "prompt": "What character defects became most clear to you?",
+      "help": "Identify the defects you're ready to address."
+    },
+    {
+      "id": "s5-q11",
+      "prompt": "Are there any secrets you're still holding onto?",
+      "help": "Complete honesty is essential for recovery."
+    },
+    {
+      "id": "s5-q12",
+      "prompt": "How has your relationship with your Higher Power changed through Steps Four and Five?",
+      "help": "Consider any growth in faith or trust."
+    },
+    {
+      "id": "s5-q13",
+      "prompt": "What did you learn about yourself that you didn't know before?",
+      "help": "Reflect on new self-awareness."
+    },
+    {
+      "id": "s5-q14",
+      "prompt": "How has your perspective on your past changed?",
+      "help": "Consider any shift in understanding or compassion."
+    },
+    {
+      "id": "s5-q15",
+      "prompt": "Are you ready to move forward to Step Six?",
+      "help": "Consider your willingness to have your defects removed."
     }
   ]
 }

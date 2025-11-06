@@ -1,12 +1,139 @@
 {
   "step": 11,
-  "title": "Step 11",
-  "overviewLabels": ["step11"],
+  "title": "Step Eleven",
+  "overviewLabels": ["prayer", "meditation", "spiritual growth"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 11",
-      "help": "Optional hint"
+      "id": "s11-q1",
+      "section": "Current Practice",
+      "prompt": "Do you have a daily practice of prayer and meditation?",
+      "help": "Consistency is key to spiritual growth."
+    },
+    {
+      "id": "s11-q2",
+      "prompt": "What does your current prayer practice look like?",
+      "help": "Describe when, where, and how you pray."
+    },
+    {
+      "id": "s11-q3",
+      "prompt": "What does your current meditation practice look like?",
+      "help": "There are many forms of meditation."
+    },
+    {
+      "id": "s11-q4",
+      "prompt": "How much time do you spend in prayer and meditation daily?",
+      "help": "Quality matters more than quantity, but both help."
+    },
+    {
+      "id": "s11-q5",
+      "section": "Improving Conscious Contact",
+      "prompt": "How do you experience your Higher Power?",
+      "help": "Connection can come in many forms."
+    },
+    {
+      "id": "s11-q6",
+      "prompt": "When do you feel most connected to your Higher Power?",
+      "help": "Notice what deepens your spiritual experience."
+    },
+    {
+      "id": "s11-q7",
+      "prompt": "What obstacles get in the way of your spiritual practice?",
+      "help": "Busyness, resistance, and doubt are common."
+    },
+    {
+      "id": "s11-q8",
+      "prompt": "How can you overcome these obstacles?",
+      "help": "Simple solutions often work best."
+    },
+    {
+      "id": "s11-q9",
+      "section": "Prayer",
+      "prompt": "What prayers are meaningful to you?",
+      "help": "The Serenity Prayer, Third Step Prayer, Seventh Step Prayer, etc."
+    },
+    {
+      "id": "s11-q10",
+      "prompt": "Do you pray for others?",
+      "help": "Praying for others, especially those we resent, brings freedom."
+    },
+    {
+      "id": "s11-q11",
+      "prompt": "Do you ask for guidance in your daily decisions?",
+      "help": "We can check in with our Higher Power throughout the day."
+    },
+    {
+      "id": "s11-q12",
+      "prompt": "What are you grateful for today?",
+      "help": "Gratitude is a powerful prayer."
+    },
+    {
+      "id": "s11-q13",
+      "section": "Meditation",
+      "prompt": "What form of meditation works best for you?",
+      "help": "Sitting, walking, breathing, reading meditation, etc."
+    },
+    {
+      "id": "s11-q14",
+      "prompt": "What do you experience during meditation?",
+      "help": "Peace, insight, connection, or sometimes restlessness."
+    },
+    {
+      "id": "s11-q15",
+      "prompt": "How has meditation changed your thinking?",
+      "help": "We often gain clarity and perspective."
+    },
+    {
+      "id": "s11-q16",
+      "prompt": "Do you listen for answers in meditation?",
+      "help": "Prayer is talking; meditation is listening."
+    },
+    {
+      "id": "s11-q17",
+      "section": "Knowledge of God's Will",
+      "prompt": "How do you seek to know your Higher Power's will for you?",
+      "help": "Through prayer, meditation, and spiritual guidance."
+    },
+    {
+      "id": "s11-q18",
+      "prompt": "How do you know when you're following your Higher Power's will?",
+      "help": "Peace, usefulness, and right action are signs."
+    },
+    {
+      "id": "s11-q19",
+      "prompt": "What gets in the way of knowing your Higher Power's will?",
+      "help": "Self-will, fear, and dishonesty block us."
+    },
+    {
+      "id": "s11-q20",
+      "section": "Power to Carry It Out",
+      "prompt": "How does your Higher Power give you power to carry out their will?",
+      "help": "Through strength, courage, and guidance."
+    },
+    {
+      "id": "s11-q21",
+      "prompt": "Can you think of a time when you felt guided and empowered?",
+      "help": "Reflect on spiritual experiences."
+    },
+    {
+      "id": "s11-q22",
+      "section": "Growth",
+      "prompt": "How has your spiritual life grown through the steps?",
+      "help": "Consider your journey from Step One to now."
+    },
+    {
+      "id": "s11-q23",
+      "prompt": "What are you doing to continue your spiritual growth?",
+      "help": "Reading, meetings, service, and fellowship all help."
+    },
+    {
+      "id": "s11-q24",
+      "prompt": "How has prayer and meditation improved your conscious contact with your Higher Power?",
+      "help": "This is the promise of Step Eleven."
+    },
+    {
+      "id": "s11-q25",
+      "prompt": "What spiritual principles guide your life today?",
+      "help": "Honesty, hope, faith, courage, integrity, willingness, humility, love, responsibility, service, etc."
     }
   ]
 }

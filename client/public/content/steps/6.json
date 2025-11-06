@@ -1,12 +1,86 @@
 {
   "step": 6,
-  "title": "Step 6",
-  "overviewLabels": ["step6"],
+  "title": "Step Six",
+  "overviewLabels": ["willingness", "readiness", "change"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 6",
-      "help": "Optional hint"
+      "id": "s6-q1",
+      "section": "Understanding Defects",
+      "prompt": "List the main character defects you identified in Steps Four and Five.",
+      "help": "Review your inventory for patterns."
+    },
+    {
+      "id": "s6-q2",
+      "prompt": "Which defect causes you the most problems in your life?",
+      "help": "Consider the impact on relationships and well-being."
+    },
+    {
+      "id": "s6-q3",
+      "prompt": "Which defect are you most willing to have removed?",
+      "help": "Willingness is the key to this step."
+    },
+    {
+      "id": "s6-q4",
+      "prompt": "Which defect are you least willing to have removed? Why?",
+      "help": "Be honest about your attachments to certain behaviors."
+    },
+    {
+      "id": "s6-q5",
+      "section": "Becoming Willing",
+      "prompt": "What are you afraid will happen if this defect is removed?",
+      "help": "Our defects often feel like protection or identity."
+    },
+    {
+      "id": "s6-q6",
+      "prompt": "How has holding onto this defect served you in the past?",
+      "help": "Consider what you think you gain from it."
+    },
+    {
+      "id": "s6-q7",
+      "prompt": "How has this defect hurt you and others?",
+      "help": "Look at the real costs of this behavior."
+    },
+    {
+      "id": "s6-q8",
+      "prompt": "What would your life look like without this defect?",
+      "help": "Imagine the freedom and possibilities."
+    },
+    {
+      "id": "s6-q9",
+      "section": "Growing Willingness",
+      "prompt": "Are you willing to let your Higher Power remove this defect?",
+      "help": "This is about willingness, not perfection."
+    },
+    {
+      "id": "s6-q10",
+      "prompt": "What obstacles stand between you and complete willingness?",
+      "help": "Identify what's blocking your readiness."
+    },
+    {
+      "id": "s6-q11",
+      "prompt": "How can you work on becoming more willing?",
+      "help": "Consider prayer, meditation, or talking with your sponsor."
+    },
+    {
+      "id": "s6-q12",
+      "prompt": "What does 'entirely ready' mean to you?",
+      "help": "Reflect on the completeness this step asks for."
+    },
+    {
+      "id": "s6-q13",
+      "section": "Readiness",
+      "prompt": "Do you believe your Higher Power can remove these defects?",
+      "help": "Consider your faith and trust."
+    },
+    {
+      "id": "s6-q14",
+      "prompt": "Are you willing to do your part in changing these behaviors?",
+      "help": "Recovery requires both surrender and action."
+    },
+    {
+      "id": "s6-q15",
+      "prompt": "Are you entirely ready to have all your defects of character removed?",
+      "help": "This is the essence of Step Six."
     }
   ]
 }

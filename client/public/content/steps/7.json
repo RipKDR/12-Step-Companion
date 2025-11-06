@@ -1,12 +1,86 @@
 {
   "step": 7,
-  "title": "Step 7",
-  "overviewLabels": ["step7"],
+  "title": "Step Seven",
+  "overviewLabels": ["humility", "surrender", "prayer"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 7",
-      "help": "Optional hint"
+      "id": "s7-q1",
+      "section": "Understanding Humility",
+      "prompt": "What does humility mean to you?",
+      "help": "It's not about thinking less of yourself, but thinking of yourself less."
+    },
+    {
+      "id": "s7-q2",
+      "prompt": "How has lack of humility affected your life?",
+      "help": "Consider pride, arrogance, or false modesty."
+    },
+    {
+      "id": "s7-q3",
+      "prompt": "What are you willing to do to develop humility?",
+      "help": "Consider new attitudes and behaviors."
+    },
+    {
+      "id": "s7-q4",
+      "section": "The Seventh Step Prayer",
+      "prompt": "Have you asked your Higher Power to remove your shortcomings?",
+      "help": "The Seventh Step Prayer is a formal request for help."
+    },
+    {
+      "id": "s7-q5",
+      "prompt": "What did you feel when you asked your Higher Power for help?",
+      "help": "Reflect on the experience of surrender."
+    },
+    {
+      "id": "s7-q6",
+      "prompt": "What does it mean to you to 'humbly ask'?",
+      "help": "Consider the attitude of asking versus demanding."
+    },
+    {
+      "id": "s7-q7",
+      "section": "Letting Go",
+      "prompt": "Which shortcoming are you most ready to release?",
+      "help": "Consider what you're truly willing to let go."
+    },
+    {
+      "id": "s7-q8",
+      "prompt": "What would your life be like if this shortcoming were removed?",
+      "help": "Visualize the positive changes."
+    },
+    {
+      "id": "s7-q9",
+      "prompt": "Are you trying to control the process, or are you truly surrendering?",
+      "help": "Examine your expectations and attachments."
+    },
+    {
+      "id": "s7-q10",
+      "section": "Daily Practice",
+      "prompt": "How can you practice humility in your daily life?",
+      "help": "Consider specific actions and attitudes."
+    },
+    {
+      "id": "s7-q11",
+      "prompt": "When do you notice your shortcomings appearing?",
+      "help": "Awareness is the first step to change."
+    },
+    {
+      "id": "s7-q12",
+      "prompt": "What are you doing to replace old behaviors with new ones?",
+      "help": "Recovery is about building new patterns."
+    },
+    {
+      "id": "s7-q13",
+      "prompt": "How has your relationship with your Higher Power deepened through this step?",
+      "help": "Consider growth in trust and surrender."
+    },
+    {
+      "id": "s7-q14",
+      "prompt": "What changes have you noticed since completing Step Seven?",
+      "help": "Progress may be gradual but real."
+    },
+    {
+      "id": "s7-q15",
+      "prompt": "Are you ready to make amends as outlined in Steps Eight and Nine?",
+      "help": "The removal of shortcomings prepares us to make amends."
     }
   ]
 }

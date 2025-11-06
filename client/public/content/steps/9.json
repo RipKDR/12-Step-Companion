@@ -1,12 +1,124 @@
 {
   "step": 9,
-  "title": "Step 9",
-  "overviewLabels": ["step9"],
+  "title": "Step Nine",
+  "overviewLabels": ["making amends", "action", "healing"],
   "questions": [
     {
-      "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 9",
-      "help": "Optional hint"
+      "id": "s9-q1",
+      "section": "Planning Your Amends",
+      "prompt": "Who will you make amends to first?",
+      "help": "Discuss the order with your sponsor."
+    },
+    {
+      "id": "s9-q2",
+      "prompt": "What specific amends do you need to make to this person?",
+      "help": "Be clear about what you're apologizing for and what you'll do."
+    },
+    {
+      "id": "s9-q3",
+      "prompt": "How will you approach this person?",
+      "help": "Consider the setting, timing, and your words carefully."
+    },
+    {
+      "id": "s9-q4",
+      "prompt": "Could making this amend cause harm to this person or others?",
+      "help": "Some amends should not be made if they would cause further harm."
+    },
+    {
+      "id": "s9-q5",
+      "section": "Direct Amends",
+      "prompt": "Describe an amend you've made. How did it go?",
+      "help": "Reflect on the experience, regardless of the outcome."
+    },
+    {
+      "id": "s9-q6",
+      "prompt": "How did the person respond to your amend?",
+      "help": "Their response is not within your control."
+    },
+    {
+      "id": "s9-q7",
+      "prompt": "How did you feel after making this amend?",
+      "help": "Many people feel relief and freedom."
+    },
+    {
+      "id": "s9-q8",
+      "prompt": "What did you learn from making this amend?",
+      "help": "Each amend teaches us something about ourselves."
+    },
+    {
+      "id": "s9-q9",
+      "section": "Challenging Amends",
+      "prompt": "Is there someone who refuses to accept your amend or won't speak with you?",
+      "help": "You can only do your part; their response is up to them."
+    },
+    {
+      "id": "s9-q10",
+      "prompt": "How do you feel about this situation?",
+      "help": "It's okay to feel disappointed or hurt."
+    },
+    {
+      "id": "s9-q11",
+      "prompt": "What can you do to find peace with this outcome?",
+      "help": "Sometimes acceptance is the only option."
+    },
+    {
+      "id": "s9-q12",
+      "section": "Financial Amends",
+      "prompt": "Do you owe anyone money? How much?",
+      "help": "Financial amends may need to be made over time."
+    },
+    {
+      "id": "s9-q13",
+      "prompt": "What is your plan for repaying this debt?",
+      "help": "Make a realistic plan you can keep."
+    },
+    {
+      "id": "s9-q14",
+      "section": "Indirect Amends",
+      "prompt": "Are there people you cannot make direct amends to? (deceased, lost contact, etc.)",
+      "help": "Indirect amends can still heal."
+    },
+    {
+      "id": "s9-q15",
+      "prompt": "What indirect amends can you make? (charity, changed behavior, helping others, etc.)",
+      "help": "Living well is a powerful amend."
+    },
+    {
+      "id": "s9-q16",
+      "section": "Living Amends",
+      "prompt": "How are you making living amends through changed behavior?",
+      "help": "Actions speak louder than words."
+    },
+    {
+      "id": "s9-q17",
+      "prompt": "What patterns have you changed to avoid repeating past harms?",
+      "help": "Recovery is about building a new life."
+    },
+    {
+      "id": "s9-q18",
+      "section": "Reflection",
+      "prompt": "How has making amends changed your relationships?",
+      "help": "Consider both repaired and new relationships."
+    },
+    {
+      "id": "s9-q19",
+      "prompt": "How has making amends changed you?",
+      "help": "Reflect on your growth and healing."
+    },
+    {
+      "id": "s9-q20",
+      "prompt": "What promises of recovery are you experiencing?",
+      "help": "Peace, freedom, and usefulness to others."
+    },
+    {
+      "id": "s9-q21",
+      "prompt": "Are there any amends you're avoiding? Why?",
+      "help": "Continued fear or pride may need addressing."
+    },
+    {
+      "id": "s9-q22",
+      "prompt": "How will you continue to make amends as part of your ongoing recovery?",
+      "help": "Step Ten will help maintain this practice."
     }
   ]
 }
