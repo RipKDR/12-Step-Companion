@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { haptics } from '@/lib/haptics';
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +36,7 @@ export default function Journal() {
 
   const handleSave = () => {
     if (content.trim()) {
+      haptics.success();
       addJournalEntry({
         date: new Date().toISOString(),
         content: content.trim(),

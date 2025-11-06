@@ -1,13 +1,15 @@
 import { useMemo, useState, useEffect } from 'react';
 import SobrietyCounter from '@/components/SobrietyCounter';
 import DailyCard from '@/components/DailyCard';
+import DailyAffirmation from '@/components/DailyAffirmation';
 import ProgressRing from '@/components/ProgressRing';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Sunrise, Moon, BookOpen, BookMarked, Phone } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
 import { loadAllSteps } from '@/lib/contentLoader';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -110,6 +112,12 @@ export default function Home() {
           )}
         </section>
 
+        {/* Daily Affirmation */}
+        <section aria-labelledby="affirmation-heading" className="py-6">
+          <h2 id="affirmation-heading" className="sr-only">Daily Affirmation</h2>
+          <DailyAffirmation date={new Date()} />
+        </section>
+
         {/* Progress Ring */}
         <section className="flex justify-center py-6" aria-labelledby="progress-heading">
           <h2 id="progress-heading" className="sr-only">Current Step Progress</h2>
@@ -147,44 +155,29 @@ export default function Home() {
         <section className="space-y-3" aria-labelledby="actions-heading">
           <h2 id="actions-heading" className="text-xl font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-3">
-            <Link href="/steps">
-              <Button
-                variant="outline"
-                className="w-full h-14 justify-start gap-3 text-base"
-                data-testid="button-step-work"
-                asChild
-              >
-                <a>
-                  <BookOpen className="h-5 w-5" />
-                  Continue Step Work
-                </a>
-              </Button>
+            <Link 
+              href="/steps"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-14 justify-start gap-3 text-base")}
+              data-testid="button-step-work"
+            >
+              <BookOpen className="h-5 w-5" />
+              Continue Step Work
             </Link>
-            <Link href="/journal">
-              <Button
-                variant="outline"
-                className="w-full h-14 justify-start gap-3 text-base"
-                data-testid="button-journal"
-                asChild
-              >
-                <a>
-                  <BookMarked className="h-5 w-5" />
-                  New Journal Entry
-                </a>
-              </Button>
+            <Link 
+              href="/journal"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-14 justify-start gap-3 text-base")}
+              data-testid="button-journal"
+            >
+              <BookMarked className="h-5 w-5" />
+              New Journal Entry
             </Link>
-            <Link href="/emergency">
-              <Button
-                variant="destructive"
-                className="w-full h-14 justify-start gap-3 text-base"
-                data-testid="button-emergency"
-                asChild
-              >
-                <a>
-                  <Phone className="h-5 w-5" />
-                  Emergency Help
-                </a>
-              </Button>
+            <Link 
+              href="/emergency"
+              className={cn(buttonVariants({ variant: "destructive" }), "w-full h-14 justify-start gap-3 text-base")}
+              data-testid="button-emergency"
+            >
+              <Phone className="h-5 w-5" />
+              Emergency Help
             </Link>
           </div>
         </section>

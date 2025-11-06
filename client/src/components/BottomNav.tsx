@@ -24,25 +24,25 @@ export default function BottomNav() {
           const Icon = item.icon;
           
           return (
-            <Link key={item.path} href={item.path}>
-              <a
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[60px] rounded-lg transition-colors ${
-                  isActive 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover-elevate'
-                }`}
-                data-testid={item.testId}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                <Icon 
-                  className="h-5 w-5" 
-                  fill={isActive ? 'currentColor' : 'none'}
-                  strokeWidth={isActive ? 0 : 2}
-                />
-                <span className={`text-xs ${isActive ? 'font-semibold' : 'font-regular'}`}>
-                  {item.label}
-                </span>
-              </a>
+            <Link 
+              key={item.path} 
+              href={item.path}
+              className={`flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[60px] rounded-lg transition-colors ${
+                isActive 
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover-elevate'
+              }`}
+              data-testid={item.testId}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <Icon 
+                className="h-5 w-5" 
+                fill={isActive ? 'currentColor' : 'none'}
+                strokeWidth={isActive ? 0 : 2}
+              />
+              <span className={`text-xs ${isActive ? 'font-semibold' : 'font-regular'}`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}

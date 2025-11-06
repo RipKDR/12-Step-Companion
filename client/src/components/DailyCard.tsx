@@ -3,6 +3,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
+import { haptics } from '@/lib/haptics';
 
 interface DailyCardProps {
   title: string;
@@ -41,7 +42,10 @@ export default function DailyCard({
         <Button
           size="icon"
           variant={completed ? 'default' : 'outline'}
-          onClick={onComplete}
+          onClick={() => {
+            haptics.success();
+            onComplete();
+          }}
           data-testid={`${testId}-complete-button`}
           aria-label={completed ? 'Completed' : 'Mark as complete'}
         >

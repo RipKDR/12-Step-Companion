@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
@@ -155,8 +156,26 @@ export default function Steps() {
       </header>
 
       {isLoading && (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>Loading step content...</p>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-6 w-full" />
+            </CardHeader>
+          </Card>
+          <div className="space-y-4">
+            <Skeleton className="h-2 w-full" />
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-32 w-full" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 
