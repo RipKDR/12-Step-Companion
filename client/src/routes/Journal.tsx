@@ -68,30 +68,38 @@ export default function Journal() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold mb-4">Journal</h1>
+      <header className="space-y-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            Journal
+          </h1>
+          <p className="text-muted-foreground">
+            Track your thoughts, moods, and recovery journey
+          </p>
+        </div>
         
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search entries..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            data-testid="input-search"
-          />
+        <div className="flex gap-3 flex-col sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search entries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 border-muted focus:border-primary/50 transition-colors"
+              data-testid="input-search"
+            />
+          </div>
+          <Button
+            className="gap-2 min-w-[160px]"
+            onClick={() => setIsDialogOpen(true)}
+            data-testid="button-new-entry"
+          >
+            <Plus className="h-4 w-4" />
+            New Entry
+          </Button>
         </div>
       </header>
-
-      <Button
-        className="w-full gap-2 h-12"
-        onClick={() => setIsDialogOpen(true)}
-        data-testid="button-new-entry"
-      >
-        <Plus className="h-5 w-5" />
-        New Journal Entry
-      </Button>
 
       <section className="space-y-4" aria-label="Journal entries">
         {filteredEntries.length === 0 ? (

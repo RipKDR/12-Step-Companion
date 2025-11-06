@@ -110,12 +110,21 @@ export default function Steps() {
 
   if (selectedStep === null) {
     return (
-      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold mb-2">Step Work</h1>
-          <p className="text-muted-foreground">
-            Select a step to continue your work
-          </p>
+      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-8">
+        <header className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+              Step Work
+            </h1>
+            <p className="text-muted-foreground">
+              Select a step to continue your recovery work
+            </p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 w-fit">
+            <div className="text-sm font-medium text-primary">
+              Progress: {steps.filter(s => s.completed).length} of 12 steps completed
+            </div>
+          </div>
         </header>
         <StepSelector
           steps={steps}

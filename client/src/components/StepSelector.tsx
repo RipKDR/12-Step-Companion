@@ -22,36 +22,49 @@ export default function StepSelector({ steps, onSelect, currentStep }: StepSelec
         return (
           <Card
             key={step.number}
-            className={`cursor-pointer hover-elevate active-elevate-2 transition-all ${
-              isCurrent ? 'ring-2 ring-primary' : ''
-            }`}
+            className={`relative cursor-pointer hover-elevate active-elevate-2 transition-all overflow-hidden ${
+              isCurrent ? 'border-primary/50 bg-gradient-to-br from-primary/5 to-transparent' : ''
+            } ${step.completed ? 'border-primary/20' : ''}`}
             onClick={() => onSelect(step.number)}
             data-testid={`step-card-${step.number}`}
           >
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
-              <CardTitle className="text-lg">
-                Step {step.number}
-              </CardTitle>
+            {isCurrent && (
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -z-10" />
+            )}
+            <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
+              <div className="flex items-center gap-3">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
+                  step.completed ? 'bg-primary text-primary-foreground' : 
+                  isCurrent ? 'bg-primary/20 text-primary border border-primary/30' :
+                  'bg-muted text-muted-foreground'
+                } transition-colors font-bold`}>
+                  {step.completed ? <Check className="h-5 w-5" /> : step.number}
+                </div>
+                <CardTitle className="text-base">
+                  Step {step.number}
+                </CardTitle>
+              </div>
               {step.completed && (
-                <Badge variant="default" className="gap-1">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 gap-1">
                   <Check className="h-3 w-3" />
-                  Done
+                  Complete
+                </Badge>
+              )}
+              {isCurrent && !step.completed && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  Current
                 </Badge>
               )}
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">{step.title}</p>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Progress</span>
-                  <span>{step.progress}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${step.progress}%` }}
-                  />
-                </div>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{step.progress}% Complete</span>
+              </div>
+              <div className="w-full bg-muted/50 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+                  style={{ width: `${step.progress}%` }}
+                />
               </div>
             </CardContent>
           </Card>
