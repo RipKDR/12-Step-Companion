@@ -8,7 +8,8 @@ import type {
   JournalEntry, 
   WorksheetResponse,
   EmergencyAction,
-  AppSettings 
+  AppSettings,
+  FellowshipContact
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -54,6 +55,8 @@ const initialState: AppState = {
   worksheetResponses: {},
   meetings: [],
   emergencyActions: defaultEmergencyActions,
+  fellowshipContacts: {},
+  favoriteQuotes: [],
   settings: {
     theme: 'system',
     highContrast: false,
@@ -92,6 +95,17 @@ interface AppStore extends AppState {
   
   // Emergency Actions
   updateEmergencyAction: (id: string, updates: Partial<EmergencyAction>) => void;
+  
+  // Fellowship Contacts
+  addContact: (contact: Omit<FellowshipContact, 'id' | 'createdAtISO' | 'updatedAtISO'>) => void;
+  updateContact: (id: string, updates: Partial<FellowshipContact>) => void;
+  deleteContact: (id: string) => void;
+  getContacts: () => FellowshipContact[];
+  getEmergencyContacts: () => FellowshipContact[];
+  
+  // Favorite Quotes
+  toggleFavoriteQuote: (quoteId: string) => void;
+  isFavoriteQuote: (quoteId: string) => boolean;
   
   // Settings
   updateSettings: (updates: Partial<AppSettings>) => void;
@@ -261,6 +275,74 @@ export const useAppStore = create<AppStore>()(
         ),
       })),
       
+      // Fellowship Contacts
+      addContact: (contact) => set((state) => {
+        const id = `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const now = new Date().toISOString();
+        const newContact: FellowshipContact = {
+          ...contact,
+          id,
+          createdAtISO: now,
+          updatedAtISO: now,
+        };
+        
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: newContact,
+          },
+        };
+      }),
+      
+      updateContact: (id, updates) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+        
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              ...updates,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
+      
+      deleteContact: (id) => set((state) => {
+        const { [id]: _, ...rest } = state.fellowshipContacts;
+        return { fellowshipContacts: rest };
+      }),
+      
+      getContacts: () => {
+        const state = get();
+        return Object.values(state.fellowshipContacts).sort(
+          (a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime()
+        );
+      },
+      
+      getEmergencyContacts: () => {
+        const state = get();
+        return Object.values(state.fellowshipContacts)
+          .filter((contact) => contact.isEmergencyContact)
+          .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
+      },
+      
+      // Favorite Quotes
+      toggleFavoriteQuote: (quoteId) => set((state) => {
+        const isFavorite = state.favoriteQuotes.includes(quoteId);
+        return {
+          favoriteQuotes: isFavorite
+            ? state.favoriteQuotes.filter((id) => id !== quoteId)
+            : [...state.favoriteQuotes, quoteId],
+        };
+      }),
+      
+      isFavoriteQuote: (quoteId) => {
+        return get().favoriteQuotes.includes(quoteId);
+      },
+      
       // Settings
       updateSettings: (updates) => set((state) => ({
         settings: { ...state.settings, ...updates },
@@ -296,6 +378,8 @@ export const useAppStore = create<AppStore>()(
           dailyCards: data.dailyCards ? mergeByTimestamp(state.dailyCards, data.dailyCards) : state.dailyCards,
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
+          fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
+          favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
         };
       }),

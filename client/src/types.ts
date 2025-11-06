@@ -88,6 +88,26 @@ export interface EmergencyAction {
   icon: string;
 }
 
+export interface FellowshipContact {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  relationshipType: 'sponsor' | 'sponsee' | 'friend' | 'home-group' | 'other';
+  isEmergencyContact: boolean;
+  notes?: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+}
+
+export interface RecoveryQuote {
+  id: string;
+  text: string;
+  author?: string;
+  source?: string;
+  category: 'hope' | 'strength' | 'connection' | 'principles' | 'service' | 'gratitude';
+}
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   highContrast: boolean;
@@ -138,6 +158,8 @@ export interface AppState {
   meetings?: Meeting[]; // meeting log
   goals?: Record<string, Goal>; // id -> goal
   emergencyActions: EmergencyAction[];
+  fellowshipContacts: Record<string, FellowshipContact>; // id -> contact
+  favoriteQuotes: string[]; // quote IDs
   settings: AppSettings;
   onboardingComplete: boolean;
 }
