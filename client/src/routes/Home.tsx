@@ -103,7 +103,7 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-8">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
       {/* Skip to main content link */}
       <a
         href="#main-content"
@@ -112,14 +112,14 @@ export default function Home() {
         Skip to main content
       </a>
 
-      <main id="main-content" role="main" className="space-y-10">
+      <main id="main-content" role="main" className="space-y-16">
         {/* Sobriety Counter */}
         <section aria-labelledby="sobriety-heading">
           <h1 id="sobriety-heading" className="sr-only">Your Clean Time</h1>
           {profile?.cleanDate ? (
             <SobrietyCounter cleanDate={profile.cleanDate} timezone={profile.timezone} />
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               <p>Complete onboarding to start tracking your clean time</p>
             </div>
           )}
@@ -131,10 +131,10 @@ export default function Home() {
           <DailyAffirmation date={new Date()} />
         </section>
 
-        <Separator />
+        <Separator className="my-8" />
 
         {/* Progress Ring */}
-        <section className="flex justify-center" aria-labelledby="progress-heading">
+        <section className="flex justify-center py-8" aria-labelledby="progress-heading">
           <h2 id="progress-heading" className="sr-only">Current Step Progress</h2>
           <ProgressRing 
             current={stepProgress.answeredQuestions} 
@@ -143,14 +143,14 @@ export default function Home() {
           />
         </section>
 
-        <Separator />
+        <Separator className="my-8" />
 
         {/* Daily Cards */}
-        <section className="space-y-4" aria-labelledby="daily-heading">
-          <div className="flex items-center gap-3 mb-6">
+        <section className="space-y-6" aria-labelledby="daily-heading">
+          <div className="flex items-center gap-3 mb-8">
             <div className="flex-1">
-              <h2 id="daily-heading" className="text-2xl font-bold">Daily Practice</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 id="daily-heading" className="text-3xl font-bold">Daily Practice</h2>
+              <p className="text-base text-muted-foreground mt-2">
                 Complete your daily reflections and gratitude
               </p>
             </div>
@@ -211,22 +211,22 @@ export default function Home() {
           </a>
         </section>
 
-        <Separator />
+        <Separator className="my-8" />
 
         {/* Quick Actions */}
-        <section className="space-y-4" aria-labelledby="actions-heading">
-          <div className="flex items-center gap-3 mb-6">
+        <section className="space-y-6" aria-labelledby="actions-heading">
+          <div className="flex items-center gap-3 mb-8">
             <div className="flex-1">
-              <h2 id="actions-heading" className="text-2xl font-bold">Quick Actions</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 id="actions-heading" className="text-3xl font-bold">Quick Actions</h2>
+              <p className="text-base text-muted-foreground mt-2">
                 Continue your recovery journey
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-4">
             <Link 
               href="/steps"
-              className={cn(buttonVariants({ variant: "outline" }), "w-full h-14 justify-start gap-3 text-base")}
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-step-work"
             >
               <BookOpen className="h-5 w-5" />
@@ -234,7 +234,7 @@ export default function Home() {
             </Link>
             <Link 
               href="/journal"
-              className={cn(buttonVariants({ variant: "outline" }), "w-full h-14 justify-start gap-3 text-base")}
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-journal"
             >
               <BookMarked className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function Home() {
             </Link>
             <Link 
               href="/emergency"
-              className={cn(buttonVariants({ variant: "destructive" }), "w-full h-14 justify-start gap-3 text-base")}
+              className={cn(buttonVariants({ variant: "destructive" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-emergency"
             >
               <Phone className="h-5 w-5" />

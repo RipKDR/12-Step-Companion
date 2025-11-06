@@ -15,7 +15,7 @@ interface StepSelectorProps {
 
 export default function StepSelector({ steps, onSelect, currentStep }: StepSelectorProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="step-selector">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="step-selector">
       {steps.map((step) => {
         const isCurrent = currentStep === step.number;
         
@@ -31,16 +31,16 @@ export default function StepSelector({ steps, onSelect, currentStep }: StepSelec
             {isCurrent && (
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -z-10" />
             )}
-            <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+              <div className="flex items-center gap-4">
+                <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${
                   step.completed ? 'bg-primary text-primary-foreground' : 
                   isCurrent ? 'bg-primary/20 text-primary border border-primary/30' :
                   'bg-muted text-muted-foreground'
-                } transition-colors font-bold`}>
-                  {step.completed ? <Check className="h-5 w-5" /> : step.number}
+                } transition-colors font-bold text-lg`}>
+                  {step.completed ? <Check className="h-6 w-6" /> : step.number}
                 </div>
-                <CardTitle className="text-base">
+                <CardTitle className="text-lg">
                   Step {step.number}
                 </CardTitle>
               </div>
@@ -56,11 +56,11 @@ export default function StepSelector({ steps, onSelect, currentStep }: StepSelec
                 </Badge>
               )}
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">{step.progress}% Complete</span>
+                <span className="text-base font-medium text-muted-foreground">{step.progress}% Complete</span>
               </div>
-              <div className="w-full bg-muted/50 rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
                   style={{ width: `${step.progress}%` }}

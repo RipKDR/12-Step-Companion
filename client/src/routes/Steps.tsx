@@ -110,18 +110,18 @@ export default function Steps() {
 
   if (selectedStep === null) {
     return (
-      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-8">
-        <header className="space-y-4">
+      <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+        <header className="space-y-6 mb-12">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
               Step Work
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               Select a step to continue your recovery work
             </p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 w-fit">
-            <div className="text-sm font-medium text-primary">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-lg bg-primary/10 border border-primary/20 w-fit">
+            <div className="text-base font-medium text-primary">
               Progress: {steps.filter(s => s.completed).length} of 12 steps completed
             </div>
           </div>
@@ -143,11 +143,12 @@ export default function Steps() {
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
-      <header className="flex items-center gap-3">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+      <header className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
           size="icon"
+          className="h-12 w-12"
           onClick={() => setSelectedStep(null)}
           data-testid="button-back"
           aria-label="Back to step list"
@@ -155,33 +156,33 @@ export default function Steps() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-3xl font-bold">
             {stepContent?.title || `Step ${selectedStep}`}
           </h1>
           {stepContent?.subtitle && (
-            <p className="text-sm text-muted-foreground mt-1">{stepContent.subtitle}</p>
+            <p className="text-base text-muted-foreground mt-2">{stepContent.subtitle}</p>
           )}
         </div>
       </header>
 
       {isLoading && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           <Card>
             <CardHeader>
-              <Skeleton className="h-4 w-32 mb-2" />
-              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-5 w-40 mb-3" />
+              <Skeleton className="h-7 w-full" />
             </CardHeader>
           </Card>
-          <div className="space-y-4">
-            <Skeleton className="h-2 w-full" />
+          <div className="space-y-6">
+            <Skeleton className="h-3 w-full" />
             <Card>
               <CardHeader>
-                <Skeleton className="h-4 w-24 mb-2" />
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-5 w-32 mb-3" />
+                <Skeleton className="h-7 w-3/4 mb-3" />
+                <Skeleton className="h-5 w-full" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-40 w-full" />
               </CardContent>
             </Card>
           </div>
@@ -189,24 +190,24 @@ export default function Steps() {
       )}
 
       {!isLoading && !stepContent && (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>Step content not available. Please import step questions in Settings.</p>
+        <div className="text-center py-16 text-muted-foreground">
+          <p className="text-base">Step content not available. Please import step questions in Settings.</p>
         </div>
       )}
 
       {!isLoading && stepContent && stepContent.questions.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {stepContent.overviewLabels && stepContent.overviewLabels.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Key Themes</CardTitle>
+                <CardTitle className="text-lg">Key Themes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {stepContent.overviewLabels.map((label) => (
                     <span
                       key={label}
-                      className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                      className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"
                     >
                       {label}
                     </span>
@@ -216,20 +217,20 @@ export default function Steps() {
             </Card>
           )}
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-6">
               <div className="flex-1">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-base font-medium">
                     Question {currentQuestionIndex + 1} of {stepContent.questions.length}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {completedCount} answered • {completionPercentage}% complete
                   </p>
                 </div>
                 <Progress 
                   value={completionPercentage} 
-                  className="h-2"
+                  className="h-3"
                 />
               </div>
             </div>
@@ -255,12 +256,12 @@ export default function Steps() {
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6">
                     <Textarea
                       placeholder="Write your answer..."
                       value={existingAnswer?.answer || ''}
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      className="min-h-48"
+                      className="min-h-56 text-base"
                       data-testid={`answer-${question.id}`}
                       autoFocus
                     />
