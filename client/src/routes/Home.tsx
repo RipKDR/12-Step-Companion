@@ -5,11 +5,12 @@ import GratitudeList from '@/components/GratitudeList';
 import QuickNotes from '@/components/QuickNotes';
 import MeditationTimer from '@/components/MeditationTimer';
 import DailyAffirmation from '@/components/DailyAffirmation';
+import DailyQuote from '@/components/DailyQuote';
 import ProgressRing from '@/components/ProgressRing';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
@@ -131,6 +132,12 @@ export default function Home() {
           <DailyAffirmation date={new Date()} />
         </section>
 
+        {/* Daily Recovery Quote */}
+        <section aria-labelledby="quote-heading">
+          <h2 id="quote-heading" className="sr-only">Daily Recovery Quote</h2>
+          <DailyQuote />
+        </section>
+
         <Separator className="my-8" />
 
         {/* Progress Ring */}
@@ -239,6 +246,22 @@ export default function Home() {
             >
               <BookMarked className="h-5 w-5" />
               New Journal Entry
+            </Link>
+            <Link 
+              href="/analytics"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-analytics"
+            >
+              <TrendingUp className="h-5 w-5" />
+              Mood Analytics
+            </Link>
+            <Link 
+              href="/contacts"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-contacts"
+            >
+              <Users className="h-5 w-5" />
+              Fellowship Contacts
             </Link>
             <Link 
               href="/emergency"

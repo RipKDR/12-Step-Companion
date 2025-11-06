@@ -1,7 +1,8 @@
-import type { StepContent, WorksheetTemplate } from '@/types';
+import type { StepContent, WorksheetTemplate, RecoveryQuote } from '@/types';
 
 const stepContentCache = new Map<number, StepContent>();
 const worksheetCache = new Map<string, WorksheetTemplate>();
+let quotesCache: RecoveryQuote[] | null = null;
 
 /**
  * Load step content from JSON file
@@ -70,9 +71,35 @@ export function getAvailableWorksheets(): string[] {
 }
 
 /**
+ * Load recovery quotes from JSON file
+ */
+export async function loadQuotes(): Promise<RecoveryQuote[]> {
+  // Check cache first
+  if (quotesCache) {
+    return quotesCache;
+  }
+
+  try {
+    const response = await fetch('/content/quotes.json');
+    if (!response.ok) {
+      console.warn('Quotes content not found');
+      return [];
+    }
+
+    const data: { quotes: RecoveryQuote[] } = await response.json();
+    quotesCache = data.quotes;
+    return data.quotes;
+  } catch (error) {
+    console.error('Failed to load quotes:', error);
+    return [];
+  }
+}
+
+/**
  * Clear content caches (useful for hot reload or content updates)
  */
 export function clearContentCache(): void {
   stepContentCache.clear();
   worksheetCache.clear();
+  quotesCache = null;
 }
