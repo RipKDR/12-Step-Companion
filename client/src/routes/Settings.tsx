@@ -1,15 +1,137 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Download, Upload, Lock, User, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { Download, Upload, Lock, User, FileText, AlertTriangle } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { useAppStore } from '@/store/useAppStore';
+import { exportJSON, exportEncrypted } from '@/lib/export';
+import { importJSON, importEncrypted, validateImportedData } from '@/lib/import';
+import { formatDateTime } from '@/lib/time';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Settings() {
-  const [highContrast, setHighContrast] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [cloudSync, setCloudSync] = useState(false);
+  const profile = useAppStore((state) => state.profile);
+  const settings = useAppStore((state) => state.settings);
+  const updateSettings = useAppStore((state) => state.updateSettings);
+  const exportData = useAppStore((state) => state.exportData);
+  const importData = useAppStore((state) => state.importData);
+  
+  const [showEncryptDialog, setShowEncryptDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [passphrase, setPassphrase] = useState('');
+  const [confirmPassphrase, setConfirmPassphrase] = useState('');
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isEncryptedImport, setIsEncryptedImport] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleExportJSON = () => {
+    const data = exportData();
+    exportJSON(data);
+    toast({
+      title: 'Export successful',
+      description: 'Your data has been exported as JSON.',
+    });
+  };
+
+  const handleExportEncrypted = async () => {
+    if (passphrase !== confirmPassphrase) {
+      toast({
+        title: 'Passphrases do not match',
+        description: 'Please ensure both passphrases are identical.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (passphrase.length < 8) {
+      toast({
+        title: 'Passphrase too short',
+        description: 'Please use at least 8 characters.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const data = exportData();
+      await exportEncrypted(data, passphrase);
+      toast({
+        title: 'Encrypted backup created',
+        description: 'Your data has been encrypted and exported.',
+      });
+      setShowEncryptDialog(false);
+      setPassphrase('');
+      setConfirmPassphrase('');
+    } catch (error) {
+      toast({
+        title: 'Export failed',
+        description: 'Failed to create encrypted backup.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile) return;
+
+    try {
+      let data;
+      
+      if (isEncryptedImport) {
+        if (!passphrase) {
+          toast({
+            title: 'Passphrase required',
+            description: 'Please enter the passphrase for this backup.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        data = await importEncrypted(importFile, passphrase);
+      } else {
+        data = await importJSON(importFile);
+      }
+
+      if (!validateImportedData(data)) {
+        throw new Error('Invalid data format');
+      }
+
+      importData(data);
+      
+      toast({
+        title: 'Import successful',
+        description: 'Your data has been imported and merged.',
+      });
+      
+      setShowImportDialog(false);
+      setImportFile(null);
+      setPassphrase('');
+      setIsEncryptedImport(false);
+    } catch (error: any) {
+      toast({
+        title: 'Import failed',
+        description: error.message || 'Failed to import data.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
@@ -31,18 +153,20 @@ export default function Settings() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-sm text-muted-foreground">Name</Label>
-            <p className="text-base font-medium">Alex</p>
+            <p className="text-base font-medium">{profile?.name || 'Not set'}</p>
           </div>
-          <div>
-            <Label className="text-sm text-muted-foreground">Clean Date</Label>
-            <p className="text-base font-medium">
-              {new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-AU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </p>
-          </div>
+          {profile?.cleanDate && (
+            <div>
+              <Label className="text-sm text-muted-foreground">Clean Date</Label>
+              <p className="text-base font-medium">
+                {formatDateTime(profile.cleanDate, profile.timezone, {
+                  weekday: undefined,
+                  hour: undefined,
+                  minute: undefined,
+                })}
+              </p>
+            </div>
+          )}
           <Button variant="outline" className="w-full" data-testid="button-edit-profile">
             Edit Profile
           </Button>
@@ -71,8 +195,8 @@ export default function Settings() {
             </div>
             <Switch
               id="high-contrast"
-              checked={highContrast}
-              onCheckedChange={setHighContrast}
+              checked={settings.highContrast}
+              onCheckedChange={(checked) => updateSettings({ highContrast: checked })}
               data-testid="switch-high-contrast"
             />
           </div>
@@ -84,8 +208,8 @@ export default function Settings() {
             </div>
             <Switch
               id="reduced-motion"
-              checked={reducedMotion}
-              onCheckedChange={setReducedMotion}
+              checked={settings.reducedMotion}
+              onCheckedChange={(checked) => updateSettings({ reducedMotion: checked })}
               data-testid="switch-reduced-motion"
             />
           </div>
@@ -102,15 +226,30 @@ export default function Settings() {
           <CardDescription>Export, import, and backup your data</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start gap-3" data-testid="button-export">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-3" 
+            onClick={handleExportJSON}
+            data-testid="button-export"
+          >
             <Download className="h-4 w-4" />
             Export Data (JSON)
           </Button>
-          <Button variant="outline" className="w-full justify-start gap-3" data-testid="button-import">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-3"
+            onClick={() => setShowImportDialog(true)}
+            data-testid="button-import"
+          >
             <Upload className="h-4 w-4" />
             Import Data
           </Button>
-          <Button variant="outline" className="w-full justify-start gap-3" data-testid="button-backup">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-3"
+            onClick={() => setShowEncryptDialog(true)}
+            data-testid="button-backup"
+          >
             <Lock className="h-4 w-4" />
             Create Encrypted Backup
           </Button>
@@ -130,8 +269,7 @@ export default function Settings() {
             <Label htmlFor="cloud-sync">Enable Cloud Sync</Label>
             <Switch
               id="cloud-sync"
-              checked={cloudSync}
-              onCheckedChange={setCloudSync}
+              checked={settings.cloudSync}
               disabled
               data-testid="switch-cloud-sync"
             />
@@ -139,24 +277,120 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Content Manager */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Content Manager</CardTitle>
-          <CardDescription>Import step questions and worksheets</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" className="w-full" data-testid="button-import-content">
-            Import Step Questions
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* About */}
       <div className="text-center text-sm text-muted-foreground pt-4">
         <p>Recovery Companion v1.0.0</p>
         <p className="mt-1">Privacy-first • Offline-capable • Open source</p>
       </div>
+
+      {/* Encrypted Backup Dialog */}
+      <Dialog open={showEncryptDialog} onOpenChange={setShowEncryptDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Encrypted Backup</DialogTitle>
+            <DialogDescription>
+              Protect your backup with a passphrase
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Important Warning</AlertTitle>
+            <AlertDescription>
+              If you lose your passphrase, you will NOT be able to recover this backup. 
+              Write it down and store it safely.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="passphrase">Passphrase</Label>
+              <Input
+                id="passphrase"
+                type="password"
+                value={passphrase}
+                onChange={(e) => setPassphrase(e.target.value)}
+                placeholder="Enter a strong passphrase"
+                data-testid="input-passphrase"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm-passphrase">Confirm Passphrase</Label>
+              <Input
+                id="confirm-passphrase"
+                type="password"
+                value={confirmPassphrase}
+                onChange={(e) => setConfirmPassphrase(e.target.value)}
+                placeholder="Re-enter your passphrase"
+                data-testid="input-confirm-passphrase"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEncryptDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleExportEncrypted} data-testid="button-create-backup">
+              Create Backup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Data</DialogTitle>
+            <DialogDescription>
+              Upload a backup file to restore your data
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Select File</Label>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,.enc"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImportFile(file);
+                    setIsEncryptedImport(file.name.endsWith('.enc'));
+                  }
+                }}
+                data-testid="input-file"
+              />
+            </div>
+
+            {isEncryptedImport && (
+              <div className="space-y-2">
+                <Label htmlFor="import-passphrase">Passphrase</Label>
+                <Input
+                  id="import-passphrase"
+                  type="password"
+                  value={passphrase}
+                  onChange={(e) => setPassphrase(e.target.value)}
+                  placeholder="Enter backup passphrase"
+                  data-testid="input-import-passphrase"
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleImport} disabled={!importFile} data-testid="button-import-confirm">
+              Import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
