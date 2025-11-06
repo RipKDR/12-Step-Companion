@@ -1,0 +1,46 @@
+{
+  "id": "halt",
+  "title": "HALT Check-In",
+  "description": "Check if you're Hungry, Angry, Lonely, or Tired - common relapse triggers",
+  "fields": [
+    {
+      "id": "hungry",
+      "label": "Hungry",
+      "type": "select",
+      "options": ["Not at all", "Somewhat", "Very"],
+      "required": true,
+      "help": "Have you eaten recently? Are you physically hungry?"
+    },
+    {
+      "id": "angry",
+      "label": "Angry",
+      "type": "select",
+      "options": ["Not at all", "Somewhat", "Very"],
+      "required": true,
+      "help": "Are you feeling frustrated, resentful, or angry?"
+    },
+    {
+      "id": "lonely",
+      "label": "Lonely",
+      "type": "select",
+      "options": ["Not at all", "Somewhat", "Very"],
+      "required": true,
+      "help": "Are you feeling isolated or disconnected?"
+    },
+    {
+      "id": "tired",
+      "label": "Tired",
+      "type": "select",
+      "options": ["Not at all", "Somewhat", "Very"],
+      "required": true,
+      "help": "Are you physically or emotionally exhausted?"
+    },
+    {
+      "id": "action_plan",
+      "label": "Action Plan",
+      "type": "textarea",
+      "required": false,
+      "help": "What will you do to address these needs?"
+    }
+  ]
+}

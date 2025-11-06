@@ -1,0 +1,22 @@
+{
+  "step": 1,
+  "title": "Step One",
+  "overviewLabels": ["powerlessness", "honesty", "surrender"],
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Describe a situation where you felt powerless over your addiction.",
+      "help": "Be specific and honest about your experiences."
+    },
+    {
+      "id": "q2",
+      "prompt": "How has your life become unmanageable?",
+      "help": "Consider the impact on relationships, work, and health."
+    },
+    {
+      "id": "q3",
+      "prompt": "What patterns do you notice in your behavior related to your addiction?",
+      "help": "Look for recurring themes and triggers."
+    }
+  ]
+}

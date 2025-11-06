@@ -1,0 +1,43 @@
+{
+  "id": "triggers",
+  "title": "Triggers & Cravings Tracker",
+  "description": "Identify and understand your triggers to build coping strategies",
+  "fields": [
+    {
+      "id": "trigger_type",
+      "label": "Type of Trigger",
+      "type": "select",
+      "options": ["Person", "Place", "Thing", "Emotion", "Situation"],
+      "required": true,
+      "help": "What category does this trigger fall into?"
+    },
+    {
+      "id": "description",
+      "label": "Describe the Trigger",
+      "type": "textarea",
+      "required": true,
+      "help": "Be specific about what triggered the craving"
+    },
+    {
+      "id": "intensity",
+      "label": "Craving Intensity (1-10)",
+      "type": "number",
+      "required": true,
+      "help": "Rate the strength of the craving"
+    },
+    {
+      "id": "coping_strategy",
+      "label": "How Did You Cope?",
+      "type": "textarea",
+      "required": false,
+      "help": "What helped you manage this trigger?"
+    },
+    {
+      "id": "outcome",
+      "label": "Outcome",
+      "type": "select",
+      "options": ["Stayed clean", "Reached out for help", "Used coping skills", "Other"],
+      "required": false
+    }
+  ]
+}

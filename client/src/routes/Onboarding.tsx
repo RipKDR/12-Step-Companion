@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Calendar, Globe, Lock } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useAppStore } from '@/store/useAppStore';
+import { detectTimezone } from '@/lib/time';
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
@@ -12,11 +14,22 @@ export default function Onboarding() {
   const [name, setName] = useState('');
   const [cleanDate, setCleanDate] = useState('');
   const [cleanTime, setCleanTime] = useState('00:00');
-  const [timezone, setTimezone] = useState('Australia/Melbourne');
+  const [timezone, setTimezone] = useState(detectTimezone());
+
+  const setProfile = useAppStore((state) => state.setProfile);
+  const completeOnboarding = useAppStore((state) => state.completeOnboarding);
 
   const handleComplete = () => {
-    console.log('Onboarding complete:', { name, cleanDate, cleanTime, timezone });
-    // TODO: Save to store and redirect to home
+    const profile = {
+      id: `user_${Date.now()}`,
+      name,
+      cleanDate: `${cleanDate}T${cleanTime}:00.000Z`,
+      timezone,
+      hasPasscode: false,
+    };
+    
+    setProfile(profile);
+    completeOnboarding();
     setLocation('/');
   };
 
@@ -121,7 +134,7 @@ export default function Onboarding() {
                 data-testid="input-timezone"
               />
               <p className="text-xs text-muted-foreground">
-                Auto-detected: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                Auto-detected: {detectTimezone()}
               </p>
             </div>
 
