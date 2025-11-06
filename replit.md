@@ -10,7 +10,12 @@ This is a privacy-first Twelve-Step Recovery Companion built as an installable P
 
 **Key Features:**
 - ✅ Live sobriety counter with timezone support (Australia/Melbourne default with DST awareness)
-- ✅ Step work tracker with JSON-loaded content (12 steps with dynamic question counts)
+- ✅ Step work tracker with JSON-loaded NA Step Working Guide content
+  - Steps 1-3 fully populated (67, 47, and 39 questions respectively)
+  - One-question-at-a-time interface with Previous/Next navigation
+  - Smart resume at first unanswered question
+  - Section headers and question organization
+  - Accurate progress tracking based on answered questions
 - ✅ Real-time progress tracking (home dashboard + steps grid)
 - ✅ Auto-save functionality for all step work answers
 - ✅ Daily intention and reflection cards with date-based storage
@@ -39,17 +44,25 @@ Preferred communication style: Simple, everyday language.
 - ✅ Real-time progress tracking with accurate question counts from JSON
 - ✅ Journal entries with mood slider, tags, and search functionality
 - ✅ Export/Import system with JSON and encrypted backup support
+- ✅ **NA Step Working Guide integration for Steps 1-3** (67, 47, and 39 questions respectively)
+- ✅ **One-question-at-a-time interface** with Previous/Next navigation
+- ✅ **Smart resume functionality** - automatically resumes at first unanswered question
+- ✅ **Accurate progress tracking** based on answered questions, not just viewing position
 
 **Bugs Fixed:**
 - Fixed JSON file serving (moved from `/public/` to `/client/public/`)
 - Fixed step progress reactivity (added stepAnswersState to useMemo dependencies)
 - Fixed Home dashboard to use real JSON question counts (was hardcoded to 10)
 - Fixed nested anchor tag warnings in navigation
+- Fixed progress tracking to show actual completion vs. current position
 
 **E2E Testing:**
 - ✅ Onboarding → Home → Steps → Journal → Settings flow verified
 - ✅ Step work autosave and progress tracking validated
 - ✅ Data persistence across page refreshes confirmed
+- ✅ One-question-at-a-time navigation with Previous/Next buttons verified
+- ✅ Progress calculation based on answered questions confirmed
+- ✅ Auto-resume at first unanswered question validated
 - ✅ All test scenarios passing
 
 ## System Architecture
