@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import SobrietyCounter from '@/components/SobrietyCounter';
 import DailyCard from '@/components/DailyCard';
 import ProgressRing from '@/components/ProgressRing';
@@ -7,37 +7,69 @@ import { Sunrise, Moon, BookOpen, BookMarked, Phone } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
+import { loadAllSteps } from '@/lib/contentLoader';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
   const getDailyCard = useAppStore((state) => state.getDailyCard);
   const updateDailyCard = useAppStore((state) => state.updateDailyCard);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  const stepAnswersState = useAppStore((state) => state.stepAnswers);
+  
+  const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
   const dailyCard = getDailyCard(todayDate);
+
+  // Load all step contents to get question counts
+  useEffect(() => {
+    loadAllSteps().then((allSteps) => {
+      const counts = new Map<number, number>();
+      allSteps.forEach((content, stepNum) => {
+        counts.set(stepNum, content.questions.length);
+      });
+      setStepQuestionCounts(counts);
+    });
+  }, []);
 
   const stepProgress = useMemo(() => {
     const totalSteps = 12;
     let currentStep = 1;
     let currentStepAnswers = 0;
+    let currentStepTotalQuestions = 0;
     
     for (let step = 1; step <= totalSteps; step++) {
       const answers = getStepAnswers(step);
-      if (answers.length === 0) {
+      const totalQuestions = stepQuestionCounts.get(step) || 0;
+      const completedAnswers = answers.filter(a => a.answer.trim()).length;
+      
+      if (completedAnswers < totalQuestions) {
         currentStep = step;
+        currentStepAnswers = completedAnswers;
+        currentStepTotalQuestions = totalQuestions;
         break;
       }
-      currentStep = step;
-      currentStepAnswers = answers.length;
+      
+      // This step is complete, move to next
+      currentStep = step + 1;
+      currentStepAnswers = 0;
+      currentStepTotalQuestions = stepQuestionCounts.get(step + 1) || 0;
+    }
+    
+    // If we've gone past step 12, stay on step 12
+    if (currentStep > totalSteps) {
+      currentStep = totalSteps;
+      const lastStepTotal = stepQuestionCounts.get(totalSteps) || 0;
+      currentStepAnswers = lastStepTotal;
+      currentStepTotalQuestions = lastStepTotal;
     }
     
     return {
       currentStep,
       answeredQuestions: currentStepAnswers,
-      totalQuestions: 10,
+      totalQuestions: currentStepTotalQuestions,
     };
-  }, [getStepAnswers]);
+  }, [getStepAnswers, stepQuestionCounts, stepAnswersState]);
 
   const handleMorningChange = (value: string) => {
     updateDailyCard(todayDate, { morningIntent: value });

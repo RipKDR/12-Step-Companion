@@ -17,6 +17,8 @@ export default function Steps() {
   
   const saveStepAnswer = useAppStore((state) => state.saveStepAnswer);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  // Subscribe to the actual stepAnswers state so component re-renders when it changes
+  const stepAnswersState = useAppStore((state) => state.stepAnswers);
 
   // Preload all step contents on mount to get question counts
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function Steps() {
         progress: totalQuestions > 0 ? Math.round((completed / totalQuestions) * 100) : 0,
       };
     });
-  }, [getStepAnswers, stepQuestionCounts]);
+  }, [getStepAnswers, stepQuestionCounts, stepAnswersState]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
     if (selectedStep) {
