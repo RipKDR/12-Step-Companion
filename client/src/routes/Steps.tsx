@@ -6,16 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Download } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
-import { loadStepContent } from '@/lib/contentLoader';
+import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
 import type { StepContent } from '@/types';
 
 export default function Steps() {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [stepContent, setStepContent] = useState<StepContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   
   const saveStepAnswer = useAppStore((state) => state.saveStepAnswer);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+
+  // Preload all step contents on mount to get question counts
+  useEffect(() => {
+    loadAllSteps().then((allSteps) => {
+      const counts = new Map<number, number>();
+      allSteps.forEach((content, stepNum) => {
+        counts.set(stepNum, content.questions.length);
+      });
+      setStepQuestionCounts(counts);
+    });
+  }, []);
 
   // Load step content when selected
   useEffect(() => {
@@ -38,18 +50,17 @@ export default function Steps() {
     return Array.from({ length: 12 }, (_, i) => {
       const stepNumber = i + 1;
       const answers = getStepAnswers(stepNumber);
-      // Default to 5 questions if content not loaded yet
-      const totalQuestions = 5;
+      const totalQuestions = stepQuestionCounts.get(stepNumber) || 0;
       const completed = answers.filter(a => a.answer.trim()).length;
       
       return {
         number: stepNumber,
         title: `Step ${stepNumber}`,
-        completed: completed === totalQuestions,
+        completed: totalQuestions > 0 && completed === totalQuestions,
         progress: totalQuestions > 0 ? Math.round((completed / totalQuestions) * 100) : 0,
       };
     });
-  }, [getStepAnswers]);
+  }, [getStepAnswers, stepQuestionCounts]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
     if (selectedStep) {
