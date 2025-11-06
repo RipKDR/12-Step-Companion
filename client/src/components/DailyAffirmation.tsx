@@ -16,13 +16,22 @@ export default function DailyAffirmation({ date }: DailyAffirmationProps) {
   }, [date]);
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10" data-testid="card-affirmation">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-1" data-testid="icon-sparkles" />
+    <Card 
+      className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background relative overflow-hidden" 
+      data-testid="card-affirmation"
+    >
+      <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_85%)]" />
+      <CardContent className="p-6 relative">
+        <div className="flex items-start gap-4">
+          <div className="p-2.5 rounded-lg bg-primary/20 text-primary shrink-0">
+            <Sparkles className="h-5 w-5" data-testid="icon-sparkles" />
+          </div>
           <div className="flex-1">
-            <p className="text-lg font-medium leading-relaxed" data-testid="text-affirmation">
-              {affirmation.text}
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+              Daily Affirmation
+            </p>
+            <p className="text-base font-medium leading-relaxed text-foreground" data-testid="text-affirmation">
+              "{affirmation.text}"
             </p>
           </div>
         </div>

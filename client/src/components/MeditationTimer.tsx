@@ -69,9 +69,11 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
 
   const handlePresetSelect = (seconds: number) => {
     haptics.light();
+    if (isActive) {
+      setIsActive(false);
+    }
     setSelectedDuration(seconds);
     setTimeLeft(seconds);
-    setIsActive(false);
     setHasCompleted(false);
   };
 
@@ -86,12 +88,17 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
   return (
     <Card className="w-full" data-testid={testId}>
       <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-3">
-        <div className="text-primary">
+        <div className="p-2 rounded-lg bg-primary/10 text-primary">
           <Clock className="h-5 w-5" />
         </div>
-        <CardTitle className="text-lg">Prayer & Meditation</CardTitle>
+        <div className="flex-1">
+          <CardTitle className="text-base">Prayer & Meditation</CardTitle>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Take time for reflection
+          </p>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <div className="flex flex-wrap gap-2 justify-center">
           {PRESET_DURATIONS.map((preset) => (
             <Button
@@ -99,8 +106,8 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
               size="sm"
               variant={selectedDuration === preset.seconds ? 'default' : 'outline'}
               onClick={() => handlePresetSelect(preset.seconds)}
-              disabled={isActive}
               data-testid={`${testId}-preset-${preset.seconds}`}
+              className="min-w-[60px]"
             >
               {preset.label}
             </Button>
@@ -108,60 +115,60 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
         </div>
 
         <div className="relative">
-          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-muted/50 rounded-full h-2.5 overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-300"
+              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center py-4">
           <div
-            className={`text-5xl font-bold ${hasCompleted ? 'text-primary' : 'text-foreground'}`}
+            className={`text-6xl font-bold transition-colors ${hasCompleted ? 'bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent' : 'text-foreground'}`}
             data-testid={`${testId}-display`}
           >
             {formatTime(timeLeft)}
           </div>
           {hasCompleted && (
-            <p className="text-sm text-primary mt-2" data-testid={`${testId}-complete-message`}>
-              Session complete!
-            </p>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <p className="text-sm font-medium text-primary" data-testid={`${testId}-complete-message`}>
+                Session complete!
+              </p>
+            </div>
           )}
         </div>
 
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-2 justify-center flex-wrap">
           {!isActive ? (
             <Button
-              size="lg"
               onClick={handleStart}
               disabled={timeLeft === 0}
-              className="gap-2"
+              className="gap-2 min-w-[120px]"
               data-testid={`${testId}-start-button`}
             >
-              <Play className="h-5 w-5" />
+              <Play className="h-4 w-4" />
               Start
             </Button>
           ) : (
             <Button
-              size="lg"
               variant="outline"
               onClick={handlePause}
-              className="gap-2"
+              className="gap-2 min-w-[120px]"
               data-testid={`${testId}-pause-button`}
             >
-              <Pause className="h-5 w-5" />
+              <Pause className="h-4 w-4" />
               Pause
             </Button>
           )}
           <Button
-            size="lg"
             variant="outline"
             onClick={handleReset}
-            className="gap-2"
+            className="gap-2 min-w-[120px]"
             data-testid={`${testId}-reset-button`}
           >
-            <RotateCcw className="h-5 w-5" />
+            <RotateCcw className="h-4 w-4" />
             Reset
           </Button>
         </div>

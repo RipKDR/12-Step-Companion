@@ -29,17 +29,22 @@ export default function QuickNotes({
   return (
     <Card className="w-full" data-testid={testId}>
       <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-3">
-        <div className="text-primary">
+        <div className="p-2 rounded-lg bg-primary/10 text-primary">
           <Lightbulb className="h-5 w-5" />
         </div>
-        <CardTitle className="text-lg">Quick Notes</CardTitle>
+        <div className="flex-1">
+          <CardTitle className="text-base">Quick Notes</CardTitle>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Capture your thoughts
+          </p>
+        </div>
       </CardHeader>
       <CardContent>
         <Textarea
           value={localValue}
           onChange={handleChange}
           placeholder="Jot down quick thoughts, insights, or reflections..."
-          className="min-h-24 resize-none"
+          className="min-h-28 resize-none border-muted focus:border-primary/50 transition-colors"
           data-testid={`${testId}-input`}
         />
       </CardContent>

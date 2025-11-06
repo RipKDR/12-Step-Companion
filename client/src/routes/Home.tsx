@@ -8,6 +8,7 @@ import DailyAffirmation from '@/components/DailyAffirmation';
 import ProgressRing from '@/components/ProgressRing';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
@@ -111,7 +112,7 @@ export default function Home() {
         Skip to main content
       </a>
 
-      <main id="main-content" role="main">
+      <main id="main-content" role="main" className="space-y-10">
         {/* Sobriety Counter */}
         <section aria-labelledby="sobriety-heading">
           <h1 id="sobriety-heading" className="sr-only">Your Clean Time</h1>
@@ -125,13 +126,15 @@ export default function Home() {
         </section>
 
         {/* Daily Affirmation */}
-        <section aria-labelledby="affirmation-heading" className="py-6">
+        <section aria-labelledby="affirmation-heading">
           <h2 id="affirmation-heading" className="sr-only">Daily Affirmation</h2>
           <DailyAffirmation date={new Date()} />
         </section>
 
+        <Separator />
+
         {/* Progress Ring */}
-        <section className="flex justify-center py-6" aria-labelledby="progress-heading">
+        <section className="flex justify-center" aria-labelledby="progress-heading">
           <h2 id="progress-heading" className="sr-only">Current Step Progress</h2>
           <ProgressRing 
             current={stepProgress.answeredQuestions} 
@@ -140,9 +143,18 @@ export default function Home() {
           />
         </section>
 
+        <Separator />
+
         {/* Daily Cards */}
         <section className="space-y-4" aria-labelledby="daily-heading">
-          <h2 id="daily-heading" className="text-xl font-semibold mb-4">Daily Practice</h2>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1">
+              <h2 id="daily-heading" className="text-2xl font-bold">Daily Practice</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Complete your daily reflections and gratitude
+              </p>
+            </div>
+          </div>
           <DailyCard
             title="Morning Intent"
             icon={<Sunrise className="h-5 w-5" />}
@@ -180,10 +192,12 @@ export default function Home() {
             className="block"
             data-testid="link-daily-inspiration"
           >
-            <Card className="hover-elevate active-elevate-2 cursor-pointer bg-primary/5 border-primary/20">
+            <Card className="hover-elevate active-elevate-2 cursor-pointer bg-gradient-to-br from-primary/5 to-transparent border-primary/20 transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
                 <div className="flex items-center gap-3">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
                   <CardTitle className="text-base">Daily Fellowship Reading</CardTitle>
                 </div>
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
@@ -197,9 +211,18 @@ export default function Home() {
           </a>
         </section>
 
+        <Separator />
+
         {/* Quick Actions */}
-        <section className="space-y-3" aria-labelledby="actions-heading">
-          <h2 id="actions-heading" className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <section className="space-y-4" aria-labelledby="actions-heading">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1">
+              <h2 id="actions-heading" className="text-2xl font-bold">Quick Actions</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Continue your recovery journey
+              </p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-3">
             <Link 
               href="/steps"

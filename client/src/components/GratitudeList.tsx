@@ -41,10 +41,17 @@ export default function GratitudeList({
   return (
     <Card className="w-full" data-testid={testId}>
       <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-3">
-        <div className="text-primary">
+        <div className="p-2 rounded-lg bg-primary/10 text-primary">
           <Heart className="h-5 w-5" />
         </div>
-        <CardTitle className="text-lg">Gratitude List</CardTitle>
+        <div className="flex-1">
+          <CardTitle className="text-base">Gratitude List</CardTitle>
+          {items.length > 0 && (
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {items.length} {items.length === 1 ? 'item' : 'items'}
+            </p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex gap-2">
@@ -53,7 +60,7 @@ export default function GratitudeList({
             onChange={(e) => setNewItem(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="What are you grateful for today?"
-            className="flex-1"
+            className="flex-1 border-muted focus:border-primary/50 transition-colors"
             data-testid={`${testId}-input`}
           />
           <Button
@@ -72,15 +79,17 @@ export default function GratitudeList({
             {items.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center gap-2 group p-2 rounded-lg bg-muted/50"
+                className="flex items-center gap-3 group p-3 rounded-lg bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 hover-elevate transition-all duration-200"
                 data-testid={`${testId}-item-${index}`}
               >
-                <Heart className="h-4 w-4 text-primary shrink-0 fill-current" />
-                <span className="flex-1 text-sm">{item}</span>
+                <div className="p-1.5 rounded-md bg-primary/10">
+                  <Heart className="h-3.5 w-3.5 text-primary shrink-0 fill-current" />
+                </div>
+                <span className="flex-1 text-sm leading-relaxed">{item}</span>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                   onClick={() => handleRemove(index)}
                   data-testid={`${testId}-remove-${index}`}
                   aria-label={`Remove ${item}`}
@@ -93,8 +102,13 @@ export default function GratitudeList({
         )}
 
         {items.length === 0 && (
-          <div className="text-center py-6 text-muted-foreground text-sm">
-            Add items you're grateful for today
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="p-3 rounded-full bg-muted mb-3">
+              <Heart className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Add items you're grateful for today
+            </p>
           </div>
         )}
       </CardContent>
