@@ -10,11 +10,13 @@ export interface StepQuestion {
   id: string;
   prompt: string;
   help?: string;
+  section?: string;
 }
 
 export interface StepContent {
   step: number;
   title: string;
+  subtitle?: string;
   overviewLabels: string[];
   questions: StepQuestion[];
 }

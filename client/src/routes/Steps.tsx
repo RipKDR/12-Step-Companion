@@ -3,7 +3,8 @@ import StepSelector from '@/components/StepSelector';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Download } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
 import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
@@ -14,6 +15,7 @@ export default function Steps() {
   const [stepContent, setStepContent] = useState<StepContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   
   const saveStepAnswer = useAppStore((state) => state.saveStepAnswer);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
@@ -39,14 +41,25 @@ export default function Steps() {
         .then((content) => {
           setStepContent(content);
           setIsLoading(false);
+          
+          // Find first unanswered question or start at beginning
+          if (content) {
+            const answers = getStepAnswers(selectedStep);
+            const firstUnanswered = content.questions.findIndex((q) => {
+              const answer = answers.find(a => a.questionId === q.id);
+              return !answer || !answer.answer.trim();
+            });
+            setCurrentQuestionIndex(firstUnanswered >= 0 ? firstUnanswered : 0);
+          }
         })
         .catch(() => {
           setIsLoading(false);
         });
     } else {
       setStepContent(null);
+      setCurrentQuestionIndex(0);
     }
-  }, [selectedStep]);
+  }, [selectedStep, getStepAnswers]);
 
   const steps = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
@@ -82,6 +95,18 @@ export default function Steps() {
     }
   };
 
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (stepContent && currentQuestionIndex < stepContent.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
   if (selectedStep === null) {
     return (
       <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
@@ -101,6 +126,11 @@ export default function Steps() {
   }
 
   const currentAnswers = getStepAnswers(selectedStep);
+  
+  // Calculate actual completion based on answered questions
+  const completedCount = currentAnswers.filter(a => a.answer.trim()).length;
+  const totalCount = stepContent?.questions.length || 0;
+  const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
@@ -118,7 +148,9 @@ export default function Steps() {
           <h1 className="text-2xl font-bold">
             {stepContent?.title || `Step ${selectedStep}`}
           </h1>
-          <p className="text-sm text-muted-foreground">Answer each question thoughtfully</p>
+          {stepContent?.subtitle && (
+            <p className="text-sm text-muted-foreground mt-1">{stepContent.subtitle}</p>
+          )}
         </div>
       </header>
 
@@ -134,7 +166,7 @@ export default function Steps() {
         </div>
       )}
 
-      {!isLoading && stepContent && (
+      {!isLoading && stepContent && stepContent.questions.length > 0 && (
         <div className="space-y-6">
           {stepContent.overviewLabels && stepContent.overviewLabels.length > 0 && (
             <Card>
@@ -156,49 +188,98 @@ export default function Steps() {
             </Card>
           )}
 
-          {stepContent.questions.map((question, index) => {
-            const existingAnswer = currentAnswers.find(a => a.questionId === question.id);
-            
-            return (
-              <Card key={question.id} data-testid={`question-${question.id}`}>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Question {index + 1}
-                  </CardTitle>
-                  <p className="text-base font-normal text-foreground mt-2">
-                    {question.prompt}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">
+                    Question {currentQuestionIndex + 1} of {stepContent.questions.length}
                   </p>
-                  {question.help && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {question.help}
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder="Write your answer..."
-                    value={existingAnswer?.answer || ''}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    className="min-h-32"
-                    data-testid={`answer-${question.id}`}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Auto-saves as you type
+                  <p className="text-xs text-muted-foreground">
+                    {completedCount} answered • {completionPercentage}% complete
                   </p>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+                <Progress 
+                  value={completionPercentage} 
+                  className="h-2"
+                />
+              </div>
+            </div>
 
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleExport}
-            data-testid="button-export"
-          >
-            <Download className="h-4 w-4" />
-            Export Step {selectedStep} Answers
-          </Button>
+            {(() => {
+              const question = stepContent.questions[currentQuestionIndex];
+              const existingAnswer = currentAnswers.find(a => a.questionId === question.id);
+              
+              return (
+                <Card key={question.id} data-testid={`question-${question.id}`}>
+                  <CardHeader>
+                    {question.section && (
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
+                        {question.section}
+                      </p>
+                    )}
+                    <CardTitle className="text-lg leading-relaxed">
+                      {question.prompt}
+                    </CardTitle>
+                    {question.help && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {question.help}
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Textarea
+                      placeholder="Write your answer..."
+                      value={existingAnswer?.answer || ''}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      className="min-h-48"
+                      data-testid={`answer-${question.id}`}
+                      autoFocus
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Auto-saves as you type
+                    </p>
+
+                    <div className="flex items-center justify-between gap-3 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={handlePrevious}
+                        disabled={currentQuestionIndex === 0}
+                        data-testid="button-previous"
+                        className="gap-2"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      
+                      <Button
+                        variant="default"
+                        onClick={handleNext}
+                        disabled={currentQuestionIndex === stepContent.questions.length - 1}
+                        data-testid="button-next"
+                        className="gap-2"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+          </div>
+
+          {currentQuestionIndex === stepContent.questions.length - 1 && (
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={handleExport}
+              data-testid="button-export"
+            >
+              <Download className="h-4 w-4" />
+              Export Step {selectedStep} Answers
+            </Button>
+          )}
         </div>
       )}
     </div>
