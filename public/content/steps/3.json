@@ -1,12 +1,203 @@
 {
   "step": 3,
-  "title": "Step 3",
-  "overviewLabels": ["step3"],
+  "title": "Step Three",
+  "subtitle": "We made a decision to turn our will and our lives over to the care of God as we understood Him.",
+  "overviewLabels": ["decision", "surrender", "faith", "trust", "willingness"],
   "questions": [
     {
       "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 3",
-      "help": "Optional hint"
+      "section": "Making a decision",
+      "prompt": "Why is making a decision central to working this step?"
+    },
+    {
+      "id": "q2",
+      "section": "Making a decision",
+      "prompt": "Can I make this decision just for today? Do I have any fears or reservations about it? What are they?"
+    },
+    {
+      "id": "q3",
+      "section": "Making a decision",
+      "prompt": "What action have I taken to follow through on my decision?"
+    },
+    {
+      "id": "q4",
+      "section": "Making a decision",
+      "prompt": "What areas of my life are difficult for me to turn over? Why is it important that I turn them over anyway?"
+    },
+    {
+      "id": "q5",
+      "section": "Self-will",
+      "prompt": "How have I acted on self-will? What were my motives?"
+    },
+    {
+      "id": "q6",
+      "section": "Self-will",
+      "prompt": "How has acting on self-will affected my life? How has my self-will affected others?"
+    },
+    {
+      "id": "q7",
+      "section": "Self-will",
+      "prompt": "Will pursuing my goals harm anyone? How?"
+    },
+    {
+      "id": "q8",
+      "section": "Self-will",
+      "prompt": "In the pursuit of what I want, is it likely that I will end up doing something that adversely affects myself or others? Explain."
+    },
+    {
+      "id": "q9",
+      "section": "Self-will",
+      "prompt": "Will I have to compromise any of my principles to achieve this goal? (For example: Will I have to be dishonest? Cruel? Disloyal?)"
+    },
+    {
+      "id": "q10",
+      "section": "Self-will",
+      "prompt": "Describe the times when my will hasn't been enough. (For example, I couldn't stay clean on my own will.)"
+    },
+    {
+      "id": "q11",
+      "section": "Self-will",
+      "prompt": "What is the difference between my will and God's will?"
+    },
+    {
+      "id": "q12",
+      "section": "Self-will",
+      "prompt": "Have there been times in my recovery when I've found myself subtly taking back my will and my life? What alerted me? What have I done to recommit myself to the Third Step?"
+    },
+    {
+      "id": "q13",
+      "section": "The God of our understanding",
+      "prompt": "Does the word \"God,\" or even the concept itself, make me uncomfortable? What is the source of my discomfort?"
+    },
+    {
+      "id": "q14",
+      "section": "The God of our understanding",
+      "prompt": "Have I ever believed that God caused horrible things to happen to me or was punishing me? What were those things?"
+    },
+    {
+      "id": "q15",
+      "section": "The God of our understanding",
+      "prompt": "What is my understanding of a Power greater than myself today? How is my Higher Power working in my life?"
+    },
+    {
+      "id": "q16",
+      "section": "The God of our understanding",
+      "prompt": "How do I communicate with my Higher Power?"
+    },
+    {
+      "id": "q17",
+      "section": "The God of our understanding",
+      "prompt": "How does my Higher Power communicate with me? What feelings do I have about my Higher Power?"
+    },
+    {
+      "id": "q18",
+      "section": "The God of our understanding",
+      "prompt": "Am I struggling with changing beliefs about the nature of my Higher Power? Describe."
+    },
+    {
+      "id": "q19",
+      "section": "The God of our understanding",
+      "prompt": "Is my current concept of a Higher Power still working? How might it need to change?"
+    },
+    {
+      "id": "q20",
+      "section": "Turning it over",
+      "prompt": "What does \"to the care of\" mean to me?"
+    },
+    {
+      "id": "q21",
+      "section": "Turning it over",
+      "prompt": "What does it mean for me to turn my will and my life over to the care of the God of my understanding?"
+    },
+    {
+      "id": "q22",
+      "section": "Turning it over",
+      "prompt": "How might my life be changed if I make the decision to turn it over to my Higher Power's care?"
+    },
+    {
+      "id": "q23",
+      "section": "Turning it over",
+      "prompt": "How do I allow my Higher Power to work in my life?"
+    },
+    {
+      "id": "q24",
+      "section": "Turning it over",
+      "prompt": "How does my Higher Power care for my will and my life?"
+    },
+    {
+      "id": "q25",
+      "section": "Turning it over",
+      "prompt": "Have there been times when I have been unable to let go and trust God to care for the outcome of a particular situation? Describe."
+    },
+    {
+      "id": "q26",
+      "section": "Turning it over",
+      "prompt": "Have there been times when I have been able to let go and trust God for the outcome? Describe."
+    },
+    {
+      "id": "q27",
+      "section": "Turning it over",
+      "prompt": "How do I take action to turn it over? Are there any words I say regularly? What are they?"
+    },
+    {
+      "id": "q28",
+      "section": "Spiritual principles",
+      "prompt": "What am I doing to reinforce my decision to allow my Higher Power to care for my will and my life?"
+    },
+    {
+      "id": "q29",
+      "section": "Spiritual principles",
+      "prompt": "How does the Third Step allow me to build on the surrender I've developed in Steps One and Two?"
+    },
+    {
+      "id": "q30",
+      "section": "Spiritual principles",
+      "prompt": "In what ways have I demonstrated willingness in my recovery so far?"
+    },
+    {
+      "id": "q31",
+      "section": "Spiritual principles",
+      "prompt": "Am I fighting anything in my recovery? What do I think would happen if I became willing to let recovery prevail in that area of my life?"
+    },
+    {
+      "id": "q32",
+      "section": "Spiritual principles",
+      "prompt": "How have hope, faith, and trust become positive forces in my life?"
+    },
+    {
+      "id": "q33",
+      "section": "Spiritual principles",
+      "prompt": "What further action can I take to apply the principles of hope, faith, and trust in my recovery?"
+    },
+    {
+      "id": "q34",
+      "section": "Spiritual principles",
+      "prompt": "What evidence do I have that I can trust confidently in my recovery?"
+    },
+    {
+      "id": "q35",
+      "section": "Spiritual principles",
+      "prompt": "What have I done recently that demonstrates my commitment to recovery and to working a program? (For example: Have I taken a service position in NA? Have I agreed to sponsor another recovering addict? Have I continued to go to meetings no matter what I was feeling about them? Have I continued to work with my sponsor even after he or she told me an unpleasant truth or gave me some direction I didn't want to follow? Did I follow that direction?)"
+    },
+    {
+      "id": "q36",
+      "section": "Moving on",
+      "prompt": "Do I have any reservations about my decision to turn my will and my life over to God's care?"
+    },
+    {
+      "id": "q37",
+      "section": "Moving on",
+      "prompt": "Do I feel that I am now ready to turn it over?"
+    },
+    {
+      "id": "q38",
+      "section": "Moving on",
+      "prompt": "How does my surrender in the First Step help me in the Third Step?"
+    },
+    {
+      "id": "q39",
+      "section": "Moving on",
+      "prompt": "What action do I plan to take to follow through on my decision? How does working the remainder of the steps fit into this?"
     }
   ]
 }
