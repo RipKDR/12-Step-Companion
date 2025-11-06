@@ -4,6 +4,8 @@ export interface Profile {
   cleanDate: string; // ISO 8601
   timezone: string;
   hasPasscode: boolean;
+  sponsorName?: string;
+  sponsorPhone?: string;
 }
 
 export interface StepQuestion {
@@ -36,6 +38,8 @@ export interface DailyCard {
   eveningReflection?: string;
   morningCompleted: boolean;
   eveningCompleted: boolean;
+  gratitudeItems?: string[];
+  quickNotes?: string;
   updatedAtISO: string;
 }
 
@@ -45,6 +49,10 @@ export interface JournalEntry {
   content: string;
   mood?: number; // 0-10
   tags: string[];
+  isTrigger?: boolean;
+  triggerType?: string;
+  triggerIntensity?: number;
+  copingActions?: string;
   updatedAtISO: string;
 }
 
@@ -94,7 +102,30 @@ export interface Meeting {
   location: string;
   date: string;
   notes?: string;
+  recurring?: boolean;
+  recurrencePattern?: string;
+  reminderEnabled?: boolean;
   createdAtISO: string;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  targetDate?: string;
+  completed: boolean;
+  progress: number;
+  checkIns: GoalCheckIn[];
+  createdAtISO: string;
+  updatedAtISO: string;
+}
+
+export interface GoalCheckIn {
+  id: string;
+  date: string;
+  notes: string;
+  progress: number;
 }
 
 export interface AppState {
@@ -105,6 +136,7 @@ export interface AppState {
   journalEntries: Record<string, JournalEntry>; // id -> entry
   worksheetResponses: Record<string, WorksheetResponse>; // id -> response
   meetings?: Meeting[]; // meeting log
+  goals?: Record<string, Goal>; // id -> goal
   emergencyActions: EmergencyAction[];
   settings: AppSettings;
   onboardingComplete: boolean;

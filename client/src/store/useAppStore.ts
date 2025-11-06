@@ -110,9 +110,20 @@ export const useAppStore = create<AppStore>()(
       // Profile
       setProfile: (profile) => set({ profile }),
       
-      updateProfile: (updates) => set((state) => ({
-        profile: state.profile ? { ...state.profile, ...updates } : undefined,
-      })),
+      updateProfile: (updates) => set((state) => {
+        if (!state.profile) {
+          const newProfile = {
+            id: `user_${Date.now()}`,
+            name: 'User',
+            cleanDate: new Date().toISOString(),
+            timezone: 'Australia/Melbourne',
+            hasPasscode: false,
+            ...updates,
+          };
+          return { profile: newProfile };
+        }
+        return { profile: { ...state.profile, ...updates } };
+      }),
       
       // Onboarding
       completeOnboarding: () => set({ onboardingComplete: true }),

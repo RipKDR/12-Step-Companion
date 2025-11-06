@@ -2,10 +2,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import SponsorCard from '@/components/SponsorCard';
 import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useAppStore } from '@/store/useAppStore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Emergency() {
+  const profile = useAppStore((state) => state.profile);
+  const updateProfile = useAppStore((state) => state.updateProfile);
+  const { toast } = useToast();
+
   const [timerActive, setTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300);
   const [breathingActive, setBreathingActive] = useState(false);
@@ -13,6 +23,9 @@ export default function Emergency() {
   const [breathingCount, setBreathingCount] = useState(4);
   const [groundingActive, setGroundingActive] = useState(false);
   const [copingNotesVisible, setCopingNotesVisible] = useState(false);
+  const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
+  const [sponsorName, setSponsorName] = useState('');
+  const [sponsorPhone, setSponsorPhone] = useState('');
 
   useEffect(() => {
     if (!timerActive) return;
@@ -170,6 +183,26 @@ export default function Emergency() {
     }
   };
 
+  const handleEditSponsor = () => {
+    setSponsorName(profile?.sponsorName || '');
+    setSponsorPhone(profile?.sponsorPhone || '');
+    setSponsorDialogOpen(true);
+  };
+
+  const handleSaveSponsor = () => {
+    updateProfile({
+      sponsorName: sponsorName.trim() || undefined,
+      sponsorPhone: sponsorPhone.trim() || undefined,
+    });
+    
+    toast({
+      title: 'Sponsor info saved',
+      description: 'Your sponsor contact information has been updated.',
+    });
+    
+    setSponsorDialogOpen(false);
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 pb-24 pt-6 space-y-6">
       <header className="text-center mb-6">
@@ -207,6 +240,13 @@ export default function Emergency() {
           ))}
         </CardContent>
       </Card>
+
+      <SponsorCard
+        sponsorName={profile?.sponsorName}
+        sponsorPhone={profile?.sponsorPhone}
+        onEdit={handleEditSponsor}
+        testId="sponsor-card"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Button
@@ -363,6 +403,49 @@ export default function Emergency() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={sponsorDialogOpen} onOpenChange={setSponsorDialogOpen}>
+        <DialogContent data-testid="dialog-sponsor">
+          <DialogHeader>
+            <DialogTitle>Sponsor Contact Info</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="sponsor-name">Sponsor Name</Label>
+              <Input
+                id="sponsor-name"
+                value={sponsorName}
+                onChange={(e) => setSponsorName(e.target.value)}
+                placeholder="Enter sponsor's name"
+                data-testid="input-sponsor-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sponsor-phone">Phone Number</Label>
+              <Input
+                id="sponsor-phone"
+                type="tel"
+                value={sponsorPhone}
+                onChange={(e) => setSponsorPhone(e.target.value)}
+                placeholder="Enter phone number"
+                data-testid="input-sponsor-phone"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSponsorDialogOpen(false)}
+              data-testid="button-cancel"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSponsor} data-testid="button-save">
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

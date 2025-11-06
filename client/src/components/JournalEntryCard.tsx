@@ -1,12 +1,15 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Smile, Frown, Meh } from 'lucide-react';
+import { Calendar, Smile, Frown, Meh, AlertTriangle } from 'lucide-react';
 
 interface JournalEntryCardProps {
   date: string;
   content: string;
   mood?: number;
   tags: string[];
+  isTrigger?: boolean;
+  triggerType?: string;
+  triggerIntensity?: number;
   onClick: () => void;
 }
 
@@ -17,7 +20,7 @@ function getMoodIcon(mood?: number) {
   return <Frown className="h-4 w-4 text-red-600" />;
 }
 
-export default function JournalEntryCard({ date, content, mood, tags, onClick }: JournalEntryCardProps) {
+export default function JournalEntryCard({ date, content, mood, tags, isTrigger, triggerType, triggerIntensity, onClick }: JournalEntryCardProps) {
   const formattedDate = new Date(date).toLocaleDateString('en-AU', {
     weekday: 'short',
     day: 'numeric',
@@ -44,6 +47,19 @@ export default function JournalEntryCard({ date, content, mood, tags, onClick }:
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-foreground line-clamp-3">{preview}</p>
+        {isTrigger && (
+          <div className="flex items-center gap-2 text-sm">
+            <Badge variant="destructive" className="gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Trigger: {triggerType}
+            </Badge>
+            {triggerIntensity && (
+              <Badge variant="outline">
+                Intensity: {triggerIntensity}/10
+              </Badge>
+            )}
+          </div>
+        )}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (

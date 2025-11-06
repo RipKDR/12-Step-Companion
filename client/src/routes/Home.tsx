@@ -1,6 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import SobrietyCounter from '@/components/SobrietyCounter';
 import DailyCard from '@/components/DailyCard';
+import GratitudeList from '@/components/GratitudeList';
+import QuickNotes from '@/components/QuickNotes';
+import MeditationTimer from '@/components/MeditationTimer';
 import DailyAffirmation from '@/components/DailyAffirmation';
 import ProgressRing from '@/components/ProgressRing';
 import { buttonVariants } from '@/components/ui/button';
@@ -89,6 +92,14 @@ export default function Home() {
     updateDailyCard(todayDate, { eveningCompleted: !dailyCard?.eveningCompleted });
   };
 
+  const handleGratitudeChange = (items: string[]) => {
+    updateDailyCard(todayDate, { gratitudeItems: items });
+  };
+
+  const handleQuickNotesChange = (value: string) => {
+    updateDailyCard(todayDate, { quickNotes: value });
+  };
+
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-8">
       {/* Skip to main content link */}
@@ -149,6 +160,17 @@ export default function Home() {
             onComplete={handleEveningComplete}
             testId="evening-card"
           />
+          <GratitudeList
+            items={dailyCard?.gratitudeItems || []}
+            onChange={handleGratitudeChange}
+            testId="gratitude-list"
+          />
+          <QuickNotes
+            value={dailyCard?.quickNotes || ''}
+            onChange={handleQuickNotesChange}
+            testId="quick-notes"
+          />
+          <MeditationTimer testId="meditation-timer" />
         </section>
 
         {/* Quick Actions */}

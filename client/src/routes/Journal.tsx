@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
 
@@ -23,6 +25,10 @@ export default function Journal() {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState<number>(5);
   const [tags, setTags] = useState('');
+  const [isTrigger, setIsTrigger] = useState(false);
+  const [triggerType, setTriggerType] = useState('');
+  const [triggerIntensity, setTriggerIntensity] = useState<number>(5);
+  const [copingActions, setCopingActions] = useState('');
   
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
@@ -42,12 +48,20 @@ export default function Journal() {
         content: content.trim(),
         mood,
         tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        isTrigger,
+        triggerType: isTrigger ? triggerType : undefined,
+        triggerIntensity: isTrigger ? triggerIntensity : undefined,
+        copingActions: isTrigger ? copingActions : undefined,
       });
       
       // Reset form
       setContent('');
       setMood(5);
       setTags('');
+      setIsTrigger(false);
+      setTriggerType('');
+      setTriggerIntensity(5);
+      setCopingActions('');
       setIsDialogOpen(false);
     }
   };
@@ -103,6 +117,9 @@ export default function Journal() {
               content={entry.content}
               mood={entry.mood}
               tags={entry.tags}
+              isTrigger={entry.isTrigger}
+              triggerType={entry.triggerType}
+              triggerIntensity={entry.triggerIntensity}
               onClick={() => console.log('Edit entry:', entry.id)}
             />
           ))
@@ -119,17 +136,78 @@ export default function Journal() {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={isTrigger ? 'default' : 'outline'}
+                onClick={() => setIsTrigger(!isTrigger)}
+                className="gap-2"
+                data-testid="button-trigger-toggle"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                {isTrigger ? 'Trigger Entry' : 'Regular Entry'}
+              </Button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="content">Entry</Label>
               <Textarea
                 id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="What's on your mind today?"
+                placeholder={isTrigger ? "Describe the trigger situation..." : "What's on your mind today?"}
                 className="min-h-32"
                 data-testid="input-content"
               />
             </div>
+
+            {isTrigger && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="trigger-type">Trigger Type</Label>
+                  <Select value={triggerType} onValueChange={setTriggerType}>
+                    <SelectTrigger data-testid="select-trigger-type">
+                      <SelectValue placeholder="Select trigger type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="people">People</SelectItem>
+                      <SelectItem value="places">Places</SelectItem>
+                      <SelectItem value="things">Things</SelectItem>
+                      <SelectItem value="emotions">Emotions</SelectItem>
+                      <SelectItem value="stress">Stress</SelectItem>
+                      <SelectItem value="success">Success</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="trigger-intensity">Intensity ({triggerIntensity}/10)</Label>
+                  <Slider
+                    id="trigger-intensity"
+                    value={[triggerIntensity]}
+                    onValueChange={(values) => setTriggerIntensity(values[0])}
+                    min={1}
+                    max={10}
+                    step={1}
+                    data-testid="slider-trigger-intensity"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="coping-actions">Coping Actions Taken</Label>
+                  <Textarea
+                    id="coping-actions"
+                    value={copingActions}
+                    onChange={(e) => setCopingActions(e.target.value)}
+                    placeholder="What did you do to cope? (e.g., called sponsor, went to meeting, exercised)"
+                    className="min-h-20"
+                    data-testid="input-coping-actions"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="mood">Mood ({mood}/10)</Label>
