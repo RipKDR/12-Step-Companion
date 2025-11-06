@@ -241,12 +241,87 @@ export default function Emergency() {
         </CardContent>
       </Card>
 
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Users className="h-5 w-5" />
+            NA Australia Fellowship Support
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1">
+              <div className="font-semibold">NA Helpline</div>
+              <div className="text-sm text-muted-foreground">24/7 recovery support and information</div>
+            </div>
+            <a
+              href="tel:1300652820"
+              className="text-primary font-bold hover:underline text-lg whitespace-nowrap"
+              data-testid="link-na-helpline"
+            >
+              1300 652 820
+            </a>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-2">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex-1">
+                <div className="font-semibold">Meeting Info Line</div>
+                <div className="text-sm text-muted-foreground">Call or SMS for nearby meetings</div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <a
+                  href="tel:0488811247"
+                  className="text-primary font-bold hover:underline text-lg whitespace-nowrap"
+                  data-testid="link-na-meeting-voice"
+                >
+                  0488 811 247
+                </a>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <a
+                href="sms:0488811247"
+                className="inline-block"
+              >
+                <Button size="sm" variant="outline" data-testid="button-sms-meeting">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  SMS for Meetings
+                </Button>
+              </a>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2 p-3 bg-muted/30 rounded-md">
+              <strong>SMS Tip:</strong> Text your postcode and state (e.g., "2000 NSW") to receive a list of meetings in your area within the next 24 hours.
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <SponsorCard
         sponsorName={profile?.sponsorName}
         sponsorPhone={profile?.sponsorPhone}
         onEdit={handleEditSponsor}
         testId="sponsor-card"
       />
+
+      <a 
+        href="https://www.na.org.au/multi/searchable-map/" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <Button 
+          variant="default" 
+          size="lg"
+          className="w-full h-16 text-lg"
+          data-testid="button-find-meeting"
+        >
+          <Users className="h-6 w-6 mr-3" />
+          Find NA Meeting Near Me
+        </Button>
+      </a>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Button

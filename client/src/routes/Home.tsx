@@ -7,7 +7,8 @@ import MeditationTimer from '@/components/MeditationTimer';
 import DailyAffirmation from '@/components/DailyAffirmation';
 import ProgressRing from '@/components/ProgressRing';
 import { buttonVariants } from '@/components/ui/button';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
@@ -171,6 +172,29 @@ export default function Home() {
             testId="quick-notes"
           />
           <MeditationTimer testId="meditation-timer" />
+          
+          <a 
+            href="https://www.na.org.au/multi/category/na-today-blog/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+            data-testid="link-daily-inspiration"
+          >
+            <Card className="hover-elevate active-elevate-2 cursor-pointer bg-primary/5 border-primary/20">
+              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Daily Fellowship Reading</CardTitle>
+                </div>
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Read recovery stories and insights from members across Australia
+                </p>
+              </CardContent>
+            </Card>
+          </a>
         </section>
 
         {/* Quick Actions */}

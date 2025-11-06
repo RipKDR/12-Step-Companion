@@ -18,6 +18,7 @@ import Journal from "@/routes/Journal";
 import Worksheets from "@/routes/Worksheets";
 import Meetings from "@/routes/Meetings";
 import Emergency from "@/routes/Emergency";
+import Resources from "@/routes/Resources";
 import Settings from "@/routes/Settings";
 import Onboarding from "@/routes/Onboarding";
 
@@ -43,6 +44,7 @@ function Router() {
         <Route path="/worksheets" component={Worksheets} />
         <Route path="/meetings" component={Meetings} />
         <Route path="/emergency" component={Emergency} />
+        <Route path="/resources" component={Resources} />
         <Route path="/settings" component={Settings} />
         <Route path="/onboarding" component={Onboarding} />
         <Route component={NotFound} />

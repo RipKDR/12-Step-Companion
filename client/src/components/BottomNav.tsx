@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'wouter';
-import { Home, BookOpen, BookMarked, FileText, Settings } from 'lucide-react';
+import { Home, BookOpen, BookMarked, FileText, Settings, Library } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home', testId: 'nav-home' },
   { path: '/steps', icon: BookOpen, label: 'Steps', testId: 'nav-steps' },
   { path: '/journal', icon: BookMarked, label: 'Journal', testId: 'nav-journal' },
   { path: '/worksheets', icon: FileText, label: 'Worksheets', testId: 'nav-worksheets' },
+  { path: '/resources', icon: Library, label: 'Resources', testId: 'nav-resources' },
   { path: '/settings', icon: Settings, label: 'Settings', testId: 'nav-settings' },
 ];
 

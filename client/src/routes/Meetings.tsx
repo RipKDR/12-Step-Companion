@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, MapPin, Clock, Users, Trash2 } from 'lucide-react';
+import { Calendar, Plus, MapPin, Clock, Users, Trash2, MessageCircle, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -31,6 +31,8 @@ export default function Meetings() {
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
+  const [postcode, setPostcode] = useState('');
+  const [australianState, setAustralianState] = useState('');
 
   const { toast } = useToast();
   
@@ -153,6 +155,75 @@ export default function Meetings() {
             </CardHeader>
           </Card>
         </div>
+
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Search className="h-5 w-5" />
+              Find NA Meetings Near You
+            </CardTitle>
+            <CardDescription>
+              Get meeting information sent directly to your phone via SMS
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="postcode">Postcode</Label>
+                <Input
+                  id="postcode"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  placeholder="2000"
+                  maxLength={4}
+                  data-testid="input-postcode"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State/Territory</Label>
+                <Select value={australianState} onValueChange={setAustralianState}>
+                  <SelectTrigger data-testid="select-state">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NSW">NSW</SelectItem>
+                    <SelectItem value="VIC">VIC</SelectItem>
+                    <SelectItem value="QLD">QLD</SelectItem>
+                    <SelectItem value="SA">SA</SelectItem>
+                    <SelectItem value="WA">WA</SelectItem>
+                    <SelectItem value="TAS">TAS</SelectItem>
+                    <SelectItem value="NT">NT</SelectItem>
+                    <SelectItem value="ACT">ACT</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <a
+                href={postcode && australianState ? `sms:0488811247?body=${encodeURIComponent(`${postcode} ${australianState}`)}` : `sms:0488811247`}
+                className="block"
+              >
+                <Button 
+                  className="w-full"
+                  disabled={!postcode || !australianState}
+                  data-testid="button-sms-lookup"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  {postcode && australianState ? `SMS "${postcode} ${australianState}" to 0488 811 247` : 'Enter Postcode & State'}
+                </Button>
+              </a>
+              
+              <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-md space-y-1">
+                <p><strong>How it works:</strong></p>
+                <p>• Enter your postcode and state above</p>
+                <p>• Tap the button to open your SMS app</p>
+                <p>• Send the message to receive meeting info</p>
+                <p>• You'll get a list of meetings in your area within the next 24 hours</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Meeting History</h2>
