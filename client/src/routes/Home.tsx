@@ -116,40 +116,43 @@ export default function Home() {
           <h2 id="actions-heading" className="text-xl font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-3">
             <Link href="/steps">
-              <a className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-14 justify-start gap-3 text-base"
-                  data-testid="button-step-work"
-                >
+              <Button
+                variant="outline"
+                className="w-full h-14 justify-start gap-3 text-base"
+                data-testid="button-step-work"
+                asChild
+              >
+                <a>
                   <BookOpen className="h-5 w-5" />
                   Continue Step Work
-                </Button>
-              </a>
+                </a>
+              </Button>
             </Link>
             <Link href="/journal">
-              <a className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-14 justify-start gap-3 text-base"
-                  data-testid="button-journal"
-                >
+              <Button
+                variant="outline"
+                className="w-full h-14 justify-start gap-3 text-base"
+                data-testid="button-journal"
+                asChild
+              >
+                <a>
                   <BookMarked className="h-5 w-5" />
                   New Journal Entry
-                </Button>
-              </a>
+                </a>
+              </Button>
             </Link>
             <Link href="/emergency">
-              <a className="block">
-                <Button
-                  variant="destructive"
-                  className="w-full h-14 justify-start gap-3 text-base"
-                  data-testid="button-emergency"
-                >
+              <Button
+                variant="destructive"
+                className="w-full h-14 justify-start gap-3 text-base"
+                data-testid="button-emergency"
+                asChild
+              >
+                <a>
                   <Phone className="h-5 w-5" />
                   Emergency Help
-                </Button>
-              </a>
+                </a>
+              </Button>
             </Link>
           </div>
         </section>
