@@ -1,112 +1,53 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import JournalEntryCard from '@/components/JournalEntryCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Plus, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import type { JournalEntry } from '@/types';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
-  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [content, setContent] = useState('');
+  const [mood, setMood] = useState<number>(5);
+  const [tags, setTags] = useState('');
   
-  const [formContent, setFormContent] = useState('');
-  const [formMood, setFormMood] = useState<number>(5);
-  const [formTags, setFormTags] = useState('');
-
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
-  const updateJournalEntry = useAppStore((state) => state.updateJournalEntry);
-  const deleteJournalEntry = useAppStore((state) => state.deleteJournalEntry);
-  const { toast } = useToast();
 
-  const entries = useMemo(() => getJournalEntries(), [getJournalEntries]);
+  const entries = getJournalEntries();
 
   const filteredEntries = entries.filter((entry) =>
     entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const openNewEntryDialog = () => {
-    setEditingEntry(null);
-    setFormContent('');
-    setFormMood(5);
-    setFormTags('');
-    setDialogOpen(true);
-  };
-
-  const openEditEntryDialog = (entry: JournalEntry) => {
-    setEditingEntry(entry);
-    setFormContent(entry.content);
-    setFormMood(entry.mood || 5);
-    setFormTags(entry.tags.join(', '));
-    setDialogOpen(true);
-  };
-
-  const handleSaveEntry = () => {
-    if (!formContent.trim()) {
-      toast({
-        title: 'Content required',
-        description: 'Please write something in your journal entry.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const tags = formTags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
-
-    if (editingEntry) {
-      updateJournalEntry(editingEntry.id, {
-        content: formContent,
-        mood: formMood,
-        tags,
-      });
-      toast({
-        title: 'Entry updated',
-        description: 'Your journal entry has been updated.',
-      });
-    } else {
+  const handleSave = () => {
+    if (content.trim()) {
       addJournalEntry({
         date: new Date().toISOString(),
-        content: formContent,
-        mood: formMood,
-        tags,
+        content: content.trim(),
+        mood,
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       });
-      toast({
-        title: 'Entry created',
-        description: 'Your journal entry has been saved.',
-      });
+      
+      // Reset form
+      setContent('');
+      setMood(5);
+      setTags('');
+      setIsDialogOpen(false);
     }
-
-    setDialogOpen(false);
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setEntryToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (entryToDelete) {
-      deleteJournalEntry(entryToDelete);
-      toast({
-        title: 'Entry deleted',
-        description: 'Your journal entry has been deleted.',
-      });
-    }
-    setDeleteDialogOpen(false);
-    setEntryToDelete(null);
   };
 
   return (
@@ -114,7 +55,6 @@ export default function Journal() {
       <header>
         <h1 className="text-2xl font-bold mb-4">Journal</h1>
         
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -128,17 +68,15 @@ export default function Journal() {
         </div>
       </header>
 
-      {/* New Entry Button */}
       <Button
         className="w-full gap-2 h-12"
-        onClick={openNewEntryDialog}
+        onClick={() => setIsDialogOpen(true)}
         data-testid="button-new-entry"
       >
         <Plus className="h-5 w-5" />
         New Journal Entry
       </Button>
 
-      {/* Entries */}
       <section className="space-y-4" aria-label="Journal entries">
         {filteredEntries.length === 0 ? (
           <div className="text-center py-12">
@@ -146,7 +84,11 @@ export default function Journal() {
               {searchQuery ? 'No entries found' : 'No journal entries yet'}
             </p>
             {!searchQuery && (
-              <Button variant="outline" onClick={openNewEntryDialog} data-testid="button-create-first">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsDialogOpen(true)}
+                data-testid="button-create-first"
+              >
                 Create your first entry
               </Button>
             )}
@@ -159,107 +101,77 @@ export default function Journal() {
               content={entry.content}
               mood={entry.mood}
               tags={entry.tags}
-              onClick={() => openEditEntryDialog(entry)}
+              onClick={() => console.log('Edit entry:', entry.id)}
             />
           ))
         )}
       </section>
 
-      {/* Entry Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-journal-entry">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingEntry ? 'Edit Entry' : 'New Journal Entry'}</DialogTitle>
+            <DialogTitle>New Journal Entry</DialogTitle>
             <DialogDescription>
-              {editingEntry ? 'Update your journal entry' : 'Write about your day, feelings, or recovery journey'}
+              Write about your day, your feelings, or anything on your mind.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             <div className="space-y-2">
               <Label htmlFor="content">Entry</Label>
               <Textarea
                 id="content"
-                placeholder="Write your thoughts..."
-                value={formContent}
-                onChange={(e) => setFormContent(e.target.value)}
-                className="min-h-40"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind today?"
+                className="min-h-32"
                 data-testid="input-content"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mood">Mood (1-10)</Label>
-              <div className="flex items-center gap-4">
-                <Input
-                  id="mood"
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={formMood}
-                  onChange={(e) => setFormMood(parseInt(e.target.value))}
-                  className="flex-1"
-                  data-testid="input-mood"
-                />
-                <span className="text-lg font-semibold w-8 text-center" data-testid="text-mood-value">
-                  {formMood}
-                </span>
-              </div>
+              <Label htmlFor="mood">Mood ({mood}/10)</Label>
+              <Slider
+                id="mood"
+                value={[mood]}
+                onValueChange={(values) => setMood(values[0])}
+                min={0}
+                max={10}
+                step={1}
+                data-testid="slider-mood"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="tags">Tags (comma-separated)</Label>
               <Input
                 id="tags"
-                placeholder="e.g., gratitude, meeting, sponsor"
-                value={formTags}
-                onChange={(e) => setFormTags(e.target.value)}
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="gratitude, meeting, struggle"
                 data-testid="input-tags"
               />
             </div>
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            {editingEntry && (
-              <Button 
-                variant="destructive" 
-                onClick={() => {
-                  handleDeleteClick(editingEntry.id);
-                  setDialogOpen(false);
-                }}
-                className="sm:mr-auto"
-                data-testid="button-delete"
-              >
-                Delete
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => setDialogOpen(false)} data-testid="button-cancel">
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              data-testid="button-cancel"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSaveEntry} data-testid="button-save">
-              {editingEntry ? 'Update' : 'Save'}
+            <Button
+              onClick={handleSave}
+              disabled={!content.trim()}
+              data-testid="button-save"
+            >
+              Save Entry
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent data-testid="dialog-delete-confirm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete entry?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your journal entry.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} data-testid="button-confirm-delete">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
