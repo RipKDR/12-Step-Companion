@@ -1,0 +1,12 @@
+{
+  "step": 4,
+  "title": "Step 4",
+  "overviewLabels": ["step4"],
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Paste your permitted question text here for Step 4",
+      "help": "Optional hint"
+    }
+  ]
+}
