@@ -21,7 +21,7 @@ export default function Worksheets() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const getWorksheetResponses = useAppStore((state) => state.getWorksheetResponses);
+  const worksheetResponsesMap = useAppStore((state) => state.worksheetResponses);
   const saveWorksheetResponse = useAppStore((state) => state.saveWorksheetResponse);
   const { toast } = useToast();
 
@@ -46,7 +46,7 @@ export default function Worksheets() {
   };
 
   const getWorksheetData = (id: string, template: WorksheetTemplate | null) => {
-    const responses = getWorksheetResponses(id);
+    const responses = Object.values(worksheetResponsesMap).filter(r => r.templateId === id);
     return {
       id,
       template,
