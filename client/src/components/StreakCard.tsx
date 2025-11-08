@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import type { StreakData } from '@/types';
 import { getStreakFireEmoji, getStreakColor } from '@/lib/streaks';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Flame, Crown } from 'lucide-react';
 
 interface StreakCardProps {
   title: string;
@@ -11,11 +11,11 @@ interface StreakCardProps {
   onClick?: () => void;
 }
 
-const colorClasses = {
-  blue: 'from-blue-500/10 to-blue-600/5 border-blue-500/20',
-  green: 'from-green-500/10 to-green-600/5 border-green-500/20',
-  purple: 'from-purple-500/10 to-purple-600/5 border-purple-500/20',
-  orange: 'from-orange-500/10 to-orange-600/5 border-orange-500/20',
+const borderColorClasses = {
+  blue: 'border-blue-500/30',
+  green: 'border-green-500/30',
+  purple: 'border-purple-500/30',
+  orange: 'border-orange-500/30',
 };
 
 const iconColorClasses = {
@@ -38,9 +38,9 @@ export default function StreakCard({
 
   return (
     <Card
-      className={`cursor-pointer transition-all hover:scale-[1.02] ${
+      className={`cursor-pointer transition-all hover:shadow-md ${
         isActive
-          ? `bg-gradient-to-br ${colorClasses[color]}`
+          ? `bg-card border ${borderColorClasses[color]}`
           : 'bg-muted/50 border-muted'
       }`}
       onClick={onClick}
@@ -51,8 +51,8 @@ export default function StreakCard({
             <Icon className={`h-5 w-5 ${iconColorClasses[color]}`} />
             <h3 className="font-medium text-sm">{title}</h3>
           </div>
-          {fireEmoji && (
-            <span className="text-xl animate-pulse">{fireEmoji}</span>
+          {streak.current >= 7 && (
+            <Flame className={`h-5 w-5 ${iconColorClasses[color]}`} />
           )}
         </div>
 
@@ -72,10 +72,10 @@ export default function StreakCard({
 
           {streak.longest > 0 && (
             <div className="text-center pt-2 border-t border-border/50">
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                 Longest: {streak.longest} {streak.longest === 1 ? 'day' : 'days'}
                 {streakColor === 'record' && (
-                  <span className="ml-1">👑</span>
+                  <Crown className="h-3 w-3 text-yellow-500" />
                 )}
               </div>
             </div>

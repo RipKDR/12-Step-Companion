@@ -75,7 +75,7 @@ export default function Onboarding() {
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Heart className="h-8 w-8 text-emerald-600" />
             </div>
-            <CardTitle className="text-3xl">Recovery Companion 🌱</CardTitle>
+            <CardTitle className="text-3xl">Recovery Companion</CardTitle>
             <CardDescription className="text-base mt-4">
               Your private, offline-first companion for recovery.
             </CardDescription>
@@ -216,7 +216,7 @@ export default function Onboarding() {
             </div>
 
             <div className="text-center space-y-2">
-              <p className="text-lg font-medium">...of courage and strength! 💪</p>
+              <p className="text-lg font-medium">...of courage and strength!</p>
               <p className="text-muted-foreground">Every moment counts.</p>
             </div>
 
@@ -254,7 +254,7 @@ export default function Onboarding() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <Sparkles className="h-6 w-6 text-emerald-600" />
-              <CardTitle className="text-2xl">Quick Win 🎯</CardTitle>
+              <CardTitle className="text-2xl">Quick Win</CardTitle>
             </div>
             <CardDescription>
               Name one thing you're grateful for right now
@@ -399,7 +399,7 @@ export default function Onboarding() {
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-emerald-600" />
             </div>
-            <CardTitle className="text-3xl">You're All Set! 🎉</CardTitle>
+            <CardTitle className="text-3xl">You're All Set!</CardTitle>
             <CardDescription className="text-base mt-2">
               Here are some ways to start:
             </CardDescription>

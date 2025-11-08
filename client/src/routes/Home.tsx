@@ -455,7 +455,7 @@ export default function Home() {
             className="block"
             data-testid="link-daily-inspiration"
           >
-            <Card className="hover-elevate active-elevate-2 cursor-pointer bg-gradient-to-br from-primary/5 to-transparent border-primary/20 transition-all duration-200">
+            <Card className="cursor-pointer bg-card border border-border hover:shadow-md transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 text-primary">

@@ -14,8 +14,8 @@ export default function BottomNav() {
   const [location] = useLocation();
 
   return (
-    <nav 
-      className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-card-border z-40 safe-area-bottom shadow-lg"
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 safe-area-bottom shadow-sm"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -23,28 +23,25 @@ export default function BottomNav() {
         {navItems.map((item) => {
           const isActive = location === item.path;
           const Icon = item.icon;
-          
+
           return (
-            <Link 
-              key={item.path} 
+            <Link
+              key={item.path}
               href={item.path}
-              className={`relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 min-w-[60px] rounded-xl transition-all duration-200 ${
-                isActive 
-                  ? 'text-primary' 
-                  : 'text-muted-foreground hover-elevate active-elevate-2'
+              className={`flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors duration-200 ${
+                isActive
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               data-testid={item.testId}
               aria-current={isActive ? 'page' : undefined}
             >
-              {isActive && (
-                <div className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20" />
-              )}
-              <Icon 
-                className={`h-5 w-5 relative z-10 transition-transform ${isActive ? 'scale-110' : ''}`}
+              <Icon
+                className="h-5 w-5"
                 fill={isActive ? 'currentColor' : 'none'}
                 strokeWidth={isActive ? 0 : 2}
               />
-              <span className={`text-xs relative z-10 transition-all ${isActive ? 'font-semibold' : 'font-regular'}`}>
+              <span className={`text-xs ${isActive ? 'font-semibold' : 'font-medium'}`}>
                 {item.label}
               </span>
             </Link>

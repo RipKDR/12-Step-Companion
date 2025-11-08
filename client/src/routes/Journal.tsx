@@ -141,12 +141,12 @@ export default function Journal() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
-      <header className="space-y-6 mb-12">
+      <header className="space-y-6 mb-10">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
+          <h1 className="text-3xl font-semibold text-foreground mb-2">
             Journal
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Track your thoughts, moods, and recovery journey
           </p>
         </div>
