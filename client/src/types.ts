@@ -148,6 +148,27 @@ export interface GoalCheckIn {
   progress: number;
 }
 
+export interface StreakHistoryEntry {
+  date: string; // YYYY-MM-DD
+  completed: boolean;
+}
+
+export interface StreakData {
+  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork';
+  current: number;
+  longest: number;
+  lastActivityDate: string; // ISO 8601
+  startDate: string; // ISO 8601 - when current streak started
+  history: StreakHistoryEntry[];
+}
+
+export interface Streaks {
+  journaling: StreakData;
+  dailyCards: StreakData;
+  meetings: StreakData;
+  stepWork: StreakData;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -162,4 +183,5 @@ export interface AppState {
   favoriteQuotes: string[]; // quote IDs
   settings: AppSettings;
   onboardingComplete: boolean;
+  streaks: Streaks; // V2: Habit tracking
 }
