@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Smile, Frown, Meh, AlertTriangle } from 'lucide-react';
+import AudioPlayer from './AudioPlayer';
 
 interface JournalEntryCardProps {
   date: string;
@@ -10,6 +11,8 @@ interface JournalEntryCardProps {
   isTrigger?: boolean;
   triggerType?: string;
   triggerIntensity?: number;
+  audioData?: string;
+  audioDuration?: number;
   onClick: () => void;
 }
 
@@ -20,7 +23,7 @@ function getMoodIcon(mood?: number) {
   return <Frown className="h-4 w-4 text-red-600" />;
 }
 
-export default function JournalEntryCard({ date, content, mood, tags, isTrigger, triggerType, triggerIntensity, onClick }: JournalEntryCardProps) {
+export default function JournalEntryCard({ date, content, mood, tags, isTrigger, triggerType, triggerIntensity, audioData, audioDuration, onClick }: JournalEntryCardProps) {
   const formattedDate = new Date(date).toLocaleDateString('en-AU', {
     weekday: 'short',
     day: 'numeric',
@@ -31,7 +34,7 @@ export default function JournalEntryCard({ date, content, mood, tags, isTrigger,
   const preview = content.length > 150 ? content.substring(0, 150) + '...' : content;
 
   return (
-    <Card 
+    <Card
       className="cursor-pointer hover-elevate active-elevate-2 transition-all"
       onClick={onClick}
       data-testid="journal-entry-card"
@@ -47,6 +50,11 @@ export default function JournalEntryCard({ date, content, mood, tags, isTrigger,
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-foreground line-clamp-3">{preview}</p>
+        {audioData && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <AudioPlayer audioData={audioData} duration={audioDuration} />
+          </div>
+        )}
         {isTrigger && (
           <div className="flex items-center gap-2 text-sm">
             <Badge variant="destructive" className="gap-1">

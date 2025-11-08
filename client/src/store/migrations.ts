@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 6;
+export const CURRENT_VERSION = 7;
 
 type Migration = (state: any) => any;
 
@@ -66,6 +66,13 @@ const migrations: Record<number, Migration> = {
     // V6: Add daily challenges
     if (!state.completedChallenges) {
       state.completedChallenges = {};
+    }
+    return state;
+  },
+  7: (state: any) => {
+    // V7: Add voice recording settings
+    if (state.settings && state.settings.enableVoiceRecording === undefined) {
+      state.settings.enableVoiceRecording = false;
     }
     return state;
   },

@@ -269,6 +269,19 @@ export default function Settings() {
               data-testid="switch-reduced-motion"
             />
           </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="voice-recording">Voice Recording</Label>
+              <p className="text-sm text-muted-foreground">Enable audio recording in journal (stored locally)</p>
+            </div>
+            <Switch
+              id="voice-recording"
+              checked={settings.enableVoiceRecording}
+              onCheckedChange={(checked) => updateSettings({ enableVoiceRecording: checked })}
+              data-testid="switch-voice-recording"
+            />
+          </div>
         </CardContent>
       </Card>
 

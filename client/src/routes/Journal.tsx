@@ -15,9 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Search, AlertTriangle } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
+import { startSpeechRecognition, startAudioRecording, isSpeechRecognitionSupported, isMediaRecordingSupported } from '@/lib/voice';
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,9 +30,16 @@ export default function Journal() {
   const [triggerType, setTriggerType] = useState('');
   const [triggerIntensity, setTriggerIntensity] = useState<number>(5);
   const [copingActions, setCopingActions] = useState('');
-  
+  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioData, setAudioData] = useState<string | undefined>(undefined);
+  const [audioDuration, setAudioDuration] = useState<number | undefined>(undefined);
+  const [stopListening, setStopListening] = useState<(() => void) | null>(null);
+  const [stopRecording, setStopRecording] = useState<(() => void) | null>(null);
+
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
+  const settings = useAppStore((state) => state.settings);
 
   const entries = getJournalEntries();
 
@@ -39,6 +47,54 @@ export default function Journal() {
     entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const handleToggleVoice = () => {
+    if (isListening) {
+      if (stopListening) stopListening();
+      setIsListening(false);
+      setStopListening(null);
+    } else {
+      const stop = startSpeechRecognition(
+        (result) => {
+          if (result.isFinal) {
+            setContent((prev) => (prev ? `${prev} ${result.transcript}` : result.transcript));
+          }
+        },
+        (error) => {
+          console.error('Speech recognition error:', error);
+          setIsListening(false);
+        },
+        () => {
+          setIsListening(false);
+        }
+      );
+      setStopListening(() => stop);
+      setIsListening(true);
+    }
+  };
+
+  const handleToggleRecording = async () => {
+    if (isRecording) {
+      if (stopRecording) stopRecording();
+      setIsRecording(false);
+      setStopRecording(null);
+    } else {
+      const stop = await startAudioRecording(
+        (result) => {
+          setAudioData(result.audioData);
+          setAudioDuration(result.duration);
+          setIsRecording(false);
+        },
+        (error) => {
+          console.error('Audio recording error:', error);
+          setIsRecording(false);
+        },
+        300 // 5 minutes max
+      );
+      setStopRecording(() => stop);
+      setIsRecording(true);
+    }
+  };
 
   const handleSave = () => {
     if (content.trim()) {
@@ -52,8 +108,10 @@ export default function Journal() {
         triggerType: isTrigger ? triggerType : undefined,
         triggerIntensity: isTrigger ? triggerIntensity : undefined,
         copingActions: isTrigger ? copingActions : undefined,
+        audioData,
+        audioDuration,
       });
-      
+
       // Reset form
       setContent('');
       setMood(5);
@@ -62,6 +120,8 @@ export default function Journal() {
       setTriggerType('');
       setTriggerIntensity(5);
       setCopingActions('');
+      setAudioData(undefined);
+      setAudioDuration(undefined);
       setIsDialogOpen(false);
     }
   };
@@ -128,6 +188,8 @@ export default function Journal() {
               isTrigger={entry.isTrigger}
               triggerType={entry.triggerType}
               triggerIntensity={entry.triggerIntensity}
+              audioData={entry.audioData}
+              audioDuration={entry.audioDuration}
               onClick={() => console.log('Edit entry:', entry.id)}
             />
           ))
@@ -159,7 +221,35 @@ export default function Journal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Entry</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="content">Entry</Label>
+                <div className="flex gap-2">
+                  {isSpeechRecognitionSupported() && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isListening ? 'default' : 'outline'}
+                      onClick={handleToggleVoice}
+                      className="gap-2"
+                    >
+                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isListening ? 'Stop' : 'Voice'}
+                    </Button>
+                  )}
+                  {settings.enableVoiceRecording && isMediaRecordingSupported() && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isRecording ? 'destructive' : 'outline'}
+                      onClick={handleToggleRecording}
+                      className="gap-2"
+                    >
+                      {isRecording ? <Square className="h-4 w-4" /> : <Disc className="h-4 w-4" />}
+                      {isRecording ? 'Stop Rec' : 'Record'}
+                    </Button>
+                  )}
+                </div>
+              </div>
               <Textarea
                 id="content"
                 value={content}
@@ -168,6 +258,11 @@ export default function Journal() {
                 className="min-h-32"
                 data-testid="input-content"
               />
+              {audioData && (
+                <div className="text-sm text-muted-foreground">
+                  Audio recording attached ({audioDuration?.toFixed(0)}s)
+                </div>
+              )}
             </div>
 
             {isTrigger && (

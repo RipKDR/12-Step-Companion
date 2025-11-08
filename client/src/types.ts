@@ -54,6 +54,8 @@ export interface JournalEntry {
   triggerIntensity?: number;
   copingActions?: string;
   updatedAtISO: string;
+  audioData?: string; // V2: Base64 encoded audio (optional)
+  audioDuration?: number; // V2: Duration in seconds
 }
 
 export interface WorksheetField {
@@ -139,6 +141,7 @@ export interface AppSettings {
   reducedMotion: boolean;
   cloudSync: boolean; // stub
   notifications: NotificationSettings;
+  enableVoiceRecording: boolean; // V2: Enable audio recording in journal
 }
 
 export interface Meeting {

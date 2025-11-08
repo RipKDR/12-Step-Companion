@@ -99,7 +99,8 @@ const initialState: AppState = {
         start: '22:00',
         end: '07:00'
       }
-    }
+    },
+    enableVoiceRecording: false,
   },
   onboardingComplete: false,
   streaks: initialStreaks,
