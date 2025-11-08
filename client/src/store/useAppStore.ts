@@ -13,7 +13,8 @@ import type {
   Streaks,
   StreakData,
   CelebratedMilestone,
-  UnlockedAchievement
+  UnlockedAchievement,
+  ChallengeCompletion
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -104,6 +105,7 @@ const initialState: AppState = {
   streaks: initialStreaks,
   celebratedMilestones: {},
   unlockedAchievements: {},
+  completedChallenges: {},
 };
 
 interface AppStore extends AppState {
@@ -176,6 +178,10 @@ interface AppStore extends AppState {
   // Achievement System (V2)
   unlockAchievement: (achievement: UnlockedAchievement) => void;
   getUnlockedAchievements: () => Record<string, UnlockedAchievement>;
+
+  // Daily Challenges (V2)
+  completeChallenge: (challengeId: string, notes?: string) => void;
+  getCompletedChallenges: () => Record<string, ChallengeCompletion>;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -594,6 +600,28 @@ export const useAppStore = create<AppStore>()(
 
       getUnlockedAchievements: () => {
         return get().unlockedAchievements || {};
+      },
+
+      // Daily Challenges (V2)
+      completeChallenge: (challengeId, notes) => set((state) => {
+        const id = `challenge_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const completion: ChallengeCompletion = {
+          id,
+          challengeId,
+          completedAtISO: new Date().toISOString(),
+          notes,
+        };
+
+        return {
+          completedChallenges: {
+            ...state.completedChallenges,
+            [id]: completion,
+          },
+        };
+      }),
+
+      getCompletedChallenges: () => {
+        return get().completedChallenges || {};
       },
     }),
     {

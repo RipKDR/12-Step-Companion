@@ -12,6 +12,8 @@ import QuickJournalModal from '@/components/QuickJournalModal';
 import QuickGratitudeModal from '@/components/QuickGratitudeModal';
 import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
 import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
+import DailyChallengeCard from '@/components/DailyChallengeCard';
+import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -23,7 +25,8 @@ import { loadAllSteps } from '@/lib/contentLoader';
 import { cn } from '@/lib/utils';
 import { checkSobrietyMilestone, checkStreakMilestone } from '@/lib/milestones';
 import { checkAchievements } from '@/lib/achievements';
-import type { CelebratedMilestone, UnlockedAchievement } from '@/types';
+import { getTodaysChallenge, getThemeData, isTodayChallengeCompleted, getWeeklyCompletionCount } from '@/lib/challenges';
+import type { CelebratedMilestone, UnlockedAchievement, DailyChallenge, ChallengeTheme } from '@/types';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -36,12 +39,17 @@ export default function Home() {
   const celebratedMilestones = useAppStore((state) => state.celebratedMilestones || {});
   const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
   const unlockAchievement = useAppStore((state) => state.unlockAchievement);
+  const completedChallenges = useAppStore((state) => state.completedChallenges || {});
+  const completeChallenge = useAppStore((state) => state.completeChallenge);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
   const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
+  const [todaysChallenge, setTodaysChallenge] = useState<DailyChallenge | null>(null);
+  const [challengeTheme, setChallengeTheme] = useState<ChallengeTheme | null>(null);
+  const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
   const dailyCard = getDailyCard(todayDate);
@@ -54,6 +62,18 @@ export default function Home() {
         counts.set(stepNum, content.questions.length);
       });
       setStepQuestionCounts(counts);
+    });
+  }, []);
+
+  // Load today's challenge
+  useEffect(() => {
+    getTodaysChallenge().then((challenge) => {
+      if (challenge) {
+        setTodaysChallenge(challenge);
+        getThemeData(challenge.theme).then((theme) => {
+          if (theme) setChallengeTheme(theme);
+        });
+      }
     });
   }, []);
 
@@ -193,6 +213,20 @@ export default function Home() {
     updateDailyCard(todayDate, { quickNotes: value });
   };
 
+  // Challenge state
+  const isChallengeCompleted = isTodayChallengeCompleted(completedChallenges);
+  const weeklyCount = getWeeklyCompletionCount(completedChallenges);
+
+  const handleChallengeComplete = () => {
+    setShowChallengeCompletion(true);
+  };
+
+  const handleChallengeCompletionSave = (notes?: string) => {
+    if (todaysChallenge) {
+      completeChallenge(todaysChallenge.id, notes);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
       {/* Skip to main content link */}
@@ -215,6 +249,20 @@ export default function Home() {
             </div>
           )}
         </section>
+
+        {/* Daily Challenge - V2 Feature */}
+        {todaysChallenge && challengeTheme && (
+          <section aria-labelledby="challenge-heading">
+            <h2 id="challenge-heading" className="sr-only">Today's Challenge</h2>
+            <DailyChallengeCard
+              challenge={todaysChallenge}
+              theme={challengeTheme}
+              isCompleted={isChallengeCompleted}
+              weeklyCount={weeklyCount}
+              onComplete={handleChallengeComplete}
+            />
+          </section>
+        )}
 
         {/* Daily Affirmation */}
         <section aria-labelledby="affirmation-heading">
@@ -491,6 +539,13 @@ export default function Home() {
           if (!open) handleMilestoneCelebrated();
         }}
         milestone={currentMilestone}
+      />
+
+      {/* Challenge Completion Modal */}
+      <ChallengeCompletionModal
+        open={showChallengeCompletion}
+        onOpenChange={setShowChallengeCompletion}
+        onSave={handleChallengeCompletionSave}
       />
     </div>
   );

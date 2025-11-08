@@ -228,6 +228,28 @@ export interface UnlockedAchievement {
   progress?: number; // For incremental achievements
 }
 
+export interface ChallengeTheme {
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+export interface DailyChallenge {
+  id: string;
+  theme: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  title: string;
+  description: string;
+  reason: string;
+}
+
+export interface ChallengeCompletion {
+  id: string;
+  challengeId: string;
+  completedAtISO: string;
+  notes?: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -245,4 +267,5 @@ export interface AppState {
   streaks: Streaks; // V2: Habit tracking
   celebratedMilestones?: Record<string, CelebratedMilestone>; // V2: Milestone celebrations
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
+  completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
 }
