@@ -1,19 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { 
-  AppState, 
-  Profile, 
-  StepAnswer, 
-  DailyCard, 
-  JournalEntry, 
+import type {
+  AppState,
+  Profile,
+  StepAnswer,
+  DailyCard,
+  JournalEntry,
   WorksheetResponse,
   EmergencyAction,
   AppSettings,
-  FellowshipContact
+  FellowshipContact,
+  Streaks,
+  StreakData
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
 import { defaultFeatureFlags } from './featureFlags';
+import {
+  updateStreak,
+  checkStreakBroken,
+  breakStreak,
+  initializeStreak
+} from '@/lib/streaks';
 
 const defaultEmergencyActions: EmergencyAction[] = [
   {
@@ -46,6 +54,13 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
+const initialStreaks: Streaks = {
+  journaling: initializeStreak('journaling'),
+  dailyCards: initializeStreak('dailyCards'),
+  meetings: initializeStreak('meetings'),
+  stepWork: initializeStreak('stepWork'),
+};
+
 const initialState: AppState = {
   version: CURRENT_VERSION,
   profile: undefined,
@@ -64,6 +79,7 @@ const initialState: AppState = {
     cloudSync: false,
   },
   onboardingComplete: false,
+  streaks: initialStreaks,
 };
 
 interface AppStore extends AppState {
@@ -114,6 +130,14 @@ interface AppStore extends AppState {
   exportData: () => AppState;
   importData: (data: Partial<AppState>) => void;
   clearAllData: () => void;
+
+  // Streak Management (V2)
+  updateStreakForJournal: () => void;
+  updateStreakForDailyCard: () => void;
+  updateStreakForMeeting: () => void;
+  updateStreakForStepWork: () => void;
+  checkAllStreaks: () => void;
+  getStreak: (type: StreakData['type']) => StreakData;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -143,12 +167,19 @@ export const useAppStore = create<AppStore>()(
       completeOnboarding: () => set({ onboardingComplete: true }),
       
       // Step Answers
-      saveStepAnswer: (answer) => set((state) => ({
-        stepAnswers: {
-          ...state.stepAnswers,
-          [answer.questionId]: answer,
-        },
-      })),
+      saveStepAnswer: (answer) => {
+        const now = new Date().toISOString();
+        set((state) => ({
+          stepAnswers: {
+            ...state.stepAnswers,
+            [answer.questionId]: answer,
+          },
+          streaks: {
+            ...state.streaks,
+            stepWork: updateStreak(state.streaks.stepWork, now)
+          }
+        }));
+      },
       
       getStepAnswers: (stepNumber) => {
         const state = get();
@@ -160,43 +191,60 @@ export const useAppStore = create<AppStore>()(
       // Daily Cards
       getDailyCard: (date) => get().dailyCards[date],
       
-      updateDailyCard: (date, updates) => set((state) => {
-        const existing = state.dailyCards[date];
-        const card: DailyCard = existing
-          ? { ...existing, ...updates, updatedAtISO: new Date().toISOString() }
-          : {
-              id: date,
-              date,
-              morningCompleted: false,
-              eveningCompleted: false,
-              ...updates,
-              updatedAtISO: new Date().toISOString(),
-            };
-        
-        return {
-          dailyCards: {
-            ...state.dailyCards,
-            [date]: card,
-          },
-        };
-      }),
+      updateDailyCard: (date, updates) => {
+        const now = new Date().toISOString();
+        set((state) => {
+          const existing = state.dailyCards[date];
+          const card: DailyCard = existing
+            ? { ...existing, ...updates, updatedAtISO: now }
+            : {
+                id: date,
+                date,
+                morningCompleted: false,
+                eveningCompleted: false,
+                ...updates,
+                updatedAtISO: now,
+              };
+
+          // Update streak if morning or evening is being completed
+          const shouldUpdateStreak =
+            (updates.morningCompleted && !existing?.morningCompleted) ||
+            (updates.eveningCompleted && !existing?.eveningCompleted);
+
+          return {
+            dailyCards: {
+              ...state.dailyCards,
+              [date]: card,
+            },
+            streaks: shouldUpdateStreak ? {
+              ...state.streaks,
+              dailyCards: updateStreak(state.streaks.dailyCards, now)
+            } : state.streaks
+          };
+        });
+      },
       
       // Journal
-      addJournalEntry: (entry) => set((state) => {
+      addJournalEntry: (entry) => {
         const id = `journal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const now = new Date().toISOString();
         const newEntry: JournalEntry = {
           ...entry,
           id,
-          updatedAtISO: new Date().toISOString(),
+          updatedAtISO: now,
         };
-        
-        return {
+
+        set((state) => ({
           journalEntries: {
             ...state.journalEntries,
             [id]: newEntry,
           },
-        };
-      }),
+          streaks: {
+            ...state.streaks,
+            journaling: updateStreak(state.streaks.journaling, now)
+          }
+        }));
+      },
       
       updateJournalEntry: (id, updates) => set((state) => {
         const existing = state.journalEntries[id];
@@ -385,6 +433,65 @@ export const useAppStore = create<AppStore>()(
       }),
       
       clearAllData: () => set(initialState),
+
+      // Streak Management (V2)
+      updateStreakForJournal: () => set((state) => {
+        const now = new Date().toISOString();
+        return {
+          streaks: {
+            ...state.streaks,
+            journaling: updateStreak(state.streaks.journaling, now)
+          }
+        };
+      }),
+
+      updateStreakForDailyCard: () => set((state) => {
+        const now = new Date().toISOString();
+        return {
+          streaks: {
+            ...state.streaks,
+            dailyCards: updateStreak(state.streaks.dailyCards, now)
+          }
+        };
+      }),
+
+      updateStreakForMeeting: () => set((state) => {
+        const now = new Date().toISOString();
+        return {
+          streaks: {
+            ...state.streaks,
+            meetings: updateStreak(state.streaks.meetings, now)
+          }
+        };
+      }),
+
+      updateStreakForStepWork: () => set((state) => {
+        const now = new Date().toISOString();
+        return {
+          streaks: {
+            ...state.streaks,
+            stepWork: updateStreak(state.streaks.stepWork, now)
+          }
+        };
+      }),
+
+      checkAllStreaks: () => set((state) => {
+        const newStreaks = { ...state.streaks };
+        let hasChanges = false;
+
+        (Object.keys(newStreaks) as Array<keyof Streaks>).forEach((key) => {
+          if (checkStreakBroken(newStreaks[key])) {
+            newStreaks[key] = breakStreak(newStreaks[key]);
+            hasChanges = true;
+          }
+        });
+
+        return hasChanges ? { streaks: newStreaks } : state;
+      }),
+
+      getStreak: (type) => {
+        return get().streaks[type];
+      },
     }),
     {
       name: 'recovery-companion-storage',

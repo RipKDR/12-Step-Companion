@@ -1,6 +1,7 @@
 import type { AppState } from '@/types';
+import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 1;
+export const CURRENT_VERSION = 2;
 
 type Migration = (state: any) => any;
 
@@ -9,8 +10,18 @@ const migrations: Record<number, Migration> = {
     // Initial version - no migration needed
     return state;
   },
-  // Add future migrations here:
-  // 2: (state: any) => { ... },
+  2: (state: any) => {
+    // V2: Add streaks tracking
+    if (!state.streaks) {
+      state.streaks = {
+        journaling: initializeStreak('journaling'),
+        dailyCards: initializeStreak('dailyCards'),
+        meetings: initializeStreak('meetings'),
+        stepWork: initializeStreak('stepWork'),
+      };
+    }
+    return state;
+  },
 };
 
 export function migrateState(state: any): AppState {

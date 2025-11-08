@@ -7,10 +7,11 @@ import MeditationTimer from '@/components/MeditationTimer';
 import DailyAffirmation from '@/components/DailyAffirmation';
 import DailyQuote from '@/components/DailyQuote';
 import ProgressRing from '@/components/ProgressRing';
+import StreakCard from '@/components/StreakCard';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
@@ -23,7 +24,9 @@ export default function Home() {
   const updateDailyCard = useAppStore((state) => state.updateDailyCard);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
   const stepAnswersState = useAppStore((state) => state.stepAnswers);
-  
+  const streaks = useAppStore((state) => state.streaks);
+  const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
+
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
@@ -39,6 +42,11 @@ export default function Home() {
       setStepQuestionCounts(counts);
     });
   }, []);
+
+  // Check and break stale streaks on mount
+  useEffect(() => {
+    checkAllStreaks();
+  }, [checkAllStreaks]);
 
   const stepProgress = useMemo(() => {
     const totalSteps = 12;
@@ -148,6 +156,46 @@ export default function Home() {
             total={stepProgress.totalQuestions} 
             stepNumber={stepProgress.currentStep} 
           />
+        </section>
+
+        <Separator className="my-8" />
+
+        {/* Streaks - V2 Feature */}
+        <section className="space-y-6" aria-labelledby="streaks-heading">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1">
+              <h2 id="streaks-heading" className="text-3xl font-bold">Your Streaks</h2>
+              <p className="text-base text-muted-foreground mt-2">
+                Build daily habits and track your consistency
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <StreakCard
+              title="Journaling"
+              icon={PenLine}
+              streak={streaks.journaling}
+              color="blue"
+            />
+            <StreakCard
+              title="Daily Cards"
+              icon={Calendar}
+              streak={streaks.dailyCards}
+              color="green"
+            />
+            <StreakCard
+              title="Step Work"
+              icon={BookOpen}
+              streak={streaks.stepWork}
+              color="purple"
+            />
+            <StreakCard
+              title="Meetings"
+              icon={UserCheck}
+              streak={streaks.meetings}
+              color="orange"
+            />
+          </div>
         </section>
 
         <Separator className="my-8" />
