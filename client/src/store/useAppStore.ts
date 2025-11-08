@@ -14,7 +14,9 @@ import type {
   StreakData,
   CelebratedMilestone,
   UnlockedAchievement,
-  ChallengeCompletion
+  ChallengeCompletion,
+  AnalyticsEvent,
+  AnalyticsEventType
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -101,12 +103,19 @@ const initialState: AppState = {
       }
     },
     enableVoiceRecording: false,
+    analytics: {
+      enabled: false,
+      collectUsageData: true,
+      collectPerformanceData: false,
+      retentionDays: 90,
+    },
   },
   onboardingComplete: false,
   streaks: initialStreaks,
   celebratedMilestones: {},
   unlockedAchievements: {},
   completedChallenges: {},
+  analyticsEvents: {},
 };
 
 interface AppStore extends AppState {
@@ -183,6 +192,12 @@ interface AppStore extends AppState {
   // Daily Challenges (V2)
   completeChallenge: (challengeId: string, notes?: string) => void;
   getCompletedChallenges: () => Record<string, ChallengeCompletion>;
+
+  // Analytics (V3)
+  trackAnalyticsEvent: (type: AnalyticsEventType, metadata?: Record<string, any>) => void;
+  getAnalyticsEvents: () => Record<string, AnalyticsEvent>;
+  clearOldAnalyticsEvents: () => void;
+  updateAnalyticsSettings: (updates: Partial<AppSettings['analytics']>) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -624,6 +639,59 @@ export const useAppStore = create<AppStore>()(
       getCompletedChallenges: () => {
         return get().completedChallenges || {};
       },
+
+      // Analytics (V3)
+      trackAnalyticsEvent: (type, metadata) => {
+        const state = get();
+        if (!state.settings.analytics.enabled) {
+          return;
+        }
+
+        const id = `analytics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const event: AnalyticsEvent = {
+          id,
+          type,
+          timestamp: new Date().toISOString(),
+          metadata,
+        };
+
+        set((state) => ({
+          analyticsEvents: {
+            ...state.analyticsEvents,
+            [id]: event,
+          },
+        }));
+      },
+
+      getAnalyticsEvents: () => {
+        return get().analyticsEvents || {};
+      },
+
+      clearOldAnalyticsEvents: () => set((state) => {
+        const retentionDays = state.settings.analytics.retentionDays;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        const cutoffTimestamp = cutoffDate.toISOString();
+
+        const cleaned: Record<string, AnalyticsEvent> = {};
+        for (const [id, event] of Object.entries(state.analyticsEvents || {})) {
+          if (event.timestamp >= cutoffTimestamp) {
+            cleaned[id] = event;
+          }
+        }
+
+        return { analyticsEvents: cleaned };
+      }),
+
+      updateAnalyticsSettings: (updates) => set((state) => ({
+        settings: {
+          ...state.settings,
+          analytics: {
+            ...state.settings.analytics,
+            ...updates,
+          },
+        },
+      })),
     }),
     {
       name: 'recovery-companion-storage',

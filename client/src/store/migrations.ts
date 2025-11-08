@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 7;
+export const CURRENT_VERSION = 8;
 
 type Migration = (state: any) => any;
 
@@ -73,6 +73,21 @@ const migrations: Record<number, Migration> = {
     // V7: Add voice recording settings
     if (state.settings && state.settings.enableVoiceRecording === undefined) {
       state.settings.enableVoiceRecording = false;
+    }
+    return state;
+  },
+  8: (state: any) => {
+    // V8: Add analytics system
+    if (!state.analyticsEvents) {
+      state.analyticsEvents = {};
+    }
+    if (state.settings && !state.settings.analytics) {
+      state.settings.analytics = {
+        enabled: false,
+        collectUsageData: true,
+        collectPerformanceData: false,
+        retentionDays: 90,
+      };
     }
     return state;
   },

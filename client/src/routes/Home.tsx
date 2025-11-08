@@ -41,6 +41,7 @@ export default function Home() {
   const unlockAchievement = useAppStore((state) => state.unlockAchievement);
   const completedChallenges = useAppStore((state) => state.completedChallenges || {});
   const completeChallenge = useAppStore((state) => state.completeChallenge);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
@@ -80,7 +81,9 @@ export default function Home() {
   // Check and break stale streaks on mount
   useEffect(() => {
     checkAllStreaks();
-  }, [checkAllStreaks]);
+    // Track app opened event
+    trackAnalyticsEvent('app_opened');
+  }, [checkAllStreaks, trackAnalyticsEvent]);
 
   // Check for milestone celebrations
   useEffect(() => {
@@ -121,6 +124,13 @@ export default function Home() {
         celebratedAtISO: new Date().toISOString(),
       };
       celebrateMilestone(celebratedMilestoneData);
+
+      // Track milestone celebration
+      trackAnalyticsEvent('milestone_celebrated', {
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+      });
+
       setCurrentMilestone(null);
     }
   };
@@ -135,6 +145,12 @@ export default function Home() {
           unlockedAtISO: new Date().toISOString(),
         };
         unlockAchievement(unlockedAchievement);
+
+        // Track achievement unlock
+        trackAnalyticsEvent('achievement_unlocked', {
+          achievementCategory: achievement.category,
+          rarity: achievement.rarity,
+        });
 
         // Show celebration modal for achievement
         if (!currentMilestone) {
@@ -224,6 +240,11 @@ export default function Home() {
   const handleChallengeCompletionSave = (notes?: string) => {
     if (todaysChallenge) {
       completeChallenge(todaysChallenge.id, notes);
+
+      // Track challenge completion
+      trackAnalyticsEvent('daily_challenge_completed', {
+        theme: todaysChallenge.theme,
+      });
     }
   };
 

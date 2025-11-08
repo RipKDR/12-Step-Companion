@@ -24,6 +24,7 @@ import Onboarding from "@/routes/Onboarding";
 import Analytics from "@/routes/Analytics";
 import Contacts from "@/routes/Contacts";
 import Achievements from "@/routes/Achievements";
+import UsageInsights from "@/routes/UsageInsights";
 
 function Router() {
   const onboardingComplete = useAppStore((state) => state.onboardingComplete);
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/emergency" component={Emergency} />
         <Route path="/resources" component={Resources} />
         <Route path="/analytics" component={Analytics} />
+        <Route path="/usage-insights" component={UsageInsights} />
         <Route path="/contacts" component={Contacts} />
         <Route path="/achievements" component={Achievements} />
         <Route path="/settings" component={Settings} />

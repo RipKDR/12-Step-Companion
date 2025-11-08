@@ -135,6 +135,13 @@ export interface NotificationSettings {
   };
 }
 
+export interface AnalyticsSettings {
+  enabled: boolean;
+  collectUsageData: boolean;
+  collectPerformanceData: boolean;
+  retentionDays: number; // How long to keep analytics data
+}
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   highContrast: boolean;
@@ -142,6 +149,7 @@ export interface AppSettings {
   cloudSync: boolean; // stub
   notifications: NotificationSettings;
   enableVoiceRecording: boolean; // V2: Enable audio recording in journal
+  analytics: AnalyticsSettings; // V3: Privacy-first analytics
 }
 
 export interface Meeting {
@@ -253,6 +261,44 @@ export interface ChallengeCompletion {
   notes?: string;
 }
 
+export type AnalyticsEventType =
+  | 'app_opened'
+  | 'profile_created'
+  | 'journal_entry_created'
+  | 'journal_entry_voice_used'
+  | 'journal_entry_audio_recorded'
+  | 'daily_card_morning_completed'
+  | 'daily_card_evening_completed'
+  | 'step_answer_saved'
+  | 'meeting_logged'
+  | 'goal_created'
+  | 'goal_completed'
+  | 'crisis_mode_activated'
+  | 'emergency_contact_called'
+  | 'achievement_unlocked'
+  | 'milestone_celebrated'
+  | 'daily_challenge_completed'
+  | 'streak_extended';
+
+export interface AnalyticsEvent {
+  id: string;
+  type: AnalyticsEventType;
+  timestamp: string; // ISO 8601
+  metadata?: Record<string, any>; // Non-PII metadata only
+  sessionId?: string;
+}
+
+export interface AnalyticsMetrics {
+  totalEvents: number;
+  eventsByType: Record<AnalyticsEventType, number>;
+  activeStreaks: number;
+  totalJournalEntries: number;
+  totalMeetings: number;
+  totalGoals: number;
+  sobrietyDays: number;
+  lastActivityDate: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -271,4 +317,5 @@ export interface AppState {
   celebratedMilestones?: Record<string, CelebratedMilestone>; // V2: Milestone celebrations
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
+  analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
 }

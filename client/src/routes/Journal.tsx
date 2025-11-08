@@ -40,6 +40,7 @@ export default function Journal() {
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
   const settings = useAppStore((state) => state.settings);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
   const entries = getJournalEntries();
 
@@ -58,6 +59,8 @@ export default function Journal() {
         (result) => {
           if (result.isFinal) {
             setContent((prev) => (prev ? `${prev} ${result.transcript}` : result.transcript));
+            // Track voice-to-text usage
+            trackAnalyticsEvent('journal_entry_voice_used');
           }
         },
         (error) => {
@@ -84,6 +87,10 @@ export default function Journal() {
           setAudioData(result.audioData);
           setAudioDuration(result.duration);
           setIsRecording(false);
+          // Track audio recording usage
+          trackAnalyticsEvent('journal_entry_audio_recorded', {
+            duration: Math.floor(result.duration),
+          });
         },
         (error) => {
           console.error('Audio recording error:', error);
@@ -110,6 +117,12 @@ export default function Journal() {
         copingActions: isTrigger ? copingActions : undefined,
         audioData,
         audioDuration,
+      });
+
+      // Track journal entry creation
+      trackAnalyticsEvent('journal_entry_created', {
+        hasSponsor: isTrigger,
+        hasAudio: !!audioData,
       });
 
       // Reset form
