@@ -8,10 +8,13 @@ import DailyAffirmation from '@/components/DailyAffirmation';
 import DailyQuote from '@/components/DailyQuote';
 import ProgressRing from '@/components/ProgressRing';
 import StreakCard from '@/components/StreakCard';
-import { buttonVariants } from '@/components/ui/button';
+import QuickJournalModal from '@/components/QuickJournalModal';
+import QuickGratitudeModal from '@/components/QuickGratitudeModal';
+import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
@@ -28,6 +31,9 @@ export default function Home() {
   const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
+  const [showQuickJournal, setShowQuickJournal] = useState(false);
+  const [showQuickGratitude, setShowQuickGratitude] = useState(false);
+  const [showQuickMeeting, setShowQuickMeeting] = useState(false);
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
   const dailyCard = getDailyCard(todayDate);
@@ -200,6 +206,63 @@ export default function Home() {
 
         <Separator className="my-8" />
 
+        {/* Quick Actions - V2 Feature */}
+        <section className="space-y-6" aria-labelledby="quick-actions-heading">
+          <div className="flex items-center gap-3 mb-6">
+            <Zap className="h-6 w-6 text-primary" />
+            <div className="flex-1">
+              <h2 id="quick-actions-heading" className="text-3xl font-bold">Quick Actions</h2>
+              <p className="text-base text-muted-foreground mt-2">
+                Log your progress in under 30 seconds
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-24 flex flex-col gap-2 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950"
+              onClick={() => setShowQuickJournal(true)}
+            >
+              <PenLine className="h-6 w-6 text-blue-600" />
+              <span className="text-sm font-medium">Journal</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-24 flex flex-col gap-2 hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-950"
+              onClick={() => setShowQuickGratitude(true)}
+            >
+              <Sparkles className="h-6 w-6 text-green-600" />
+              <span className="text-sm font-medium">Gratitude</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-24 flex flex-col gap-2 hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950"
+              onClick={() => setShowQuickMeeting(true)}
+            >
+              <Users className="h-6 w-6 text-orange-600" />
+              <span className="text-sm font-medium">Meeting</span>
+            </Button>
+
+            <Link href="/steps">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full h-24 flex flex-col gap-2 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950"
+              >
+                <BookOpen className="h-6 w-6 text-purple-600" />
+                <span className="text-sm font-medium">Step Work</span>
+              </Button>
+            </Link>
+          </div>
+        </section>
+
+        <Separator className="my-8" />
+
         {/* Daily Cards */}
         <section className="space-y-6" aria-labelledby="daily-heading">
           <div className="flex items-center gap-3 mb-8">
@@ -322,6 +385,20 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {/* Quick Action Modals */}
+      <QuickJournalModal
+        open={showQuickJournal}
+        onOpenChange={setShowQuickJournal}
+      />
+      <QuickGratitudeModal
+        open={showQuickGratitude}
+        onOpenChange={setShowQuickGratitude}
+      />
+      <QuickMeetingLogModal
+        open={showQuickMeeting}
+        onOpenChange={setShowQuickMeeting}
+      />
     </div>
   );
 }

@@ -1,0 +1,140 @@
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus, X } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+import { getTodayDate } from '@/lib/time';
+
+interface QuickGratitudeModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitudeModalProps) {
+  const [gratitudeItems, setGratitudeItems] = useState<string[]>(['', '', '']);
+  const updateDailyCard = useAppStore((state) => state.updateDailyCard);
+
+  const handleSave = () => {
+    const validItems = gratitudeItems.filter((item) => item.trim());
+
+    if (validItems.length === 0) return;
+
+    const today = getTodayDate();
+    updateDailyCard(today, {
+      gratitudeItems: validItems,
+    });
+
+    // Reset form
+    setGratitudeItems(['', '', '']);
+    onOpenChange(false);
+  };
+
+  const handleItemChange = (index: number, value: string) => {
+    const newItems = [...gratitudeItems];
+    newItems[index] = value;
+    setGratitudeItems(newItems);
+  };
+
+  const handleAddItem = () => {
+    if (gratitudeItems.length < 10) {
+      setGratitudeItems([...gratitudeItems, '']);
+    }
+  };
+
+  const handleRemoveItem = (index: number) => {
+    if (gratitudeItems.length > 1) {
+      const newItems = gratitudeItems.filter((_, i) => i !== index);
+      setGratitudeItems(newItems);
+    }
+  };
+
+  const hasValidItems = gratitudeItems.some((item) => item.trim());
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Gratitude Practice 🙏</DialogTitle>
+          <DialogDescription>
+            What are you grateful for today? List 1-3 things.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 py-4 max-h-[400px] overflow-y-auto">
+          {gratitudeItems.map((item, index) => (
+            <div key={index} className="flex gap-2 items-start">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor={`gratitude-${index}`} className="text-xs text-muted-foreground">
+                  {index + 1}.
+                </Label>
+                <Input
+                  id={`gratitude-${index}`}
+                  placeholder={
+                    index === 0
+                      ? 'My sobriety'
+                      : index === 1
+                      ? 'My sponsor'
+                      : "Today's beautiful weather"
+                  }
+                  value={item}
+                  onChange={(e) => handleItemChange(index, e.target.value)}
+                  autoFocus={index === 0}
+                />
+              </div>
+              {gratitudeItems.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveItem(index)}
+                  className="mt-6"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+
+          {gratitudeItems.length < 10 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddItem}
+              className="w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Another
+            </Button>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={!hasValidItems}
+          >
+            Save ✓
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
