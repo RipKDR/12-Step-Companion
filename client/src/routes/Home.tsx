@@ -11,6 +11,7 @@ import StreakCard from '@/components/StreakCard';
 import QuickJournalModal from '@/components/QuickJournalModal';
 import QuickGratitudeModal from '@/components/QuickGratitudeModal';
 import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
+import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -20,6 +21,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
 import { loadAllSteps } from '@/lib/contentLoader';
 import { cn } from '@/lib/utils';
+import { checkSobrietyMilestone, checkStreakMilestone } from '@/lib/milestones';
+import type { CelebratedMilestone } from '@/types';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -29,11 +32,14 @@ export default function Home() {
   const stepAnswersState = useAppStore((state) => state.stepAnswers);
   const streaks = useAppStore((state) => state.streaks);
   const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
+  const celebratedMilestones = useAppStore((state) => state.celebratedMilestones || {});
+  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
+  const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
   const dailyCard = getDailyCard(todayDate);
@@ -53,6 +59,49 @@ export default function Home() {
   useEffect(() => {
     checkAllStreaks();
   }, [checkAllStreaks]);
+
+  // Check for milestone celebrations
+  useEffect(() => {
+    if (!profile?.cleanDate) return;
+
+    // Check sobriety milestones
+    const sobrietyMilestone = checkSobrietyMilestone(profile.cleanDate, celebratedMilestones);
+    if (sobrietyMilestone) {
+      setCurrentMilestone(sobrietyMilestone);
+      return;
+    }
+
+    // Check streak milestones
+    const streakTypes: Array<'journaling' | 'dailyCards' | 'meetings' | 'stepWork'> = [
+      'journaling',
+      'dailyCards',
+      'meetings',
+      'stepWork'
+    ];
+
+    for (const streakType of streakTypes) {
+      const streak = streaks[streakType];
+      const streakMilestone = checkStreakMilestone(streak.current, streakType, celebratedMilestones);
+      if (streakMilestone) {
+        setCurrentMilestone(streakMilestone);
+        return;
+      }
+    }
+  }, [profile?.cleanDate, celebratedMilestones, streaks]);
+
+  // Handle milestone celebration
+  const handleMilestoneCelebrated = () => {
+    if (currentMilestone) {
+      const celebratedMilestoneData: CelebratedMilestone = {
+        id: currentMilestone.id,
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+        celebratedAtISO: new Date().toISOString(),
+      };
+      celebrateMilestone(celebratedMilestoneData);
+      setCurrentMilestone(null);
+    }
+  };
 
   const stepProgress = useMemo(() => {
     const totalSteps = 12;
@@ -398,6 +447,15 @@ export default function Home() {
       <QuickMeetingLogModal
         open={showQuickMeeting}
         onOpenChange={setShowQuickMeeting}
+      />
+
+      {/* Milestone Celebration Modal */}
+      <MilestoneCelebrationModal
+        open={!!currentMilestone}
+        onOpenChange={(open) => {
+          if (!open) handleMilestoneCelebrated();
+        }}
+        milestone={currentMilestone}
       />
     </div>
   );

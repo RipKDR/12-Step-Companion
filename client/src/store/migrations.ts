@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 4;
 
 type Migration = (state: any) => any;
 
@@ -45,6 +45,13 @@ const migrations: Record<number, Migration> = {
           end: '07:00'
         }
       };
+    }
+    return state;
+  },
+  4: (state: any) => {
+    // V4: Add milestone celebrations
+    if (!state.celebratedMilestones) {
+      state.celebratedMilestones = {};
     }
     return state;
   },

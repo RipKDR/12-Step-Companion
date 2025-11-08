@@ -195,6 +195,13 @@ export interface Streaks {
   stepWork: StreakData;
 }
 
+export interface CelebratedMilestone {
+  id: string;
+  type: 'sobriety' | 'streak' | 'achievement' | 'step';
+  milestone: string; // e.g., "1d", "7d", "30d", "step-1"
+  celebratedAtISO: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -210,4 +217,5 @@ export interface AppState {
   settings: AppSettings;
   onboardingComplete: boolean;
   streaks: Streaks; // V2: Habit tracking
+  celebratedMilestones?: Record<string, CelebratedMilestone>; // V2: Milestone celebrations
 }

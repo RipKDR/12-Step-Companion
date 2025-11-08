@@ -11,7 +11,8 @@ import type {
   AppSettings,
   FellowshipContact,
   Streaks,
-  StreakData
+  StreakData,
+  CelebratedMilestone
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -100,6 +101,7 @@ const initialState: AppState = {
   },
   onboardingComplete: false,
   streaks: initialStreaks,
+  celebratedMilestones: {},
 };
 
 interface AppStore extends AppState {
@@ -164,6 +166,10 @@ interface AppStore extends AppState {
   updateStreakForStepWork: () => void;
   checkAllStreaks: () => void;
   getStreak: (type: StreakData['type']) => StreakData;
+
+  // Milestone Celebrations (V2)
+  celebrateMilestone: (milestone: CelebratedMilestone) => void;
+  getCelebratedMilestones: () => Record<string, CelebratedMilestone>;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -558,6 +564,18 @@ export const useAppStore = create<AppStore>()(
 
       getStreak: (type) => {
         return get().streaks[type];
+      },
+
+      // Milestone Celebrations (V2)
+      celebrateMilestone: (milestone) => set((state) => ({
+        celebratedMilestones: {
+          ...state.celebratedMilestones,
+          [milestone.id]: milestone
+        }
+      })),
+
+      getCelebratedMilestones: () => {
+        return get().celebratedMilestones || {};
       },
     }),
     {
