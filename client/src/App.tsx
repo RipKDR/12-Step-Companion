@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import BottomNav from "@/components/BottomNav";
-import EmergencyFAB from "@/components/EmergencyFAB";
 import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
@@ -60,7 +59,6 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       <BottomNav />
-      <EmergencyFAB />
     </>
   );
 }
