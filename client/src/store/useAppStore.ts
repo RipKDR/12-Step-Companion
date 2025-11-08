@@ -77,6 +77,26 @@ const initialState: AppState = {
     highContrast: false,
     reducedMotion: false,
     cloudSync: false,
+    notifications: {
+      enabled: false,
+      permission: 'default',
+      morningCheckIn: {
+        enabled: true,
+        time: '08:00'
+      },
+      eveningReflection: {
+        enabled: true,
+        time: '20:00'
+      },
+      milestoneAlerts: true,
+      streakReminders: true,
+      challengeReminders: true,
+      quietHours: {
+        enabled: true,
+        start: '22:00',
+        end: '07:00'
+      }
+    }
   },
   onboardingComplete: false,
   streaks: initialStreaks,
@@ -125,7 +145,13 @@ interface AppStore extends AppState {
   
   // Settings
   updateSettings: (updates: Partial<AppSettings>) => void;
-  
+
+  // Notifications (V2)
+  updateNotificationPermission: (permission: NotificationPermission) => void;
+  updateNotificationSettings: (updates: Partial<AppSettings['notifications']>) => void;
+  enableNotifications: () => void;
+  disableNotifications: () => void;
+
   // Data Management
   exportData: () => AppState;
   importData: (data: Partial<AppState>) => void;
@@ -395,7 +421,48 @@ export const useAppStore = create<AppStore>()(
       updateSettings: (updates) => set((state) => ({
         settings: { ...state.settings, ...updates },
       })),
-      
+
+      // Notifications (V2)
+      updateNotificationPermission: (permission) => set((state) => ({
+        settings: {
+          ...state.settings,
+          notifications: {
+            ...state.settings.notifications,
+            permission
+          }
+        }
+      })),
+
+      updateNotificationSettings: (updates) => set((state) => ({
+        settings: {
+          ...state.settings,
+          notifications: {
+            ...state.settings.notifications,
+            ...updates
+          }
+        }
+      })),
+
+      enableNotifications: () => set((state) => ({
+        settings: {
+          ...state.settings,
+          notifications: {
+            ...state.settings.notifications,
+            enabled: true
+          }
+        }
+      })),
+
+      disableNotifications: () => set((state) => ({
+        settings: {
+          ...state.settings,
+          notifications: {
+            ...state.settings.notifications,
+            enabled: false
+          }
+        }
+      })),
+
       // Data Management
       exportData: () => get(),
       

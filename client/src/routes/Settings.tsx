@@ -17,28 +17,33 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Download, Upload, Lock, User, FileText, AlertTriangle } from 'lucide-react';
+import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportJSON, exportEncrypted } from '@/lib/export';
 import { importJSON, importEncrypted, validateImportedData } from '@/lib/import';
 import { formatDateTime } from '@/lib/time';
 import { useToast } from '@/hooks/use-toast';
+import { notificationManager } from '@/lib/notifications';
 
 export default function Settings() {
   const profile = useAppStore((state) => state.profile);
   const settings = useAppStore((state) => state.settings);
   const updateSettings = useAppStore((state) => state.updateSettings);
+  const updateNotificationSettings = useAppStore((state) => state.updateNotificationSettings);
+  const enableNotifications = useAppStore((state) => state.enableNotifications);
+  const disableNotifications = useAppStore((state) => state.disableNotifications);
+  const updateNotificationPermission = useAppStore((state) => state.updateNotificationPermission);
   const exportData = useAppStore((state) => state.exportData);
   const importData = useAppStore((state) => state.importData);
-  
+
   const [showEncryptDialog, setShowEncryptDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isEncryptedImport, setIsEncryptedImport] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -133,6 +138,57 @@ export default function Settings() {
     }
   };
 
+  const handleEnableNotifications = async () => {
+    try {
+      const permission = await notificationManager.requestPermission();
+      updateNotificationPermission(permission);
+
+      if (permission === 'granted') {
+        enableNotifications();
+        await notificationManager.scheduleNotifications(settings.notifications);
+        toast({
+          title: 'Notifications enabled',
+          description: 'You will receive reminders based on your settings.',
+        });
+      } else {
+        toast({
+          title: 'Permission denied',
+          description: 'Please enable notifications in your browser settings.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to enable notifications.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDisableNotifications = async () => {
+    disableNotifications();
+    await notificationManager.clearNotifications();
+    toast({
+      title: 'Notifications disabled',
+      description: 'You will no longer receive notifications.',
+    });
+  };
+
+  const handleNotificationTimeChange = async (key: 'morningCheckIn' | 'eveningReflection', time: string) => {
+    updateNotificationSettings({
+      [key]: { ...settings.notifications[key], time }
+    });
+
+    // Reschedule if enabled
+    if (settings.notifications.enabled) {
+      await notificationManager.scheduleNotifications({
+        ...settings.notifications,
+        [key]: { ...settings.notifications[key], time }
+      });
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
       <header>
@@ -213,6 +269,186 @@ export default function Settings() {
               data-testid="switch-reduced-motion"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Bell className="h-5 w-5 text-primary" />
+            <CardTitle>Notifications</CardTitle>
+          </div>
+          <CardDescription>Manage reminders and alerts</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Master Toggle */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="notifications-enabled">Enable Notifications</Label>
+              <p className="text-sm text-muted-foreground">
+                {settings.notifications.permission === 'granted'
+                  ? 'Get helpful reminders and alerts'
+                  : settings.notifications.permission === 'denied'
+                  ? 'Blocked - please enable in browser settings'
+                  : 'Request permission to show notifications'}
+              </p>
+            </div>
+            <Switch
+              id="notifications-enabled"
+              checked={settings.notifications.enabled}
+              onCheckedChange={async (checked) => {
+                if (checked) {
+                  await handleEnableNotifications();
+                } else {
+                  await handleDisableNotifications();
+                }
+              }}
+              disabled={settings.notifications.permission === 'denied'}
+            />
+          </div>
+
+          {settings.notifications.enabled && (
+            <>
+              {/* Morning Check-in */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="morning-checkin">Morning Check-in</Label>
+                  <Switch
+                    id="morning-checkin"
+                    checked={settings.notifications.morningCheckIn.enabled}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        morningCheckIn: { ...settings.notifications.morningCheckIn, enabled: checked }
+                      })
+                    }
+                  />
+                </div>
+                {settings.notifications.morningCheckIn.enabled && (
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="morning-time" className="text-sm text-muted-foreground">Time:</Label>
+                    <Input
+                      id="morning-time"
+                      type="time"
+                      value={settings.notifications.morningCheckIn.time}
+                      onChange={(e) => handleNotificationTimeChange('morningCheckIn', e.target.value)}
+                      className="w-32"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Evening Reflection */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="evening-reflection">Evening Reflection</Label>
+                  <Switch
+                    id="evening-reflection"
+                    checked={settings.notifications.eveningReflection.enabled}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        eveningReflection: { ...settings.notifications.eveningReflection, enabled: checked }
+                      })
+                    }
+                  />
+                </div>
+                {settings.notifications.eveningReflection.enabled && (
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="evening-time" className="text-sm text-muted-foreground">Time:</Label>
+                    <Input
+                      id="evening-time"
+                      type="time"
+                      value={settings.notifications.eveningReflection.time}
+                      onChange={(e) => handleNotificationTimeChange('eveningReflection', e.target.value)}
+                      className="w-32"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Other Alerts */}
+              <div className="space-y-3 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="milestone-alerts">Milestone Alerts</Label>
+                    <p className="text-sm text-muted-foreground">Celebrate achievements</p>
+                  </div>
+                  <Switch
+                    id="milestone-alerts"
+                    checked={settings.notifications.milestoneAlerts}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({ milestoneAlerts: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="streak-reminders">Streak Reminders</Label>
+                    <p className="text-sm text-muted-foreground">Maintain your habits</p>
+                  </div>
+                  <Switch
+                    id="streak-reminders"
+                    checked={settings.notifications.streakReminders}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({ streakReminders: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Quiet Hours */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="quiet-hours">Quiet Hours</Label>
+                    <p className="text-sm text-muted-foreground">No notifications during these times</p>
+                  </div>
+                  <Switch
+                    id="quiet-hours"
+                    checked={settings.notifications.quietHours.enabled}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        quietHours: { ...settings.notifications.quietHours, enabled: checked }
+                      })
+                    }
+                  />
+                </div>
+                {settings.notifications.quietHours.enabled && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="quiet-start" className="text-sm text-muted-foreground">From:</Label>
+                      <Input
+                        id="quiet-start"
+                        type="time"
+                        value={settings.notifications.quietHours.start}
+                        onChange={(e) =>
+                          updateNotificationSettings({
+                            quietHours: { ...settings.notifications.quietHours, start: e.target.value }
+                          })
+                        }
+                        className="w-32"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="quiet-end" className="text-sm text-muted-foreground">To:</Label>
+                      <Input
+                        id="quiet-end"
+                        type="time"
+                        value={settings.notifications.quietHours.end}
+                        onChange={(e) =>
+                          updateNotificationSettings({
+                            quietHours: { ...settings.notifications.quietHours, end: e.target.value }
+                          })
+                        }
+                        className="w-32"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

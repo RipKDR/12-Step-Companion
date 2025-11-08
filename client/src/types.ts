@@ -108,11 +108,37 @@ export interface RecoveryQuote {
   category: 'hope' | 'strength' | 'connection' | 'principles' | 'service' | 'gratitude';
 }
 
+export interface NotificationSettings {
+  enabled: boolean;
+  permission: 'granted' | 'denied' | 'default';
+
+  morningCheckIn: {
+    enabled: boolean;
+    time: string; // HH:MM format (24-hour)
+  };
+
+  eveningReflection: {
+    enabled: boolean;
+    time: string; // HH:MM format
+  };
+
+  milestoneAlerts: boolean;
+  streakReminders: boolean;
+  challengeReminders: boolean;
+
+  quietHours: {
+    enabled: boolean;
+    start: string; // HH:MM format
+    end: string; // HH:MM format
+  };
+}
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   highContrast: boolean;
   reducedMotion: boolean;
   cloudSync: boolean; // stub
+  notifications: NotificationSettings;
 }
 
 export interface Meeting {

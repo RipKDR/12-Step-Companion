@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 2;
+export const CURRENT_VERSION = 3;
 
 type Migration = (state: any) => any;
 
@@ -18,6 +18,32 @@ const migrations: Record<number, Migration> = {
         dailyCards: initializeStreak('dailyCards'),
         meetings: initializeStreak('meetings'),
         stepWork: initializeStreak('stepWork'),
+      };
+    }
+    return state;
+  },
+  3: (state: any) => {
+    // V3: Add notification settings
+    if (!state.settings.notifications) {
+      state.settings.notifications = {
+        enabled: false,
+        permission: 'default',
+        morningCheckIn: {
+          enabled: true,
+          time: '08:00'
+        },
+        eveningReflection: {
+          enabled: true,
+          time: '20:00'
+        },
+        milestoneAlerts: true,
+        streakReminders: true,
+        challengeReminders: true,
+        quietHours: {
+          enabled: true,
+          start: '22:00',
+          end: '07:00'
+        }
       };
     }
     return state;
