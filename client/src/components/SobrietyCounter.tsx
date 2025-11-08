@@ -58,65 +58,64 @@ export default function SobrietyCounter({ cleanDate, timezone = 'Australia/Melbo
   }, [cleanDate, timezone]);
 
   return (
-    <div 
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20 p-10 shadow-sm" 
+    <div
+      className="rounded-lg bg-card border border-border p-8 shadow-sm"
       data-testid="sobriety-counter"
     >
-      <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_85%)]" />
-      <div className="relative flex flex-col items-center gap-10">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+      <div className="flex flex-col items-center gap-8">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-border">
+            <div className="w-2 h-2 rounded-full bg-primary" />
             <span className="text-sm font-medium text-primary">Active Recovery</span>
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold text-foreground">
             Clean Time
           </h2>
         </div>
         
-        <div 
-          className="flex flex-wrap justify-center gap-8 md:gap-10" 
-          role="timer" 
+        <div
+          className="flex flex-wrap justify-center gap-6 md:gap-8"
+          role="timer"
           aria-live="polite"
           aria-atomic="true"
         >
           {time.years > 0 && (
-            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-card-border min-w-[110px]">
-              <div className="text-5xl md:text-6xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent" data-testid="counter-years">
+            <div className="flex flex-col items-center gap-2 min-w-[100px]">
+              <div className="text-5xl md:text-6xl font-semibold text-foreground tracking-tight" data-testid="counter-years">
                 {time.years}
               </div>
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 {time.years === 1 ? 'Year' : 'Years'}
               </div>
             </div>
           )}
-          <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-card-border min-w-[110px]">
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent" data-testid="counter-days">
+          <div className="flex flex-col items-center gap-2 min-w-[100px]">
+            <div className="text-5xl md:text-6xl font-semibold text-foreground tracking-tight" data-testid="counter-days">
               {time.days}
             </div>
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {time.days === 1 ? 'Day' : 'Days'}
             </div>
           </div>
-          <div className="flex flex-col items-center gap-4 p-5 rounded-xl bg-card/50 backdrop-blur-sm border border-card-border min-w-[100px]">
-            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent" data-testid="counter-hours">
+          <div className="flex flex-col items-center gap-2 min-w-[90px]">
+            <div className="text-4xl md:text-5xl font-semibold text-foreground tracking-tight" data-testid="counter-hours">
               {time.hours}
             </div>
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {time.hours === 1 ? 'Hour' : 'Hours'}
             </div>
           </div>
-          <div className="flex flex-col items-center gap-4 p-5 rounded-xl bg-card/50 backdrop-blur-sm border border-card-border min-w-[100px]">
-            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent" data-testid="counter-minutes">
+          <div className="flex flex-col items-center gap-2 min-w-[90px]">
+            <div className="text-4xl md:text-5xl font-semibold text-foreground tracking-tight" data-testid="counter-minutes">
               {time.minutes}
             </div>
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {time.minutes === 1 ? 'Minute' : 'Minutes'}
             </div>
           </div>
         </div>
-        
-        <div className="flex flex-col items-center gap-1">
+
+        <div className="flex flex-col items-center gap-1 pt-4 border-t border-border">
           <div className="text-sm text-muted-foreground" data-testid="counter-absolute">
             Clean since
           </div>

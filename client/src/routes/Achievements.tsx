@@ -68,7 +68,7 @@ export default function Achievements() {
       </div>
 
       {/* Stats Card */}
-      <Card className="mb-8 bg-gradient-to-br from-primary/10 to-transparent">
+      <Card className="mb-8 border-primary/30">
         <CardHeader>
           <CardTitle>Your Progress</CardTitle>
           <CardDescription>Achievements unlocked</CardDescription>

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Share2, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import { motion } from 'framer-motion';
+import { Share2, Sparkles, Trophy, Flame, BookOpen, CheckCircle } from 'lucide-react';
 
 export interface MilestoneData {
   id: string;
@@ -27,18 +24,18 @@ interface MilestoneCelebrationModalProps {
   onShare?: () => void;
 }
 
-const getMilestoneEmoji = (type: MilestoneData['type']): string => {
+const getMilestoneIcon = (type: MilestoneData['type']) => {
   switch (type) {
     case 'sobriety':
-      return '🎉';
+      return CheckCircle;
     case 'streak':
-      return '🔥';
+      return Flame;
     case 'achievement':
-      return '🏆';
+      return Trophy;
     case 'step':
-      return '📖';
+      return BookOpen;
     default:
-      return '✨';
+      return Sparkles;
   }
 };
 
@@ -48,81 +45,34 @@ export default function MilestoneCelebrationModal({
   milestone,
   onShare,
 }: MilestoneCelebrationModalProps) {
-  useEffect(() => {
-    if (open && milestone) {
-      // Trigger confetti animation
-      const duration = 3000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
-      function randomInRange(min: number, max: number) {
-        return Math.random() * (max - min) + min;
-      }
-
-      const interval: NodeJS.Timeout = setInterval(function () {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-
-        // Burst from two sides
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        });
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        });
-      }, 250);
-
-      return () => clearInterval(interval);
-    }
-  }, [open, milestone]);
-
   if (!milestone) return null;
 
-  const emoji = getMilestoneEmoji(milestone.type);
+  const Icon = getMilestoneIcon(milestone.type);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] border-2 border-primary/50">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-            className="text-8xl mx-auto"
-          >
-            {emoji}
-          </motion.div>
+          <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+            <Icon className="h-10 w-10 text-primary" />
+          </div>
 
-          <DialogTitle className="text-4xl font-bold text-center">
+          <DialogTitle className="text-2xl font-semibold text-center">
             {milestone.title}
           </DialogTitle>
 
-          <DialogDescription className="text-lg text-center px-4">
+          <DialogDescription className="text-base text-center px-4">
             {milestone.message}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-6 flex justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex items-center gap-2 text-muted-foreground"
-          >
-            <Sparkles className="h-5 w-5" />
-            <span className="text-sm italic">
-              Keep going. One day at a time. ✨
+        <div className="py-4 flex justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm">
+              Keep going. One day at a time.
             </span>
-          </motion.div>
+          </div>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row gap-2">
@@ -145,7 +95,7 @@ export default function MilestoneCelebrationModal({
             onClick={() => onOpenChange(false)}
             className="w-full sm:w-auto"
           >
-            Continue 💪
+            Continue
           </Button>
         </DialogFooter>
       </DialogContent>

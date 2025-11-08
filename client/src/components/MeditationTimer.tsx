@@ -115,9 +115,9 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
         </div>
 
         <div className="relative">
-          <div className="w-full bg-muted/50 rounded-full h-2.5 overflow-hidden">
+          <div className="w-full bg-muted/50 rounded-full h-2 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-300"
+              className="h-full bg-primary transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -125,14 +125,14 @@ export default function MeditationTimer({ testId = 'meditation-timer' }: Meditat
 
         <div className="text-center py-4">
           <div
-            className={`text-6xl font-bold transition-colors ${hasCompleted ? 'bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent' : 'text-foreground'}`}
+            className={`text-6xl font-semibold tracking-tight transition-colors ${hasCompleted ? 'text-primary' : 'text-foreground'}`}
             data-testid={`${testId}-display`}
           >
             {formatTime(timeLeft)}
           </div>
           {hasCompleted && (
             <div className="flex items-center justify-center gap-2 mt-3">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-primary" />
               <p className="text-sm font-medium text-primary" data-testid={`${testId}-complete-message`}>
                 Session complete!
               </p>
