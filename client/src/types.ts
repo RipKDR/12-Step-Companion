@@ -202,6 +202,32 @@ export interface CelebratedMilestone {
   celebratedAtISO: string;
 }
 
+export interface AchievementCriteria {
+  type: 'sobriety_days' | 'step_completed' | 'journal_count' | 'journal_streak' |
+        'daily_card_count' | 'daily_card_streak' | 'gratitude_count' |
+        'meeting_count' | 'has_sponsor' | 'contact_count' |
+        'crisis_mode_used' | 'emergency_contact_used' |
+        'morning_card_count' | 'evening_card_count' | 'meditation_count' | 'any_streak';
+  target: number;
+}
+
+export interface Achievement {
+  id: string;
+  category: 'sobriety' | 'step-work' | 'community' | 'self-care' | 'crisis';
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic';
+  title: string;
+  description: string;
+  icon: string;
+  criteria: AchievementCriteria;
+}
+
+export interface UnlockedAchievement {
+  id: string;
+  achievementId: string;
+  unlockedAtISO: string;
+  progress?: number; // For incremental achievements
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -218,4 +244,5 @@ export interface AppState {
   onboardingComplete: boolean;
   streaks: Streaks; // V2: Habit tracking
   celebratedMilestones?: Record<string, CelebratedMilestone>; // V2: Milestone celebrations
+  unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
 }

@@ -12,7 +12,8 @@ import type {
   FellowshipContact,
   Streaks,
   StreakData,
-  CelebratedMilestone
+  CelebratedMilestone,
+  UnlockedAchievement
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -102,6 +103,7 @@ const initialState: AppState = {
   onboardingComplete: false,
   streaks: initialStreaks,
   celebratedMilestones: {},
+  unlockedAchievements: {},
 };
 
 interface AppStore extends AppState {
@@ -170,6 +172,10 @@ interface AppStore extends AppState {
   // Milestone Celebrations (V2)
   celebrateMilestone: (milestone: CelebratedMilestone) => void;
   getCelebratedMilestones: () => Record<string, CelebratedMilestone>;
+
+  // Achievement System (V2)
+  unlockAchievement: (achievement: UnlockedAchievement) => void;
+  getUnlockedAchievements: () => Record<string, UnlockedAchievement>;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -576,6 +582,18 @@ export const useAppStore = create<AppStore>()(
 
       getCelebratedMilestones: () => {
         return get().celebratedMilestones || {};
+      },
+
+      // Achievement System (V2)
+      unlockAchievement: (achievement) => set((state) => ({
+        unlockedAchievements: {
+          ...state.unlockedAchievements,
+          [achievement.achievementId]: achievement
+        }
+      })),
+
+      getUnlockedAchievements: () => {
+        return get().unlockedAchievements || {};
       },
     }),
     {

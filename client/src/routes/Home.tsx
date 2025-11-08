@@ -15,14 +15,15 @@ import MilestoneCelebrationModal, { type MilestoneData } from '@/components/Mile
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap, Trophy } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
 import { loadAllSteps } from '@/lib/contentLoader';
 import { cn } from '@/lib/utils';
 import { checkSobrietyMilestone, checkStreakMilestone } from '@/lib/milestones';
-import type { CelebratedMilestone } from '@/types';
+import { checkAchievements } from '@/lib/achievements';
+import type { CelebratedMilestone, UnlockedAchievement } from '@/types';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -34,6 +35,7 @@ export default function Home() {
   const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
   const celebratedMilestones = useAppStore((state) => state.celebratedMilestones || {});
   const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
+  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
@@ -102,6 +104,31 @@ export default function Home() {
       setCurrentMilestone(null);
     }
   };
+
+  // Check for newly unlocked achievements
+  useEffect(() => {
+    checkAchievements(useAppStore.getState()).then((newAchievements) => {
+      newAchievements.forEach((achievement) => {
+        const unlockedAchievement: UnlockedAchievement = {
+          id: `unlock_${achievement.id}_${Date.now()}`,
+          achievementId: achievement.id,
+          unlockedAtISO: new Date().toISOString(),
+        };
+        unlockAchievement(unlockedAchievement);
+
+        // Show celebration modal for achievement
+        if (!currentMilestone) {
+          setCurrentMilestone({
+            id: achievement.id,
+            type: 'achievement',
+            milestone: achievement.id,
+            title: achievement.title,
+            message: achievement.description,
+          });
+        }
+      });
+    });
+  }, [streaks, profile?.cleanDate, stepAnswersState]);
 
   const stepProgress = useMemo(() => {
     const totalSteps = 12;
@@ -407,7 +434,7 @@ export default function Home() {
               <BookMarked className="h-5 w-5" />
               New Journal Entry
             </Link>
-            <Link 
+            <Link
               href="/analytics"
               className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-analytics"
@@ -415,7 +442,15 @@ export default function Home() {
               <TrendingUp className="h-5 w-5" />
               Mood Analytics
             </Link>
-            <Link 
+            <Link
+              href="/achievements"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-achievements"
+            >
+              <Trophy className="h-5 w-5" />
+              View Achievements
+            </Link>
+            <Link
               href="/contacts"
               className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-contacts"
