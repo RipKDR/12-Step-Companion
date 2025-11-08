@@ -271,6 +271,31 @@ export default function Home() {
           )}
         </section>
 
+        {/* Emergency Support - Always Accessible */}
+        <section aria-labelledby="emergency-heading">
+          <h2 id="emergency-heading" className="sr-only">Emergency Support</h2>
+          <Link href="/emergency">
+            <Card className="cursor-pointer bg-card border-2 border-destructive/30 hover:border-destructive hover:shadow-md transition-all duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive shrink-0">
+                    <Phone className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base text-foreground">
+                      Need Support Right Now?
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Crisis tools, breathing exercises, and emergency contacts
+                    </p>
+                  </div>
+                  <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </section>
+
         {/* Daily Challenge - V2 Feature */}
         {todaysChallenge && challengeTheme && (
           <section aria-labelledby="challenge-heading">
@@ -356,8 +381,8 @@ export default function Home() {
           <div className="flex items-center gap-3 mb-6">
             <Zap className="h-6 w-6 text-primary" />
             <div className="flex-1">
-              <h2 id="quick-actions-heading" className="text-3xl font-bold">Quick Actions</h2>
-              <p className="text-base text-muted-foreground mt-2">
+              <h2 id="quick-actions-heading" className="text-2xl font-semibold">Quick Actions</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 Log your progress in under 30 seconds
               </p>
             </div>
@@ -410,10 +435,10 @@ export default function Home() {
 
         {/* Daily Cards */}
         <section className="space-y-6" aria-labelledby="daily-heading">
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-6">
             <div className="flex-1">
-              <h2 id="daily-heading" className="text-3xl font-bold">Daily Practice</h2>
-              <p className="text-base text-muted-foreground mt-2">
+              <h2 id="daily-heading" className="text-2xl font-semibold">Daily Practice</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 Complete your daily reflections and gratitude
               </p>
             </div>
@@ -455,7 +480,7 @@ export default function Home() {
             className="block"
             data-testid="link-daily-inspiration"
           >
-            <Card className="hover-elevate active-elevate-2 cursor-pointer bg-gradient-to-br from-primary/5 to-transparent border-primary/20 transition-all duration-200">
+            <Card className="cursor-pointer bg-card border border-border hover:shadow-md transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -526,14 +551,6 @@ export default function Home() {
             >
               <Users className="h-5 w-5" />
               Fellowship Contacts
-            </Link>
-            <Link 
-              href="/emergency"
-              className={cn(buttonVariants({ variant: "destructive" }), "w-full h-16 justify-start gap-4 text-base")}
-              data-testid="button-emergency"
-            >
-              <Phone className="h-5 w-5" />
-              Emergency Help
             </Link>
           </div>
         </section>

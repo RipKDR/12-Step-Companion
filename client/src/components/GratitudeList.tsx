@@ -79,7 +79,7 @@ export default function GratitudeList({
             {items.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center gap-3 group p-3 rounded-lg bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 hover-elevate transition-all duration-200"
+                className="flex items-center gap-3 group p-3 rounded-lg bg-card border border-border hover:shadow-sm transition-all duration-200"
                 data-testid={`${testId}-item-${index}`}
               >
                 <div className="p-1.5 rounded-md bg-primary/10">

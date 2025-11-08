@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import BottomNav from "@/components/BottomNav";
-import EmergencyFAB from "@/components/EmergencyFAB";
 import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
@@ -15,6 +14,7 @@ import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
 import Home from "@/routes/Home";
 import Steps from "@/routes/Steps";
 import Journal from "@/routes/Journal";
+import More from "@/routes/More";
 import Worksheets from "@/routes/Worksheets";
 import Meetings from "@/routes/Meetings";
 import Emergency from "@/routes/Emergency";
@@ -45,6 +45,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/steps" component={Steps} />
         <Route path="/journal" component={Journal} />
+        <Route path="/more" component={More} />
         <Route path="/worksheets" component={Worksheets} />
         <Route path="/meetings" component={Meetings} />
         <Route path="/emergency" component={Emergency} />
@@ -58,7 +59,6 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       <BottomNav />
-      <EmergencyFAB />
     </>
   );
 }
