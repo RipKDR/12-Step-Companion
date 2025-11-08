@@ -11,15 +11,22 @@ import StreakCard from '@/components/StreakCard';
 import QuickJournalModal from '@/components/QuickJournalModal';
 import QuickGratitudeModal from '@/components/QuickGratitudeModal';
 import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
+import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
+import DailyChallengeCard from '@/components/DailyChallengeCard';
+import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap, Trophy } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
 import { loadAllSteps } from '@/lib/contentLoader';
 import { cn } from '@/lib/utils';
+import { checkSobrietyMilestone, checkStreakMilestone } from '@/lib/milestones';
+import { checkAchievements } from '@/lib/achievements';
+import { getTodaysChallenge, getThemeData, isTodayChallengeCompleted, getWeeklyCompletionCount } from '@/lib/challenges';
+import type { CelebratedMilestone, UnlockedAchievement, DailyChallenge, ChallengeTheme } from '@/types';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -29,11 +36,21 @@ export default function Home() {
   const stepAnswersState = useAppStore((state) => state.stepAnswers);
   const streaks = useAppStore((state) => state.streaks);
   const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
+  const celebratedMilestones = useAppStore((state) => state.celebratedMilestones || {});
+  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
+  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
+  const completedChallenges = useAppStore((state) => state.completedChallenges || {});
+  const completeChallenge = useAppStore((state) => state.completeChallenge);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
+  const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
+  const [todaysChallenge, setTodaysChallenge] = useState<DailyChallenge | null>(null);
+  const [challengeTheme, setChallengeTheme] = useState<ChallengeTheme | null>(null);
+  const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
 
   const todayDate = useMemo(() => getTodayDate(profile?.timezone || 'Australia/Melbourne'), [profile?.timezone]);
   const dailyCard = getDailyCard(todayDate);
@@ -49,10 +66,105 @@ export default function Home() {
     });
   }, []);
 
+  // Load today's challenge
+  useEffect(() => {
+    getTodaysChallenge().then((challenge) => {
+      if (challenge) {
+        setTodaysChallenge(challenge);
+        getThemeData(challenge.theme).then((theme) => {
+          if (theme) setChallengeTheme(theme);
+        });
+      }
+    });
+  }, []);
+
   // Check and break stale streaks on mount
   useEffect(() => {
     checkAllStreaks();
-  }, [checkAllStreaks]);
+    // Track app opened event
+    trackAnalyticsEvent('app_opened');
+  }, [checkAllStreaks, trackAnalyticsEvent]);
+
+  // Check for milestone celebrations
+  useEffect(() => {
+    if (!profile?.cleanDate) return;
+
+    // Check sobriety milestones
+    const sobrietyMilestone = checkSobrietyMilestone(profile.cleanDate, celebratedMilestones);
+    if (sobrietyMilestone) {
+      setCurrentMilestone(sobrietyMilestone);
+      return;
+    }
+
+    // Check streak milestones
+    const streakTypes: Array<'journaling' | 'dailyCards' | 'meetings' | 'stepWork'> = [
+      'journaling',
+      'dailyCards',
+      'meetings',
+      'stepWork'
+    ];
+
+    for (const streakType of streakTypes) {
+      const streak = streaks[streakType];
+      const streakMilestone = checkStreakMilestone(streak.current, streakType, celebratedMilestones);
+      if (streakMilestone) {
+        setCurrentMilestone(streakMilestone);
+        return;
+      }
+    }
+  }, [profile?.cleanDate, celebratedMilestones, streaks]);
+
+  // Handle milestone celebration
+  const handleMilestoneCelebrated = () => {
+    if (currentMilestone) {
+      const celebratedMilestoneData: CelebratedMilestone = {
+        id: currentMilestone.id,
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+        celebratedAtISO: new Date().toISOString(),
+      };
+      celebrateMilestone(celebratedMilestoneData);
+
+      // Track milestone celebration
+      trackAnalyticsEvent('milestone_celebrated', {
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+      });
+
+      setCurrentMilestone(null);
+    }
+  };
+
+  // Check for newly unlocked achievements
+  useEffect(() => {
+    checkAchievements(useAppStore.getState()).then((newAchievements) => {
+      newAchievements.forEach((achievement) => {
+        const unlockedAchievement: UnlockedAchievement = {
+          id: `unlock_${achievement.id}_${Date.now()}`,
+          achievementId: achievement.id,
+          unlockedAtISO: new Date().toISOString(),
+        };
+        unlockAchievement(unlockedAchievement);
+
+        // Track achievement unlock
+        trackAnalyticsEvent('achievement_unlocked', {
+          achievementCategory: achievement.category,
+          rarity: achievement.rarity,
+        });
+
+        // Show celebration modal for achievement
+        if (!currentMilestone) {
+          setCurrentMilestone({
+            id: achievement.id,
+            type: 'achievement',
+            milestone: achievement.id,
+            title: achievement.title,
+            message: achievement.description,
+          });
+        }
+      });
+    });
+  }, [streaks, profile?.cleanDate, stepAnswersState]);
 
   const stepProgress = useMemo(() => {
     const totalSteps = 12;
@@ -117,6 +229,25 @@ export default function Home() {
     updateDailyCard(todayDate, { quickNotes: value });
   };
 
+  // Challenge state
+  const isChallengeCompleted = isTodayChallengeCompleted(completedChallenges);
+  const weeklyCount = getWeeklyCompletionCount(completedChallenges);
+
+  const handleChallengeComplete = () => {
+    setShowChallengeCompletion(true);
+  };
+
+  const handleChallengeCompletionSave = (notes?: string) => {
+    if (todaysChallenge) {
+      completeChallenge(todaysChallenge.id, notes);
+
+      // Track challenge completion
+      trackAnalyticsEvent('daily_challenge_completed', {
+        theme: todaysChallenge.theme,
+      });
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
       {/* Skip to main content link */}
@@ -139,6 +270,20 @@ export default function Home() {
             </div>
           )}
         </section>
+
+        {/* Daily Challenge - V2 Feature */}
+        {todaysChallenge && challengeTheme && (
+          <section aria-labelledby="challenge-heading">
+            <h2 id="challenge-heading" className="sr-only">Today's Challenge</h2>
+            <DailyChallengeCard
+              challenge={todaysChallenge}
+              theme={challengeTheme}
+              isCompleted={isChallengeCompleted}
+              weeklyCount={weeklyCount}
+              onComplete={handleChallengeComplete}
+            />
+          </section>
+        )}
 
         {/* Daily Affirmation */}
         <section aria-labelledby="affirmation-heading">
@@ -358,7 +503,7 @@ export default function Home() {
               <BookMarked className="h-5 w-5" />
               New Journal Entry
             </Link>
-            <Link 
+            <Link
               href="/analytics"
               className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-analytics"
@@ -366,7 +511,15 @@ export default function Home() {
               <TrendingUp className="h-5 w-5" />
               Mood Analytics
             </Link>
-            <Link 
+            <Link
+              href="/achievements"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-achievements"
+            >
+              <Trophy className="h-5 w-5" />
+              View Achievements
+            </Link>
+            <Link
               href="/contacts"
               className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
               data-testid="button-contacts"
@@ -398,6 +551,22 @@ export default function Home() {
       <QuickMeetingLogModal
         open={showQuickMeeting}
         onOpenChange={setShowQuickMeeting}
+      />
+
+      {/* Milestone Celebration Modal */}
+      <MilestoneCelebrationModal
+        open={!!currentMilestone}
+        onOpenChange={(open) => {
+          if (!open) handleMilestoneCelebrated();
+        }}
+        milestone={currentMilestone}
+      />
+
+      {/* Challenge Completion Modal */}
+      <ChallengeCompletionModal
+        open={showChallengeCompletion}
+        onOpenChange={setShowChallengeCompletion}
+        onSave={handleChallengeCompletionSave}
       />
     </div>
   );

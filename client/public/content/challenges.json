@@ -1,0 +1,244 @@
+{
+  "themes": {
+    "monday": {
+      "name": "Connection Monday",
+      "icon": "👥",
+      "color": "blue",
+      "description": "Start your week by strengthening fellowship bonds"
+    },
+    "tuesday": {
+      "name": "Step Work Tuesday",
+      "icon": "📖",
+      "color": "purple",
+      "description": "Deepen your recovery through the 12 steps"
+    },
+    "wednesday": {
+      "name": "Gratitude Wednesday",
+      "icon": "💝",
+      "color": "pink",
+      "description": "Cultivate thankfulness and appreciation"
+    },
+    "thursday": {
+      "name": "Self-Care Thursday",
+      "icon": "🧘",
+      "color": "green",
+      "description": "Prioritize your physical and mental wellbeing"
+    },
+    "friday": {
+      "name": "Service Friday",
+      "icon": "🤝",
+      "color": "orange",
+      "description": "Give back to others in recovery"
+    },
+    "saturday": {
+      "name": "Reflection Saturday",
+      "icon": "🌅",
+      "color": "amber",
+      "description": "Review your week and set intentions"
+    },
+    "sunday": {
+      "name": "Spiritual Sunday",
+      "icon": "✨",
+      "color": "indigo",
+      "description": "Connect with your higher power"
+    }
+  },
+  "challenges": [
+    {
+      "id": "monday-1",
+      "theme": "monday",
+      "title": "Reach out to your sponsor",
+      "description": "Send a text, make a call, or meet in person with your sponsor today",
+      "reason": "Regular contact with your sponsor strengthens accountability and provides support when you need it most"
+    },
+    {
+      "id": "monday-2",
+      "theme": "monday",
+      "title": "Connect with a fellowship member",
+      "description": "Have a meaningful conversation with someone from your home group",
+      "reason": "Building friendships in recovery creates a support network that understands your journey"
+    },
+    {
+      "id": "monday-3",
+      "theme": "monday",
+      "title": "Share your phone number",
+      "description": "Exchange contact information with someone new at a meeting",
+      "reason": "Expanding your fellowship network gives you more people to reach out to in times of need"
+    },
+    {
+      "id": "monday-4",
+      "theme": "monday",
+      "title": "Send an encouragement message",
+      "description": "Reach out to someone who's struggling and offer words of support",
+      "reason": "Supporting others reinforces your own recovery and strengthens fellowship bonds"
+    },
+    {
+      "id": "tuesday-1",
+      "theme": "tuesday",
+      "title": "Answer one step question",
+      "description": "Work through at least one question in your current step",
+      "reason": "Consistent step work is the foundation of lasting recovery and personal growth"
+    },
+    {
+      "id": "tuesday-2",
+      "theme": "tuesday",
+      "title": "Read step literature",
+      "description": "Spend 15 minutes reading about your current step",
+      "reason": "Understanding the principles behind each step helps you apply them more effectively in your life"
+    },
+    {
+      "id": "tuesday-3",
+      "theme": "tuesday",
+      "title": "Discuss steps with sponsor",
+      "description": "Talk to your sponsor about a step you're working on or struggling with",
+      "reason": "Your sponsor's experience and guidance can help you navigate difficult step work"
+    },
+    {
+      "id": "tuesday-4",
+      "theme": "tuesday",
+      "title": "Review a completed step",
+      "description": "Reflect on a step you've already completed and how you're applying it",
+      "reason": "The steps are meant to be lived, not just completed - regular review keeps them fresh"
+    },
+    {
+      "id": "wednesday-1",
+      "theme": "wednesday",
+      "title": "List 5 things you're grateful for",
+      "description": "Write down five specific things you appreciate about your recovery journey",
+      "reason": "Gratitude shifts your focus from what's missing to what's present, improving mental wellbeing"
+    },
+    {
+      "id": "wednesday-2",
+      "theme": "wednesday",
+      "title": "Thank someone who helped you",
+      "description": "Express appreciation to someone who supported you in recovery",
+      "reason": "Acknowledging others' kindness strengthens relationships and spreads positivity"
+    },
+    {
+      "id": "wednesday-3",
+      "theme": "wednesday",
+      "title": "Appreciate a small moment",
+      "description": "Notice and savor something simple today - a sunrise, a good meal, a kind gesture",
+      "reason": "Mindful appreciation of small moments builds resilience and joy in everyday life"
+    },
+    {
+      "id": "wednesday-4",
+      "theme": "wednesday",
+      "title": "Gratitude meditation",
+      "description": "Spend 5 minutes in quiet reflection on the gifts recovery has brought you",
+      "reason": "Regular gratitude practice rewires your brain for positivity and contentment"
+    },
+    {
+      "id": "thursday-1",
+      "theme": "thursday",
+      "title": "Exercise for 20 minutes",
+      "description": "Go for a walk, do yoga, or any physical activity that feels good",
+      "reason": "Physical activity reduces stress, improves mood, and supports overall recovery"
+    },
+    {
+      "id": "thursday-2",
+      "theme": "thursday",
+      "title": "Prepare a healthy meal",
+      "description": "Cook or prepare a nutritious meal with intention and care",
+      "reason": "Proper nutrition supports your physical and mental health in recovery"
+    },
+    {
+      "id": "thursday-3",
+      "theme": "thursday",
+      "title": "Practice a sleep hygiene routine",
+      "description": "Set up a calming bedtime routine to improve your sleep quality",
+      "reason": "Quality sleep is essential for emotional regulation and staying centered in recovery"
+    },
+    {
+      "id": "thursday-4",
+      "theme": "thursday",
+      "title": "Do something creative",
+      "description": "Engage in a creative activity - art, music, writing, or any form of expression",
+      "reason": "Creative expression provides healthy outlets for emotions and reduces stress"
+    },
+    {
+      "id": "friday-1",
+      "theme": "friday",
+      "title": "Arrive early to help set up",
+      "description": "Get to your meeting 15 minutes early to help with chairs, coffee, or greeting",
+      "reason": "Service work keeps you connected to the fellowship and reminds you of your purpose"
+    },
+    {
+      "id": "friday-2",
+      "theme": "friday",
+      "title": "Offer to sponsor someone",
+      "description": "If you're ready, reach out to someone who might benefit from sponsorship",
+      "reason": "Sponsoring others reinforces your own recovery and carries the message forward"
+    },
+    {
+      "id": "friday-3",
+      "theme": "friday",
+      "title": "Share your experience",
+      "description": "Speak up at a meeting and share something that might help others",
+      "reason": "Sharing your story gives hope to others and strengthens your own commitment"
+    },
+    {
+      "id": "friday-4",
+      "theme": "friday",
+      "title": "Volunteer for a commitment",
+      "description": "Take on a service role at your home group or in the fellowship",
+      "reason": "Regular service commitments keep you accountable and invested in recovery"
+    },
+    {
+      "id": "saturday-1",
+      "theme": "saturday",
+      "title": "Review your week honestly",
+      "description": "Reflect on your highs, lows, and lessons learned this week",
+      "reason": "Regular self-reflection helps you identify patterns and areas for growth"
+    },
+    {
+      "id": "saturday-2",
+      "theme": "saturday",
+      "title": "Journal about challenges",
+      "description": "Write about a difficulty you faced this week and how you handled it",
+      "reason": "Processing challenges through writing helps you learn from them and build resilience"
+    },
+    {
+      "id": "saturday-3",
+      "theme": "saturday",
+      "title": "Set intentions for next week",
+      "description": "Write down 2-3 specific goals or intentions for the coming week",
+      "reason": "Clear intentions help you stay focused and proactive in your recovery"
+    },
+    {
+      "id": "saturday-4",
+      "theme": "saturday",
+      "title": "Celebrate your progress",
+      "description": "Acknowledge one thing you did well this week, no matter how small",
+      "reason": "Recognizing progress, however small, builds confidence and motivation"
+    },
+    {
+      "id": "sunday-1",
+      "theme": "sunday",
+      "title": "Morning meditation or prayer",
+      "description": "Start your day with 10 minutes of quiet spiritual practice",
+      "reason": "Daily spiritual practice strengthens your connection to your higher power"
+    },
+    {
+      "id": "sunday-2",
+      "theme": "sunday",
+      "title": "Read spiritual literature",
+      "description": "Spend time with recovery literature or spiritual texts that inspire you",
+      "reason": "Regular reading of spiritual material nourishes your spiritual growth"
+    },
+    {
+      "id": "sunday-3",
+      "theme": "sunday",
+      "title": "Practice surrender",
+      "description": "Identify something you're trying to control and practice letting it go",
+      "reason": "Letting go of control reduces anxiety and deepens trust in your higher power"
+    },
+    {
+      "id": "sunday-4",
+      "theme": "sunday",
+      "title": "Attend a spiritual-focused meeting",
+      "description": "Go to a meeting with a spiritual focus or theme today",
+      "reason": "Sharing spiritual experiences with others strengthens both individual and collective recovery"
+    }
+  ]
+}

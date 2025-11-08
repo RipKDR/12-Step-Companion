@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 8;
 
 type Migration = (state: any) => any;
 
@@ -44,6 +44,49 @@ const migrations: Record<number, Migration> = {
           start: '22:00',
           end: '07:00'
         }
+      };
+    }
+    return state;
+  },
+  4: (state: any) => {
+    // V4: Add milestone celebrations
+    if (!state.celebratedMilestones) {
+      state.celebratedMilestones = {};
+    }
+    return state;
+  },
+  5: (state: any) => {
+    // V5: Add achievement system
+    if (!state.unlockedAchievements) {
+      state.unlockedAchievements = {};
+    }
+    return state;
+  },
+  6: (state: any) => {
+    // V6: Add daily challenges
+    if (!state.completedChallenges) {
+      state.completedChallenges = {};
+    }
+    return state;
+  },
+  7: (state: any) => {
+    // V7: Add voice recording settings
+    if (state.settings && state.settings.enableVoiceRecording === undefined) {
+      state.settings.enableVoiceRecording = false;
+    }
+    return state;
+  },
+  8: (state: any) => {
+    // V8: Add analytics system
+    if (!state.analyticsEvents) {
+      state.analyticsEvents = {};
+    }
+    if (state.settings && !state.settings.analytics) {
+      state.settings.analytics = {
+        enabled: false,
+        collectUsageData: true,
+        collectPerformanceData: false,
+        retentionDays: 90,
       };
     }
     return state;

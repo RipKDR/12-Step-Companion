@@ -17,7 +17,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell } from 'lucide-react';
+import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell, BarChart3 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportJSON, exportEncrypted } from '@/lib/export';
@@ -269,6 +269,124 @@ export default function Settings() {
               data-testid="switch-reduced-motion"
             />
           </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="voice-recording">Voice Recording</Label>
+              <p className="text-sm text-muted-foreground">Enable audio recording in journal (stored locally)</p>
+            </div>
+            <Switch
+              id="voice-recording"
+              checked={settings.enableVoiceRecording}
+              onCheckedChange={(checked) => updateSettings({ enableVoiceRecording: checked })}
+              data-testid="switch-voice-recording"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Analytics */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            <CardTitle>Usage Analytics</CardTitle>
+          </div>
+          <CardDescription>Privacy-first insights (stored locally only)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="analytics-enabled">Enable Analytics</Label>
+              <p className="text-sm text-muted-foreground">Track your usage patterns (never sent to servers)</p>
+            </div>
+            <Switch
+              id="analytics-enabled"
+              checked={settings.analytics.enabled}
+              onCheckedChange={(checked) =>
+                updateSettings({
+                  analytics: { ...settings.analytics, enabled: checked }
+                })
+              }
+              data-testid="switch-analytics-enabled"
+            />
+          </div>
+
+          {settings.analytics.enabled && (
+            <>
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="usage-data">Collect Usage Data</Label>
+                  <p className="text-sm text-muted-foreground">Track feature usage and activity</p>
+                </div>
+                <Switch
+                  id="usage-data"
+                  checked={settings.analytics.collectUsageData}
+                  onCheckedChange={(checked) =>
+                    updateSettings({
+                      analytics: { ...settings.analytics, collectUsageData: checked }
+                    })
+                  }
+                  data-testid="switch-usage-data"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="performance-data">Collect Performance Data</Label>
+                  <p className="text-sm text-muted-foreground">Track app performance metrics</p>
+                </div>
+                <Switch
+                  id="performance-data"
+                  checked={settings.analytics.collectPerformanceData}
+                  onCheckedChange={(checked) =>
+                    updateSettings({
+                      analytics: { ...settings.analytics, collectPerformanceData: checked }
+                    })
+                  }
+                  data-testid="switch-performance-data"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="retention-days">Data Retention (days)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="retention-days"
+                    type="number"
+                    min="7"
+                    max="365"
+                    value={settings.analytics.retentionDays}
+                    onChange={(e) =>
+                      updateSettings({
+                        analytics: {
+                          ...settings.analytics,
+                          retentionDays: parseInt(e.target.value) || 90
+                        }
+                      })
+                    }
+                    className="w-24"
+                    data-testid="input-retention-days"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Delete analytics data older than this
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <p className="text-sm font-medium">Privacy Guarantee</p>
+                <p className="text-xs text-muted-foreground">
+                  All analytics data is stored locally on your device. Nothing is ever sent to external servers.
+                  You can view and export all collected data on the Usage Insights page.
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

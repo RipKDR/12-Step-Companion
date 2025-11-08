@@ -54,6 +54,8 @@ export interface JournalEntry {
   triggerIntensity?: number;
   copingActions?: string;
   updatedAtISO: string;
+  audioData?: string; // V2: Base64 encoded audio (optional)
+  audioDuration?: number; // V2: Duration in seconds
 }
 
 export interface WorksheetField {
@@ -133,12 +135,21 @@ export interface NotificationSettings {
   };
 }
 
+export interface AnalyticsSettings {
+  enabled: boolean;
+  collectUsageData: boolean;
+  collectPerformanceData: boolean;
+  retentionDays: number; // How long to keep analytics data
+}
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   highContrast: boolean;
   reducedMotion: boolean;
   cloudSync: boolean; // stub
   notifications: NotificationSettings;
+  enableVoiceRecording: boolean; // V2: Enable audio recording in journal
+  analytics: AnalyticsSettings; // V3: Privacy-first analytics
 }
 
 export interface Meeting {
@@ -195,6 +206,99 @@ export interface Streaks {
   stepWork: StreakData;
 }
 
+export interface CelebratedMilestone {
+  id: string;
+  type: 'sobriety' | 'streak' | 'achievement' | 'step';
+  milestone: string; // e.g., "1d", "7d", "30d", "step-1"
+  celebratedAtISO: string;
+}
+
+export interface AchievementCriteria {
+  type: 'sobriety_days' | 'step_completed' | 'journal_count' | 'journal_streak' |
+        'daily_card_count' | 'daily_card_streak' | 'gratitude_count' |
+        'meeting_count' | 'has_sponsor' | 'contact_count' |
+        'crisis_mode_used' | 'emergency_contact_used' |
+        'morning_card_count' | 'evening_card_count' | 'meditation_count' | 'any_streak';
+  target: number;
+}
+
+export interface Achievement {
+  id: string;
+  category: 'sobriety' | 'step-work' | 'community' | 'self-care' | 'crisis';
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic';
+  title: string;
+  description: string;
+  icon: string;
+  criteria: AchievementCriteria;
+}
+
+export interface UnlockedAchievement {
+  id: string;
+  achievementId: string;
+  unlockedAtISO: string;
+  progress?: number; // For incremental achievements
+}
+
+export interface ChallengeTheme {
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+export interface DailyChallenge {
+  id: string;
+  theme: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  title: string;
+  description: string;
+  reason: string;
+}
+
+export interface ChallengeCompletion {
+  id: string;
+  challengeId: string;
+  completedAtISO: string;
+  notes?: string;
+}
+
+export type AnalyticsEventType =
+  | 'app_opened'
+  | 'profile_created'
+  | 'journal_entry_created'
+  | 'journal_entry_voice_used'
+  | 'journal_entry_audio_recorded'
+  | 'daily_card_morning_completed'
+  | 'daily_card_evening_completed'
+  | 'step_answer_saved'
+  | 'meeting_logged'
+  | 'goal_created'
+  | 'goal_completed'
+  | 'crisis_mode_activated'
+  | 'emergency_contact_called'
+  | 'achievement_unlocked'
+  | 'milestone_celebrated'
+  | 'daily_challenge_completed'
+  | 'streak_extended';
+
+export interface AnalyticsEvent {
+  id: string;
+  type: AnalyticsEventType;
+  timestamp: string; // ISO 8601
+  metadata?: Record<string, any>; // Non-PII metadata only
+  sessionId?: string;
+}
+
+export interface AnalyticsMetrics {
+  totalEvents: number;
+  eventsByType: Record<AnalyticsEventType, number>;
+  activeStreaks: number;
+  totalJournalEntries: number;
+  totalMeetings: number;
+  totalGoals: number;
+  sobrietyDays: number;
+  lastActivityDate: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;
@@ -210,4 +314,8 @@ export interface AppState {
   settings: AppSettings;
   onboardingComplete: boolean;
   streaks: Streaks; // V2: Habit tracking
+  celebratedMilestones?: Record<string, CelebratedMilestone>; // V2: Milestone celebrations
+  unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
+  completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
+  analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
 }

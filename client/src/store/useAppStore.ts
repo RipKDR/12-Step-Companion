@@ -11,7 +11,12 @@ import type {
   AppSettings,
   FellowshipContact,
   Streaks,
-  StreakData
+  StreakData,
+  CelebratedMilestone,
+  UnlockedAchievement,
+  ChallengeCompletion,
+  AnalyticsEvent,
+  AnalyticsEventType
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -96,10 +101,21 @@ const initialState: AppState = {
         start: '22:00',
         end: '07:00'
       }
-    }
+    },
+    enableVoiceRecording: false,
+    analytics: {
+      enabled: false,
+      collectUsageData: true,
+      collectPerformanceData: false,
+      retentionDays: 90,
+    },
   },
   onboardingComplete: false,
   streaks: initialStreaks,
+  celebratedMilestones: {},
+  unlockedAchievements: {},
+  completedChallenges: {},
+  analyticsEvents: {},
 };
 
 interface AppStore extends AppState {
@@ -164,6 +180,24 @@ interface AppStore extends AppState {
   updateStreakForStepWork: () => void;
   checkAllStreaks: () => void;
   getStreak: (type: StreakData['type']) => StreakData;
+
+  // Milestone Celebrations (V2)
+  celebrateMilestone: (milestone: CelebratedMilestone) => void;
+  getCelebratedMilestones: () => Record<string, CelebratedMilestone>;
+
+  // Achievement System (V2)
+  unlockAchievement: (achievement: UnlockedAchievement) => void;
+  getUnlockedAchievements: () => Record<string, UnlockedAchievement>;
+
+  // Daily Challenges (V2)
+  completeChallenge: (challengeId: string, notes?: string) => void;
+  getCompletedChallenges: () => Record<string, ChallengeCompletion>;
+
+  // Analytics (V3)
+  trackAnalyticsEvent: (type: AnalyticsEventType, metadata?: Record<string, any>) => void;
+  getAnalyticsEvents: () => Record<string, AnalyticsEvent>;
+  clearOldAnalyticsEvents: () => void;
+  updateAnalyticsSettings: (updates: Partial<AppSettings['analytics']>) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -559,6 +593,105 @@ export const useAppStore = create<AppStore>()(
       getStreak: (type) => {
         return get().streaks[type];
       },
+
+      // Milestone Celebrations (V2)
+      celebrateMilestone: (milestone) => set((state) => ({
+        celebratedMilestones: {
+          ...state.celebratedMilestones,
+          [milestone.id]: milestone
+        }
+      })),
+
+      getCelebratedMilestones: () => {
+        return get().celebratedMilestones || {};
+      },
+
+      // Achievement System (V2)
+      unlockAchievement: (achievement) => set((state) => ({
+        unlockedAchievements: {
+          ...state.unlockedAchievements,
+          [achievement.achievementId]: achievement
+        }
+      })),
+
+      getUnlockedAchievements: () => {
+        return get().unlockedAchievements || {};
+      },
+
+      // Daily Challenges (V2)
+      completeChallenge: (challengeId, notes) => set((state) => {
+        const id = `challenge_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const completion: ChallengeCompletion = {
+          id,
+          challengeId,
+          completedAtISO: new Date().toISOString(),
+          notes,
+        };
+
+        return {
+          completedChallenges: {
+            ...state.completedChallenges,
+            [id]: completion,
+          },
+        };
+      }),
+
+      getCompletedChallenges: () => {
+        return get().completedChallenges || {};
+      },
+
+      // Analytics (V3)
+      trackAnalyticsEvent: (type, metadata) => {
+        const state = get();
+        if (!state.settings.analytics.enabled) {
+          return;
+        }
+
+        const id = `analytics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const event: AnalyticsEvent = {
+          id,
+          type,
+          timestamp: new Date().toISOString(),
+          metadata,
+        };
+
+        set((state) => ({
+          analyticsEvents: {
+            ...state.analyticsEvents,
+            [id]: event,
+          },
+        }));
+      },
+
+      getAnalyticsEvents: () => {
+        return get().analyticsEvents || {};
+      },
+
+      clearOldAnalyticsEvents: () => set((state) => {
+        const retentionDays = state.settings.analytics.retentionDays;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        const cutoffTimestamp = cutoffDate.toISOString();
+
+        const cleaned: Record<string, AnalyticsEvent> = {};
+        for (const [id, event] of Object.entries(state.analyticsEvents || {})) {
+          if (event.timestamp >= cutoffTimestamp) {
+            cleaned[id] = event;
+          }
+        }
+
+        return { analyticsEvents: cleaned };
+      }),
+
+      updateAnalyticsSettings: (updates) => set((state) => ({
+        settings: {
+          ...state.settings,
+          analytics: {
+            ...state.settings.analytics,
+            ...updates,
+          },
+        },
+      })),
     }),
     {
       name: 'recovery-companion-storage',
