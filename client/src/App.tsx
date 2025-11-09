@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
+import { useAuth } from "@/hooks/useAuth";
 
 // Routes
 import Home from "@/routes/Home";
@@ -25,9 +26,20 @@ import Analytics from "@/routes/Analytics";
 import Contacts from "@/routes/Contacts";
 import Achievements from "@/routes/Achievements";
 import UsageInsights from "@/routes/UsageInsights";
+import Landing from "@/routes/Landing";
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
   const onboardingComplete = useAppStore((state) => state.onboardingComplete);
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
 
   if (!onboardingComplete) {
     return (
