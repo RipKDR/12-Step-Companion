@@ -1,139 +1,178 @@
 {
   "step": 11,
   "title": "Step Eleven",
-  "overviewLabels": ["prayer", "meditation", "spiritual growth"],
+  "subtitle": "We sought through prayer and meditation to improve our conscious contact with God as we understood Him, praying only for knowledge of His will for us and the power to carry that out.",
+  "overviewLabels": ["prayer", "meditation", "spiritual growth", "conscious contact"],
   "questions": [
     {
-      "id": "s11-q1",
-      "section": "Current Practice",
-      "prompt": "Do you have a daily practice of prayer and meditation?",
-      "help": "Consistency is key to spiritual growth."
+      "id": "q1",
+      "section": "Introduction",
+      "prompt": "What is my understanding of prayer?"
     },
     {
-      "id": "s11-q2",
-      "prompt": "What does your current prayer practice look like?",
-      "help": "Describe when, where, and how you pray."
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "What is my understanding of meditation?"
     },
     {
-      "id": "s11-q3",
-      "prompt": "What does your current meditation practice look like?",
-      "help": "There are many forms of meditation."
+      "id": "q3",
+      "section": "Introduction",
+      "prompt": "How do prayer and meditation improve my conscious contact with a Higher Power?"
     },
     {
-      "id": "s11-q4",
-      "prompt": "How much time do you spend in prayer and meditation daily?",
-      "help": "Quality matters more than quantity, but both help."
+      "id": "q4",
+      "section": "Sought through prayer and meditation",
+      "prompt": "Do I have a daily practice of prayer and meditation?"
     },
     {
-      "id": "s11-q5",
-      "section": "Improving Conscious Contact",
-      "prompt": "How do you experience your Higher Power?",
-      "help": "Connection can come in many forms."
+      "id": "q5",
+      "section": "Sought through prayer and meditation",
+      "prompt": "What does my current prayer practice look like?"
     },
     {
-      "id": "s11-q6",
-      "prompt": "When do you feel most connected to your Higher Power?",
-      "help": "Notice what deepens your spiritual experience."
+      "id": "q6",
+      "section": "Sought through prayer and meditation",
+      "prompt": "What does my current meditation practice look like?"
     },
     {
-      "id": "s11-q7",
-      "prompt": "What obstacles get in the way of your spiritual practice?",
-      "help": "Busyness, resistance, and doubt are common."
+      "id": "q7",
+      "section": "Sought through prayer and meditation",
+      "prompt": "What is working about my current practice?"
     },
     {
-      "id": "s11-q8",
-      "prompt": "How can you overcome these obstacles?",
-      "help": "Simple solutions often work best."
+      "id": "q8",
+      "section": "Sought through prayer and meditation",
+      "prompt": "What would I like to change or improve?"
     },
     {
-      "id": "s11-q9",
-      "section": "Prayer",
-      "prompt": "What prayers are meaningful to you?",
-      "help": "The Serenity Prayer, Third Step Prayer, Seventh Step Prayer, etc."
+      "id": "q9",
+      "section": "To improve our conscious contact",
+      "prompt": "What does 'conscious contact' mean to me?"
     },
     {
-      "id": "s11-q10",
-      "prompt": "Do you pray for others?",
-      "help": "Praying for others, especially those we resent, brings freedom."
+      "id": "q10",
+      "section": "To improve our conscious contact",
+      "prompt": "How do I experience conscious contact with a Higher Power?"
     },
     {
-      "id": "s11-q11",
-      "prompt": "Do you ask for guidance in your daily decisions?",
-      "help": "We can check in with our Higher Power throughout the day."
+      "id": "q11",
+      "section": "To improve our conscious contact",
+      "prompt": "When do I feel closest to my Higher Power?"
     },
     {
-      "id": "s11-q12",
-      "prompt": "What are you grateful for today?",
-      "help": "Gratitude is a powerful prayer."
+      "id": "q12",
+      "section": "To improve our conscious contact",
+      "prompt": "How has my conscious contact improved since I began recovery?"
     },
     {
-      "id": "s11-q13",
-      "section": "Meditation",
-      "prompt": "What form of meditation works best for you?",
-      "help": "Sitting, walking, breathing, reading meditation, etc."
+      "id": "q13",
+      "section": "To improve our conscious contact",
+      "prompt": "What obstacles exist between me and God?"
     },
     {
-      "id": "s11-q14",
-      "prompt": "What do you experience during meditation?",
-      "help": "Peace, insight, connection, or sometimes restlessness."
+      "id": "q14",
+      "section": "To improve our conscious contact",
+      "prompt": "What am I doing to remove those obstacles?"
     },
     {
-      "id": "s11-q15",
-      "prompt": "How has meditation changed your thinking?",
-      "help": "We often gain clarity and perspective."
+      "id": "q15",
+      "section": "With God as we understood Him",
+      "prompt": "How has my understanding of a Higher Power changed since I began recovery?"
     },
     {
-      "id": "s11-q16",
-      "prompt": "Do you listen for answers in meditation?",
-      "help": "Prayer is talking; meditation is listening."
+      "id": "q16",
+      "section": "With God as we understood Him",
+      "prompt": "How has my understanding of a Higher Power changed since I began working the steps?"
     },
     {
-      "id": "s11-q17",
-      "section": "Knowledge of God's Will",
-      "prompt": "How do you seek to know your Higher Power's will for you?",
-      "help": "Through prayer, meditation, and spiritual guidance."
+      "id": "q17",
+      "section": "With God as we understood Him",
+      "prompt": "In what ways do I experience my Higher Power?"
     },
     {
-      "id": "s11-q18",
-      "prompt": "How do you know when you're following your Higher Power's will?",
-      "help": "Peace, usefulness, and right action are signs."
+      "id": "q18",
+      "section": "Praying only for knowledge",
+      "prompt": "What do I ask for when I pray?"
     },
     {
-      "id": "s11-q19",
-      "prompt": "What gets in the way of knowing your Higher Power's will?",
-      "help": "Self-will, fear, and dishonesty block us."
+      "id": "q19",
+      "section": "Praying only for knowledge",
+      "prompt": "Do I ask for material things, or do I ask for spiritual help?"
     },
     {
-      "id": "s11-q20",
-      "section": "Power to Carry It Out",
-      "prompt": "How does your Higher Power give you power to carry out their will?",
-      "help": "Through strength, courage, and guidance."
+      "id": "q20",
+      "section": "Praying only for knowledge",
+      "prompt": "Do I pray for knowledge of God's will?"
     },
     {
-      "id": "s11-q21",
-      "prompt": "Can you think of a time when you felt guided and empowered?",
-      "help": "Reflect on spiritual experiences."
+      "id": "q21",
+      "section": "Of His will for us",
+      "prompt": "How do I seek to know God's will for me?"
     },
     {
-      "id": "s11-q22",
-      "section": "Growth",
-      "prompt": "How has your spiritual life grown through the steps?",
-      "help": "Consider your journey from Step One to now."
+      "id": "q22",
+      "section": "Of His will for us",
+      "prompt": "What is the difference between my will and God's will?"
     },
     {
-      "id": "s11-q23",
-      "prompt": "What are you doing to continue your spiritual growth?",
-      "help": "Reading, meetings, service, and fellowship all help."
+      "id": "q23",
+      "section": "Of His will for us",
+      "prompt": "How do I know when I'm following God's will?"
     },
     {
-      "id": "s11-q24",
-      "prompt": "How has prayer and meditation improved your conscious contact with your Higher Power?",
-      "help": "This is the promise of Step Eleven."
+      "id": "q24",
+      "section": "Of His will for us",
+      "prompt": "How do I know when I'm following my own will?"
     },
     {
-      "id": "s11-q25",
-      "prompt": "What spiritual principles guide your life today?",
-      "help": "Honesty, hope, faith, courage, integrity, willingness, humility, love, responsibility, service, etc."
+      "id": "q25",
+      "section": "And the power to carry that out",
+      "prompt": "Do I trust that my Higher Power will give me the power to carry out God's will?"
+    },
+    {
+      "id": "q26",
+      "section": "And the power to carry that out",
+      "prompt": "Have there been times when I've asked for God's will and been given the power to carry it out? When?"
+    },
+    {
+      "id": "q27",
+      "section": "And the power to carry that out",
+      "prompt": "What is my part in carrying out God's will?"
+    },
+    {
+      "id": "q28",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing the principle of seeking in my life today?"
+    },
+    {
+      "id": "q29",
+      "section": "Spiritual principles",
+      "prompt": "How has my spiritual awareness grown?"
+    },
+    {
+      "id": "q30",
+      "section": "Spiritual principles",
+      "prompt": "How has my spiritual life improved?"
+    },
+    {
+      "id": "q31",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing unconditional love in my life today?"
+    },
+    {
+      "id": "q32",
+      "section": "Moving on",
+      "prompt": "What gifts have I received from working this step?"
+    },
+    {
+      "id": "q33",
+      "section": "Moving on",
+      "prompt": "How has my life changed as a result of my prayer and meditation practice?"
+    },
+    {
+      "id": "q34",
+      "section": "Moving on",
+      "prompt": "How has my relationship with my Higher Power grown?"
     }
   ]
 }

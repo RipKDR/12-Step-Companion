@@ -1,111 +1,168 @@
 {
   "step": 8,
   "title": "Step Eight",
-  "overviewLabels": ["amends list", "willingness", "accountability"],
+  "subtitle": "We made a list of all persons we had harmed and became willing to make amends to them all.",
+  "overviewLabels": ["amends list", "willingness", "accountability", "preparation"],
   "questions": [
     {
-      "id": "s8-q1",
-      "section": "Creating Your List",
-      "prompt": "Who is the first person you harmed through your addiction?",
-      "help": "Be thorough and honest as you create your list."
+      "id": "q1",
+      "section": "Introduction",
+      "prompt": "Who belongs on my Eighth Step list?"
     },
     {
-      "id": "s8-q2",
-      "prompt": "What harm did you cause this person?",
-      "help": "Be specific about your actions and their impact."
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "Whom have I harmed?"
     },
     {
-      "id": "s8-q3",
-      "prompt": "How do you feel about making amends to this person?",
-      "help": "Consider your willingness and any fears."
+      "id": "q3",
+      "section": "Introduction",
+      "prompt": "What is the nature of the wrongs I've committed against this person?"
     },
     {
-      "id": "s8-q4",
-      "prompt": "Who else did you harm? List another person.",
-      "help": "Continue building your comprehensive list."
+      "id": "q4",
+      "section": "Introduction",
+      "prompt": "What effect has my behavior had on this person?"
     },
     {
-      "id": "s8-q5",
-      "prompt": "What harm did you cause them?",
-      "help": "Be specific and honest."
+      "id": "q5",
+      "section": "Made a list",
+      "prompt": "In making my list, is my sponsor helping me see where I've harmed others?"
     },
     {
-      "id": "s8-q6",
-      "prompt": "List another person you harmed.",
-      "help": "Don't leave anyone out, including yourself."
+      "id": "q6",
+      "section": "Made a list",
+      "prompt": "Have I included myself on my list? Why or why not?"
     },
     {
-      "id": "s8-q7",
-      "prompt": "What harm did you cause them?",
-      "help": "Include emotional, financial, and other harms."
+      "id": "q7",
+      "section": "Made a list",
+      "prompt": "What have I done to harm myself?"
     },
     {
-      "id": "s8-q8",
-      "section": "Difficult Cases",
-      "prompt": "Who on your list are you most afraid to face?",
-      "help": "Fear is common but doesn't have to stop you."
+      "id": "q8",
+      "section": "Made a list",
+      "prompt": "Am I willing to make amends to myself? How?"
     },
     {
-      "id": "s8-q9",
-      "prompt": "What are you afraid will happen if you make amends to this person?",
-      "help": "Name your specific fears."
+      "id": "q9",
+      "section": "All persons",
+      "prompt": "Is my list complete?"
     },
     {
-      "id": "s8-q10",
-      "prompt": "Who on your list do you feel justified in having harmed?",
-      "help": "Be honest about any resentments or justifications."
+      "id": "q10",
+      "section": "All persons",
+      "prompt": "Have I looked at each of my relationships for the harm that I have done?"
     },
     {
-      "id": "s8-q11",
-      "prompt": "Can you see your part in that situation, regardless of what they did?",
-      "help": "Focus on your own behavior, not theirs."
+      "id": "q11",
+      "section": "All persons",
+      "prompt": "Do I have a nagging feeling that I've forgotten someone? Who?"
     },
     {
-      "id": "s8-q12",
-      "section": "Including Yourself",
-      "prompt": "Have you included yourself on your amends list?",
-      "help": "We often harm ourselves most through addiction."
+      "id": "q12",
+      "section": "We had harmed",
+      "prompt": "Am I blaming others instead of looking honestly at the harm I've caused?"
     },
     {
-      "id": "s8-q13",
-      "prompt": "How have you harmed yourself through your addiction?",
-      "help": "Consider physical, emotional, and spiritual harm."
+      "id": "q13",
+      "section": "We had harmed",
+      "prompt": "Am I avoiding putting someone on my list because they also harmed me?"
     },
     {
-      "id": "s8-q14",
-      "prompt": "What amends do you owe yourself?",
-      "help": "Self-care and self-forgiveness are part of recovery."
+      "id": "q14",
+      "section": "We had harmed",
+      "prompt": "Have I taken full responsibility for my actions?"
     },
     {
-      "id": "s8-q15",
-      "section": "Becoming Willing",
-      "prompt": "Is your amends list complete?",
-      "help": "Review your Fourth Step inventory for anyone you missed."
+      "id": "q15",
+      "section": "Became willing",
+      "prompt": "Am I willing to make amends to those I've harmed?"
     },
     {
-      "id": "s8-q16",
-      "prompt": "Who on your list are you not yet willing to make amends to?",
-      "help": "Willingness, not action, is the requirement for Step Eight."
+      "id": "q16",
+      "section": "Became willing",
+      "prompt": "Am I resistant to the idea of approaching certain people? Why?"
     },
     {
-      "id": "s8-q17",
-      "prompt": "What do you need to do to become willing to make amends to everyone?",
-      "help": "Prayer, time, or discussion with your sponsor may help."
+      "id": "q17",
+      "section": "Became willing",
+      "prompt": "What might be the results of making these amends?"
     },
     {
-      "id": "s8-q18",
-      "prompt": "How has making this list affected you?",
-      "help": "Reflect on your feelings and insights."
+      "id": "q18",
+      "section": "Became willing",
+      "prompt": "What might be the results of not making these amends?"
     },
     {
-      "id": "s8-q19",
-      "prompt": "Are you willing to make amends to all persons you have harmed?",
-      "help": "This is the essence of Step Eight."
+      "id": "q19",
+      "section": "Became willing",
+      "prompt": "How is my willingness to make amends connected to my spiritual condition?"
     },
     {
-      "id": "s8-q20",
-      "prompt": "Are you ready to begin Step Nine?",
-      "help": "Discuss your readiness with your sponsor."
+      "id": "q20",
+      "section": "To make amends",
+      "prompt": "What does it mean to make amends?"
+    },
+    {
+      "id": "q21",
+      "section": "To make amends",
+      "prompt": "Do I understand the difference between making amends and simply apologizing?"
+    },
+    {
+      "id": "q22",
+      "section": "To make amends",
+      "prompt": "What actions will I need to take to make amends?"
+    },
+    {
+      "id": "q23",
+      "section": "To them all",
+      "prompt": "Am I willing to go to any lengths to make amends?"
+    },
+    {
+      "id": "q24",
+      "section": "To them all",
+      "prompt": "Is there anyone I'm not willing to make amends to? Why?"
+    },
+    {
+      "id": "q25",
+      "section": "To them all",
+      "prompt": "What will I do to become willing to make amends to everyone on my list?"
+    },
+    {
+      "id": "q26",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing self-honesty in making my list?"
+    },
+    {
+      "id": "q27",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing open-mindedness in becoming willing?"
+    },
+    {
+      "id": "q28",
+      "section": "Spiritual principles",
+      "prompt": "How does willingness change my attitude toward making amends?"
+    },
+    {
+      "id": "q29",
+      "section": "Spiritual principles",
+      "prompt": "How does working this step require me to practice humility?"
+    },
+    {
+      "id": "q30",
+      "section": "Moving on",
+      "prompt": "How complete is my list?"
+    },
+    {
+      "id": "q31",
+      "section": "Moving on",
+      "prompt": "How willing am I to make amends?"
+    },
+    {
+      "id": "q32",
+      "section": "Moving on",
+      "prompt": "What barriers do I still have to making amends? How can I remove them?"
     }
   ]
 }

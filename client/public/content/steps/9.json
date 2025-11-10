@@ -1,124 +1,223 @@
 {
   "step": 9,
   "title": "Step Nine",
-  "overviewLabels": ["making amends", "action", "healing"],
+  "subtitle": "We made direct amends to such people wherever possible, except when to do so would injure them or others.",
+  "overviewLabels": ["making amends", "action", "healing", "responsibility"],
   "questions": [
     {
-      "id": "s9-q1",
-      "section": "Planning Your Amends",
-      "prompt": "Who will you make amends to first?",
-      "help": "Discuss the order with your sponsor."
+      "id": "q1",
+      "section": "Introduction",
+      "prompt": "What are direct amends?"
     },
     {
-      "id": "s9-q2",
-      "prompt": "What specific amends do you need to make to this person?",
-      "help": "Be clear about what you're apologizing for and what you'll do."
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "Am I prepared to make amends?"
     },
     {
-      "id": "s9-q3",
-      "prompt": "How will you approach this person?",
-      "help": "Consider the setting, timing, and your words carefully."
+      "id": "q3",
+      "section": "Introduction",
+      "prompt": "Have I discussed my amends list with my sponsor?"
     },
     {
-      "id": "s9-q4",
-      "prompt": "Could making this amend cause harm to this person or others?",
-      "help": "Some amends should not be made if they would cause further harm."
+      "id": "q4",
+      "section": "Made direct amends",
+      "prompt": "How do I make a direct amend?"
     },
     {
-      "id": "s9-q5",
-      "section": "Direct Amends",
-      "prompt": "Describe an amend you've made. How did it go?",
-      "help": "Reflect on the experience, regardless of the outcome."
+      "id": "q5",
+      "section": "Made direct amends",
+      "prompt": "Have I discussed my plans for approaching this person with my sponsor?"
     },
     {
-      "id": "s9-q6",
-      "prompt": "How did the person respond to your amend?",
-      "help": "Their response is not within your control."
+      "id": "q6",
+      "section": "Made direct amends",
+      "prompt": "What did I do to harm this person?"
     },
     {
-      "id": "s9-q7",
-      "prompt": "How did you feel after making this amend?",
-      "help": "Many people feel relief and freedom."
+      "id": "q7",
+      "section": "Made direct amends",
+      "prompt": "What will I say to them about the harm I have caused?"
     },
     {
-      "id": "s9-q8",
-      "prompt": "What did you learn from making this amend?",
-      "help": "Each amend teaches us something about ourselves."
+      "id": "q8",
+      "section": "Made direct amends",
+      "prompt": "What will I do to repair the damage?"
     },
     {
-      "id": "s9-q9",
-      "section": "Challenging Amends",
-      "prompt": "Is there someone who refuses to accept your amend or won't speak with you?",
-      "help": "You can only do your part; their response is up to them."
+      "id": "q9",
+      "section": "Made direct amends",
+      "prompt": "What did I say when I made my amends?"
     },
     {
-      "id": "s9-q10",
-      "prompt": "How do you feel about this situation?",
-      "help": "It's okay to feel disappointed or hurt."
+      "id": "q10",
+      "section": "Made direct amends",
+      "prompt": "How did the person respond?"
     },
     {
-      "id": "s9-q11",
-      "prompt": "What can you do to find peace with this outcome?",
-      "help": "Sometimes acceptance is the only option."
+      "id": "q11",
+      "section": "Made direct amends",
+      "prompt": "How did I feel after making the amend?"
     },
     {
-      "id": "s9-q12",
-      "section": "Financial Amends",
-      "prompt": "Do you owe anyone money? How much?",
-      "help": "Financial amends may need to be made over time."
+      "id": "q12",
+      "section": "Made direct amends",
+      "prompt": "Did I try to make excuses for my behavior?"
     },
     {
-      "id": "s9-q13",
-      "prompt": "What is your plan for repaying this debt?",
-      "help": "Make a realistic plan you can keep."
+      "id": "q13",
+      "section": "Made direct amends",
+      "prompt": "What did I learn from making this amend?"
     },
     {
-      "id": "s9-q14",
-      "section": "Indirect Amends",
-      "prompt": "Are there people you cannot make direct amends to? (deceased, lost contact, etc.)",
-      "help": "Indirect amends can still heal."
+      "id": "q14",
+      "section": "To such people",
+      "prompt": "To whom do I owe amends?"
     },
     {
-      "id": "s9-q15",
-      "prompt": "What indirect amends can you make? (charity, changed behavior, helping others, etc.)",
-      "help": "Living well is a powerful amend."
+      "id": "q15",
+      "section": "To such people",
+      "prompt": "Have I discussed my entire list with my sponsor?"
     },
     {
-      "id": "s9-q16",
-      "section": "Living Amends",
-      "prompt": "How are you making living amends through changed behavior?",
-      "help": "Actions speak louder than words."
+      "id": "q16",
+      "section": "To such people",
+      "prompt": "What, exactly, is on my list?"
     },
     {
-      "id": "s9-q17",
-      "prompt": "What patterns have you changed to avoid repeating past harms?",
-      "help": "Recovery is about building a new life."
+      "id": "q17",
+      "section": "Wherever possible",
+      "prompt": "What does 'wherever possible' mean?"
     },
     {
-      "id": "s9-q18",
-      "section": "Reflection",
-      "prompt": "How has making amends changed your relationships?",
-      "help": "Consider both repaired and new relationships."
+      "id": "q18",
+      "section": "Wherever possible",
+      "prompt": "Are there people on my list to whom I cannot make direct amends? Why not?"
     },
     {
-      "id": "s9-q19",
-      "prompt": "How has making amends changed you?",
-      "help": "Reflect on your growth and healing."
+      "id": "q19",
+      "section": "Wherever possible",
+      "prompt": "How can I make indirect amends to those I cannot approach directly?"
     },
     {
-      "id": "s9-q20",
-      "prompt": "What promises of recovery are you experiencing?",
-      "help": "Peace, freedom, and usefulness to others."
+      "id": "q20",
+      "section": "Wherever possible",
+      "prompt": "What living amends am I making?"
     },
     {
-      "id": "s9-q21",
-      "prompt": "Are there any amends you're avoiding? Why?",
-      "help": "Continued fear or pride may need addressing."
+      "id": "q21",
+      "section": "Except when",
+      "prompt": "Would making an amend to this person injure them or anyone else?"
     },
     {
-      "id": "s9-q22",
-      "prompt": "How will you continue to make amends as part of your ongoing recovery?",
-      "help": "Step Ten will help maintain this practice."
+      "id": "q22",
+      "section": "Except when",
+      "prompt": "Would making this amend be selfish on my part?"
+    },
+    {
+      "id": "q23",
+      "section": "Except when",
+      "prompt": "How would this person be injured if I made this amend?"
+    },
+    {
+      "id": "q24",
+      "section": "Except when",
+      "prompt": "Are there others who might be injured if I made this amend? How?"
+    },
+    {
+      "id": "q25",
+      "section": "Except when",
+      "prompt": "Am I being rigorously honest with myself about my motives for making or not making this amend?"
+    },
+    {
+      "id": "q26",
+      "section": "Financial amends",
+      "prompt": "Do I owe anyone money?"
+    },
+    {
+      "id": "q27",
+      "section": "Financial amends",
+      "prompt": "What is my plan for repaying my debts?"
+    },
+    {
+      "id": "q28",
+      "section": "Financial amends",
+      "prompt": "Am I following through on that plan?"
+    },
+    {
+      "id": "q29",
+      "section": "When we have harmed others",
+      "prompt": "How have I harmed my family?"
+    },
+    {
+      "id": "q30",
+      "section": "When we have harmed others",
+      "prompt": "What amends do I need to make to my family?"
+    },
+    {
+      "id": "q31",
+      "section": "When we have harmed others",
+      "prompt": "How have I harmed my friends?"
+    },
+    {
+      "id": "q32",
+      "section": "When we have harmed others",
+      "prompt": "What amends do I need to make to my friends?"
+    },
+    {
+      "id": "q33",
+      "section": "When we have harmed others",
+      "prompt": "How have I harmed my employer or co-workers?"
+    },
+    {
+      "id": "q34",
+      "section": "When we have harmed others",
+      "prompt": "What amends do I need to make there?"
+    },
+    {
+      "id": "q35",
+      "section": "Spiritual principles",
+      "prompt": "How has making amends affected my relationships?"
+    },
+    {
+      "id": "q36",
+      "section": "Spiritual principles",
+      "prompt": "How has making amends affected my self-esteem?"
+    },
+    {
+      "id": "q37",
+      "section": "Spiritual principles",
+      "prompt": "How has making amends affected my relationship with my Higher Power?"
+    },
+    {
+      "id": "q38",
+      "section": "Spiritual principles",
+      "prompt": "How have I grown in courage by working this step?"
+    },
+    {
+      "id": "q39",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing integrity in my life today?"
+    },
+    {
+      "id": "q40",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing responsibility in my life today?"
+    },
+    {
+      "id": "q41",
+      "section": "Moving on",
+      "prompt": "What promises are being fulfilled in my life as a result of working the first nine steps?"
+    },
+    {
+      "id": "q42",
+      "section": "Moving on",
+      "prompt": "How has my life changed?"
+    },
+    {
+      "id": "q43",
+      "section": "Moving on",
+      "prompt": "How have I changed?"
     }
   ]
 }

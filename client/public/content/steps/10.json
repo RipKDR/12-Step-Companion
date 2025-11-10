@@ -1,122 +1,193 @@
 {
   "step": 10,
   "title": "Step Ten",
-  "overviewLabels": ["daily inventory", "accountability", "maintenance"],
+  "subtitle": "We continued to take personal inventory and when we were wrong promptly admitted it.",
+  "overviewLabels": ["daily inventory", "accountability", "maintenance", "growth"],
   "questions": [
     {
-      "id": "s10-q1",
-      "section": "Daily Practice",
-      "prompt": "Do you take a daily personal inventory?",
-      "help": "Step Ten is about maintaining what we've built."
+      "id": "q1",
+      "section": "Introduction",
+      "prompt": "Why do I need to continue taking personal inventory?"
     },
     {
-      "id": "s10-q2",
-      "prompt": "When during the day do you take your inventory? (morning, evening, both)",
-      "help": "Establish a consistent practice."
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "How does continuing to take inventory help me maintain my recovery?"
     },
     {
-      "id": "s10-q3",
-      "prompt": "What format do you use? (written, mental, prayer, etc.)",
-      "help": "Find what works best for you."
+      "id": "q3",
+      "section": "Continued",
+      "prompt": "Am I making a daily practice of taking inventory?"
     },
     {
-      "id": "s10-q4",
-      "section": "Spot-Check Inventory",
-      "prompt": "Describe a situation today where you felt angry or afraid.",
-      "help": "When we're disturbed, we can pause and check ourselves."
+      "id": "q4",
+      "section": "Continued",
+      "prompt": "How often do I review my day?"
     },
     {
-      "id": "s10-q5",
-      "prompt": "What was your part in this situation?",
-      "help": "Look at your own behavior, not others'."
+      "id": "q5",
+      "section": "Continued",
+      "prompt": "Do I write my daily inventory, or do I review it mentally?"
     },
     {
-      "id": "s10-q6",
-      "prompt": "Which character defect showed up? (selfishness, dishonesty, fear, etc.)",
-      "help": "Awareness helps us change."
+      "id": "q6",
+      "section": "To take personal inventory",
+      "prompt": "What does it mean to take a personal inventory?"
     },
     {
-      "id": "s10-q7",
-      "prompt": "What could you have done differently?",
-      "help": "Consider healthier responses."
+      "id": "q7",
+      "section": "To take personal inventory",
+      "prompt": "What areas of my life do I include in my daily inventory?"
     },
     {
-      "id": "s10-q8",
-      "prompt": "Do you need to make an immediate amend?",
-      "help": "Promptly admitting when we're wrong keeps us free."
+      "id": "q8",
+      "section": "To take personal inventory",
+      "prompt": "Am I looking at my actions, behaviors, and motives?"
     },
     {
-      "id": "s10-q9",
-      "section": "Evening Review",
-      "prompt": "What did you do well today?",
-      "help": "Acknowledge your successes and progress."
+      "id": "q9",
+      "section": "To take personal inventory",
+      "prompt": "Am I looking at my relationships?"
     },
     {
-      "id": "s10-q10",
-      "prompt": "Where did you fall short today?",
-      "help": "Honesty without harsh self-judgment."
+      "id": "q10",
+      "section": "To take personal inventory",
+      "prompt": "Am I looking at my thought patterns?"
     },
     {
-      "id": "s10-q11",
-      "prompt": "Did you harm anyone today?",
-      "help": "If so, plan to make amends promptly."
+      "id": "q11",
+      "section": "Daily inventory",
+      "prompt": "What did I do well today?"
     },
     {
-      "id": "s10-q12",
-      "prompt": "Were you kind, loving, and helpful today?",
-      "help": "Consider how you treated others."
+      "id": "q12",
+      "section": "Daily inventory",
+      "prompt": "Where did I fall short today?"
     },
     {
-      "id": "s10-q13",
-      "prompt": "Did you practice spiritual principles? (honesty, open-mindedness, willingness, etc.)",
-      "help": "Recovery is about how we live."
+      "id": "q13",
+      "section": "Daily inventory",
+      "prompt": "Was I kind, tolerant, and loving today?"
     },
     {
-      "id": "s10-q14",
-      "section": "Ongoing Vigilance",
-      "prompt": "What are your warning signs that you're getting off track?",
-      "help": "Restlessness, irritability, and discontent are common."
+      "id": "q14",
+      "section": "Daily inventory",
+      "prompt": "Was I dishonest, selfish, or fearful today?"
     },
     {
-      "id": "s10-q15",
-      "prompt": "What do you do when you notice these warning signs?",
-      "help": "Quick action prevents bigger problems."
+      "id": "q15",
+      "section": "Daily inventory",
+      "prompt": "Do I owe anyone an amend for today?"
     },
     {
-      "id": "s10-q16",
-      "prompt": "Are you holding onto any resentments?",
-      "help": "Resentments are the number one offender."
+      "id": "q16",
+      "section": "Daily inventory",
+      "prompt": "Did I act on any character defects today? Which ones?"
     },
     {
-      "id": "s10-q17",
-      "prompt": "What can you do to let go of this resentment?",
-      "help": "Prayer for the other person often helps."
+      "id": "q17",
+      "section": "Daily inventory",
+      "prompt": "Did I practice any spiritual principles today? Which ones?"
     },
     {
-      "id": "s10-q18",
-      "section": "Growth and Progress",
-      "prompt": "How has your daily inventory practice helped your recovery?",
-      "help": "Reflect on the benefits."
+      "id": "q18",
+      "section": "Spot-check inventory",
+      "prompt": "When I'm feeling upset or disturbed, do I pause and take an inventory?"
     },
     {
-      "id": "s10-q19",
-      "prompt": "What patterns have you noticed through regular inventory?",
-      "help": "Self-awareness leads to change."
+      "id": "q19",
+      "section": "Spot-check inventory",
+      "prompt": "What patterns am I seeing in these spot-check inventories?"
     },
     {
-      "id": "s10-q20",
-      "prompt": "How has Step Ten changed your relationships?",
-      "help": "Promptly admitting wrongs builds trust."
+      "id": "q20",
+      "section": "Spot-check inventory",
+      "prompt": "How does a spot-check inventory help me in the moment?"
     },
     {
-      "id": "s10-q21",
-      "prompt": "Are you experiencing more peace and serenity?",
-      "help": "This is a promise of daily practice."
+      "id": "q21",
+      "section": "And when we were wrong",
+      "prompt": "When I've been wrong, do I admit it promptly?"
     },
     {
-      "id": "s10-q22",
-      "prompt": "What improvements do you want to make in your Step Ten practice?",
-      "help": "We can always deepen our spiritual practice."
+      "id": "q22",
+      "section": "And when we were wrong",
+      "prompt": "What gets in the way of my admitting when I'm wrong?"
+    },
+    {
+      "id": "q23",
+      "section": "And when we were wrong",
+      "prompt": "How has my willingness to admit my wrongs affected my relationships?"
+    },
+    {
+      "id": "q24",
+      "section": "Promptly admitted it",
+      "prompt": "What does 'promptly' mean to me?"
+    },
+    {
+      "id": "q25",
+      "section": "Promptly admitted it",
+      "prompt": "Do I wait to admit my wrongs, or do I do it right away?"
+    },
+    {
+      "id": "q26",
+      "section": "Promptly admitted it",
+      "prompt": "How does admitting my wrongs promptly benefit me?"
+    },
+    {
+      "id": "q27",
+      "section": "Promptly admitted it",
+      "prompt": "How does it benefit others?"
+    },
+    {
+      "id": "q28",
+      "section": "Keeping it green",
+      "prompt": "Do I stay in touch with what it was like when I was using?"
+    },
+    {
+      "id": "q29",
+      "section": "Keeping it green",
+      "prompt": "How do I keep the memory of my using fresh?"
+    },
+    {
+      "id": "q30",
+      "section": "Keeping it green",
+      "prompt": "What am I doing to guard against complacency?"
+    },
+    {
+      "id": "q31",
+      "section": "Spiritual principles",
+      "prompt": "How does continuing to take inventory help me practice honesty?"
+    },
+    {
+      "id": "q32",
+      "section": "Spiritual principles",
+      "prompt": "How does taking inventory help me practice humility?"
+    },
+    {
+      "id": "q33",
+      "section": "Spiritual principles",
+      "prompt": "How does promptly admitting my wrongs help me practice responsibility?"
+    },
+    {
+      "id": "q34",
+      "section": "Spiritual principles",
+      "prompt": "How am I growing spiritually as a result of working this step?"
+    },
+    {
+      "id": "q35",
+      "section": "Moving on",
+      "prompt": "What patterns have I noticed through regular inventory?"
+    },
+    {
+      "id": "q36",
+      "section": "Moving on",
+      "prompt": "How has my life improved since I began practicing daily inventory?"
+    },
+    {
+      "id": "q37",
+      "section": "Moving on",
+      "prompt": "How has working Step Ten prepared me for Steps Eleven and Twelve?"
     }
   ]
 }

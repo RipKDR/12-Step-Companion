@@ -1,153 +1,208 @@
 {
   "step": 12,
   "title": "Step Twelve",
-  "overviewLabels": ["service", "carrying the message", "spiritual awakening"],
+  "subtitle": "Having had a spiritual awakening as the result of these steps, we tried to carry this message to addicts, and to practice these principles in all our affairs.",
+  "overviewLabels": ["service", "carrying the message", "spiritual awakening", "principles"],
   "questions": [
     {
-      "id": "s12-q1",
-      "section": "Spiritual Awakening",
-      "prompt": "Have you had a spiritual awakening as a result of these steps?",
-      "help": "It may be sudden or gradual, dramatic or subtle."
+      "id": "q1",
+      "section": "Having had a spiritual awakening",
+      "prompt": "Have I had a spiritual awakening?"
     },
     {
-      "id": "s12-q2",
-      "prompt": "How has your life changed since you began working the steps?",
-      "help": "Consider changes in thinking, feeling, and behavior."
+      "id": "q2",
+      "section": "Having had a spiritual awakening",
+      "prompt": "What does a spiritual awakening mean to me?"
     },
     {
-      "id": "s12-q3",
-      "prompt": "How have your relationships changed?",
-      "help": "With yourself, others, and your Higher Power."
+      "id": "q3",
+      "section": "Having had a spiritual awakening",
+      "prompt": "How has my spiritual awakening affected my life?"
     },
     {
-      "id": "s12-q4",
-      "prompt": "What promises of recovery are you experiencing?",
-      "help": "Freedom, happiness, peace, usefulness, etc."
+      "id": "q4",
+      "section": "Having had a spiritual awakening",
+      "prompt": "In what ways have I been changed by working the steps?"
     },
     {
-      "id": "s12-q5",
-      "prompt": "How is your life different from before recovery?",
-      "help": "Reflect on the transformation."
+      "id": "q5",
+      "section": "Having had a spiritual awakening",
+      "prompt": "How has my thinking changed?"
     },
     {
-      "id": "s12-q6",
-      "section": "Carrying the Message",
-      "prompt": "Are you carrying the message of recovery to others?",
-      "help": "Service is essential to maintaining our recovery."
+      "id": "q6",
+      "section": "Having had a spiritual awakening",
+      "prompt": "How have my attitudes changed?"
     },
     {
-      "id": "s12-q7",
-      "prompt": "How do you carry the message? (sponsorship, H&I, service commitments, etc.)",
-      "help": "There are many ways to be of service."
+      "id": "q7",
+      "section": "Having had a spiritual awakening",
+      "prompt": "How has my behavior changed?"
     },
     {
-      "id": "s12-q8",
-      "prompt": "Do you have a sponsor? Are you a sponsor?",
-      "help": "Both relationships are vital to recovery."
+      "id": "q8",
+      "section": "As the result of these steps",
+      "prompt": "What specific changes in my life can I trace directly to working the steps?"
     },
     {
-      "id": "s12-q9",
-      "prompt": "What service commitments do you have?",
-      "help": "Making coffee, greeting, secretary, etc."
+      "id": "q9",
+      "section": "As the result of these steps",
+      "prompt": "How has each step contributed to my spiritual awakening?"
     },
     {
-      "id": "s12-q10",
-      "prompt": "How has being of service helped your recovery?",
-      "help": "We keep what we have by giving it away."
+      "id": "q10",
+      "section": "As the result of these steps",
+      "prompt": "What promises of the program am I experiencing?"
     },
     {
-      "id": "s12-q11",
-      "section": "Sharing Your Experience",
-      "prompt": "Are you comfortable sharing your experience, strength, and hope?",
-      "help": "Your story can help someone else."
+      "id": "q11",
+      "section": "We tried to carry this message",
+      "prompt": "What is the message I'm supposed to carry?"
     },
     {
-      "id": "s12-q12",
-      "prompt": "What is your message to someone new to recovery?",
-      "help": "Share what worked for you."
+      "id": "q12",
+      "section": "We tried to carry this message",
+      "prompt": "How do I carry the message of recovery?"
     },
     {
-      "id": "s12-q13",
-      "prompt": "How do you practice attraction rather than promotion?",
-      "help": "Living well is the best advertisement for recovery."
+      "id": "q13",
+      "section": "We tried to carry this message",
+      "prompt": "Do I have a sponsor?"
     },
     {
-      "id": "s12-q14",
-      "prompt": "What do you do when someone asks for help?",
-      "help": "Being available is a form of service."
+      "id": "q14",
+      "section": "We tried to carry this message",
+      "prompt": "Am I a sponsor? If so, to how many people?"
     },
     {
-      "id": "s12-q15",
-      "section": "Practicing Principles",
-      "prompt": "Are you practicing these principles in all your affairs?",
-      "help": "Recovery is about how we live, not just about staying clean."
+      "id": "q15",
+      "section": "We tried to carry this message",
+      "prompt": "What am I doing to help newcomers?"
     },
     {
-      "id": "s12-q16",
-      "prompt": "How do you practice spiritual principles at work?",
-      "help": "Honesty, integrity, and responsibility."
+      "id": "q16",
+      "section": "We tried to carry this message",
+      "prompt": "What service commitments do I have?"
     },
     {
-      "id": "s12-q17",
-      "prompt": "How do you practice spiritual principles in relationships?",
-      "help": "Love, patience, and tolerance."
+      "id": "q17",
+      "section": "We tried to carry this message",
+      "prompt": "How has being of service benefited me?"
     },
     {
-      "id": "s12-q18",
-      "prompt": "How do you practice spiritual principles in difficult situations?",
-      "help": "Prayer, pause, and asking for help."
+      "id": "q18",
+      "section": "To addicts",
+      "prompt": "Do I carry the message to all addicts, or just those I like?"
     },
     {
-      "id": "s12-q19",
-      "prompt": "When do you find it hardest to practice spiritual principles?",
-      "help": "Awareness helps us grow."
+      "id": "q19",
+      "section": "To addicts",
+      "prompt": "Do I practice the principle of attraction rather than promotion?"
     },
     {
-      "id": "s12-q20",
-      "section": "Continued Growth",
-      "prompt": "How do you maintain your spiritual fitness?",
-      "help": "Meetings, prayer, meditation, service, fellowship."
+      "id": "q20",
+      "section": "To addicts",
+      "prompt": "Am I willing to go to any lengths to help another addict?"
     },
     {
-      "id": "s12-q21",
-      "prompt": "Are you continuing to work the steps in your daily life?",
-      "help": "The steps are not a one-time event but a way of life."
+      "id": "q21",
+      "section": "And to practice these principles",
+      "prompt": "What are the spiritual principles I've learned from the Twelve Steps?"
     },
     {
-      "id": "s12-q22",
-      "prompt": "What areas of your life still need work?",
-      "help": "We claim spiritual progress, not spiritual perfection."
+      "id": "q22",
+      "section": "And to practice these principles",
+      "prompt": "Which principles am I practicing in my life today?"
     },
     {
-      "id": "s12-q23",
-      "prompt": "How has your understanding of your Higher Power evolved?",
-      "help": "Our spiritual awareness continues to deepen."
+      "id": "q23",
+      "section": "And to practice these principles",
+      "prompt": "Which principles do I have the most trouble practicing?"
     },
     {
-      "id": "s12-q24",
-      "prompt": "What are you grateful for in your recovery?",
-      "help": "Gratitude keeps us connected to our blessings."
+      "id": "q24",
+      "section": "In all our affairs",
+      "prompt": "Am I practicing spiritual principles in all areas of my life?"
     },
     {
-      "id": "s12-q25",
-      "section": "Looking Forward",
-      "prompt": "What are your goals for continued recovery?",
-      "help": "Personal growth, service, and spiritual development."
+      "id": "q25",
+      "section": "In all our affairs",
+      "prompt": "How am I practicing spiritual principles at work?"
     },
     {
-      "id": "s12-q26",
-      "prompt": "How will you continue to carry the message?",
-      "help": "Commitment to service sustains recovery."
+      "id": "q26",
+      "section": "In all our affairs",
+      "prompt": "How am I practicing spiritual principles at home?"
     },
     {
-      "id": "s12-q27",
-      "prompt": "What is your commitment to practicing these principles in all your affairs?",
-      "help": "This is the essence of Step Twelve."
+      "id": "q27",
+      "section": "In all our affairs",
+      "prompt": "How am I practicing spiritual principles in my relationships?"
     },
     {
-      "id": "s12-q28",
-      "prompt": "What does recovery mean to you today?",
-      "help": "Reflect on your personal understanding."
+      "id": "q28",
+      "section": "In all our affairs",
+      "prompt": "Are there areas of my life where I'm not practicing these principles? Which ones?"
+    },
+    {
+      "id": "q29",
+      "section": "In all our affairs",
+      "prompt": "What do I need to do to practice spiritual principles in all areas of my life?"
+    },
+    {
+      "id": "q30",
+      "section": "Maintenance",
+      "prompt": "What am I doing to maintain my spiritual condition?"
+    },
+    {
+      "id": "q31",
+      "section": "Maintenance",
+      "prompt": "Am I attending meetings regularly?"
+    },
+    {
+      "id": "q32",
+      "section": "Maintenance",
+      "prompt": "Am I working with my sponsor?"
+    },
+    {
+      "id": "q33",
+      "section": "Maintenance",
+      "prompt": "Am I staying in touch with other recovering addicts?"
+    },
+    {
+      "id": "q34",
+      "section": "Maintenance",
+      "prompt": "Am I continuing to work the steps?"
+    },
+    {
+      "id": "q35",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing the principle of service in my life today?"
+    },
+    {
+      "id": "q36",
+      "section": "Spiritual principles",
+      "prompt": "How am I practicing gratitude in my life today?"
+    },
+    {
+      "id": "q37",
+      "section": "Spiritual principles",
+      "prompt": "How am I growing spiritually?"
+    },
+    {
+      "id": "q38",
+      "section": "Moving on",
+      "prompt": "How has my life changed as a result of working all Twelve Steps?"
+    },
+    {
+      "id": "q39",
+      "section": "Moving on",
+      "prompt": "What does recovery mean to me today?"
+    },
+    {
+      "id": "q40",
+      "section": "Moving on",
+      "prompt": "What are my goals for my continued recovery?"
     }
   ]
 }

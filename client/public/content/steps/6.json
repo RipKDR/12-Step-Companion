@@ -1,86 +1,163 @@
 {
   "step": 6,
   "title": "Step Six",
-  "overviewLabels": ["willingness", "readiness", "change"],
+  "subtitle": "We were entirely ready to have God remove all these defects of character.",
+  "overviewLabels": ["readiness", "willingness", "humility", "self-awareness"],
   "questions": [
     {
-      "id": "s6-q1",
-      "section": "Understanding Defects",
-      "prompt": "List the main character defects you identified in Steps Four and Five.",
-      "help": "Review your inventory for patterns."
+      "id": "q1",
+      "section": "Introduction",
+      "prompt": "Which of my defects cause the most harm to myself and to others?"
     },
     {
-      "id": "s6-q2",
-      "prompt": "Which defect causes you the most problems in your life?",
-      "help": "Consider the impact on relationships and well-being."
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "What specific examples show how these defects have harmed me and others?"
     },
     {
-      "id": "s6-q3",
-      "prompt": "Which defect are you most willing to have removed?",
-      "help": "Willingness is the key to this step."
+      "id": "q3",
+      "section": "Introduction",
+      "prompt": "How have my character defects isolated me from other people?"
     },
     {
-      "id": "s6-q4",
-      "prompt": "Which defect are you least willing to have removed? Why?",
-      "help": "Be honest about your attachments to certain behaviors."
+      "id": "q4",
+      "section": "Introduction",
+      "prompt": "How have my defects affected my relationship with a Higher Power?"
     },
     {
-      "id": "s6-q5",
-      "section": "Becoming Willing",
-      "prompt": "What are you afraid will happen if this defect is removed?",
-      "help": "Our defects often feel like protection or identity."
+      "id": "q5",
+      "section": "Entirely ready",
+      "prompt": "Am I willing to have all of my defects of character removed?"
     },
     {
-      "id": "s6-q6",
-      "prompt": "How has holding onto this defect served you in the past?",
-      "help": "Consider what you think you gain from it."
+      "id": "q6",
+      "section": "Entirely ready",
+      "prompt": "Do I believe that some of my character defects are good qualities that have just been distorted? Which ones?"
     },
     {
-      "id": "s6-q7",
-      "prompt": "How has this defect hurt you and others?",
-      "help": "Look at the real costs of this behavior."
+      "id": "q7",
+      "section": "Entirely ready",
+      "prompt": "How does my understanding of God's nature affect my willingness to have these defects removed?"
     },
     {
-      "id": "s6-q8",
-      "prompt": "What would your life look like without this defect?",
-      "help": "Imagine the freedom and possibilities."
+      "id": "q8",
+      "section": "Entirely ready",
+      "prompt": "Am I willing to have a defect removed even if I can't see what good quality exists underneath? Why or why not?"
     },
     {
-      "id": "s6-q9",
-      "section": "Growing Willingness",
-      "prompt": "Are you willing to let your Higher Power remove this defect?",
-      "help": "This is about willingness, not perfection."
+      "id": "q9",
+      "section": "Entirely ready",
+      "prompt": "Do I think my defects serve a purpose? What purpose?"
     },
     {
-      "id": "s6-q10",
-      "prompt": "What obstacles stand between you and complete willingness?",
-      "help": "Identify what's blocking your readiness."
+      "id": "q10",
+      "section": "Entirely ready",
+      "prompt": "Do I believe my defects are connected to my survival? How?"
     },
     {
-      "id": "s6-q11",
-      "prompt": "How can you work on becoming more willing?",
-      "help": "Consider prayer, meditation, or talking with your sponsor."
+      "id": "q11",
+      "section": "Entirely ready",
+      "prompt": "In what ways do I fear I'll be vulnerable if my defects are removed?"
     },
     {
-      "id": "s6-q12",
-      "prompt": "What does 'entirely ready' mean to you?",
-      "help": "Reflect on the completeness this step asks for."
+      "id": "q12",
+      "section": "Entirely ready",
+      "prompt": "What do I fear will happen to me if I let go of the familiar?"
     },
     {
-      "id": "s6-q13",
-      "section": "Readiness",
-      "prompt": "Do you believe your Higher Power can remove these defects?",
-      "help": "Consider your faith and trust."
+      "id": "q13",
+      "section": "Entirely ready",
+      "prompt": "What must I do to open myself to changing?"
     },
     {
-      "id": "s6-q14",
-      "prompt": "Are you willing to do your part in changing these behaviors?",
-      "help": "Recovery requires both surrender and action."
+      "id": "q14",
+      "section": "Entirely ready",
+      "prompt": "How long am I willing to suffer the consequences of my character defects before I'm ready to let them go?"
     },
     {
-      "id": "s6-q15",
-      "prompt": "Are you entirely ready to have all your defects of character removed?",
-      "help": "This is the essence of Step Six."
+      "id": "q15",
+      "section": "Have God remove",
+      "prompt": "What does it mean to me to have God remove my defects?"
+    },
+    {
+      "id": "q16",
+      "section": "Have God remove",
+      "prompt": "Do I believe that my Higher Power can remove my defects? Why or why not?"
+    },
+    {
+      "id": "q17",
+      "section": "Have God remove",
+      "prompt": "Am I willing to change? What does that mean to me?"
+    },
+    {
+      "id": "q18",
+      "section": "Have God remove",
+      "prompt": "Do I believe that I can change? If not, what must I do to find that faith?"
+    },
+    {
+      "id": "q19",
+      "section": "Have God remove",
+      "prompt": "What is my part in the process of being changed?"
+    },
+    {
+      "id": "q20",
+      "section": "All these defects",
+      "prompt": "Am I willing to go to whatever lengths are necessary for recovery?"
+    },
+    {
+      "id": "q21",
+      "section": "All these defects",
+      "prompt": "Which of my defects am I not willing to let go of? Why?"
+    },
+    {
+      "id": "q22",
+      "section": "All these defects",
+      "prompt": "What must I do to become willing?"
+    },
+    {
+      "id": "q23",
+      "section": "Spiritual principles",
+      "prompt": "How does my awareness of my defects contribute to my readiness to have them removed?"
+    },
+    {
+      "id": "q24",
+      "section": "Spiritual principles",
+      "prompt": "Do I believe God will remove my defects? Why or why not?"
+    },
+    {
+      "id": "q25",
+      "section": "Spiritual principles",
+      "prompt": "What blocks my willingness to have these defects removed?"
+    },
+    {
+      "id": "q26",
+      "section": "Spiritual principles",
+      "prompt": "Do I believe that I can still enjoy life without my character defects? Why or why not?"
+    },
+    {
+      "id": "q27",
+      "section": "Spiritual principles",
+      "prompt": "Have I lost the fear that God may not come through for me?"
+    },
+    {
+      "id": "q28",
+      "section": "Spiritual principles",
+      "prompt": "What am I doing to increase my readiness?"
+    },
+    {
+      "id": "q29",
+      "section": "Spiritual principles",
+      "prompt": "How has humility helped me in developing readiness?"
+    },
+    {
+      "id": "q30",
+      "section": "Moving on",
+      "prompt": "What are the benefits of being changed?"
+    },
+    {
+      "id": "q31",
+      "section": "Moving on",
+      "prompt": "What am I willing to do to prepare myself for the Seventh Step?"
     }
   ]
 }
