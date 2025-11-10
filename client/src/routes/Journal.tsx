@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import JournalEntryCard from '@/components/JournalEntryCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -15,10 +16,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square, TrendingUp, Calendar, Smile, Filter, X } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
 import { startSpeechRecognition, startAudioRecording, isSpeechRecognitionSupported, isMediaRecordingSupported } from '@/lib/voice';
+import { cn } from '@/lib/utils';
+
+const getMoodColor = (mood: number) => {
+  if (mood <= 3) return 'text-red-500';
+  if (mood <= 5) return 'text-orange-500';
+  if (mood <= 7) return 'text-yellow-500';
+  return 'text-green-500';
+};
+
+const getMoodEmoji = (mood: number) => {
+  if (mood <= 2) return '😢';
+  if (mood <= 4) return '😔';
+  if (mood <= 6) return '😐';
+  if (mood <= 8) return '🙂';
+  return '😊';
+};
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +53,9 @@ export default function Journal() {
   const [audioDuration, setAudioDuration] = useState<number | undefined>(undefined);
   const [stopListening, setStopListening] = useState<(() => void) | null>(null);
   const [stopRecording, setStopRecording] = useState<(() => void) | null>(null);
+  const [filterTag, setFilterTag] = useState<string>('');
+  const [filterTrigger, setFilterTrigger] = useState<boolean | null>(null);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'mood-high' | 'mood-low'>('newest');
 
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
@@ -44,10 +64,68 @@ export default function Journal() {
 
   const entries = getJournalEntries();
 
-  const filteredEntries = entries.filter((entry) =>
-    entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    entries.forEach(entry => {
+      entry.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [entries]);
+
+  const commonTags = ['gratitude', 'meeting', 'struggle', 'victory', 'reflection', 'prayer'];
+
+  const statistics = useMemo(() => {
+    if (entries.length === 0) return null;
+    
+    const totalMood = entries.reduce((sum, entry) => sum + (entry.mood ?? 5), 0);
+    const avgMood = totalMood / entries.length;
+    const triggerCount = entries.filter(e => e.isTrigger).length;
+    const last7Days = entries.filter(e => {
+      const entryDate = new Date(e.date);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate >= weekAgo;
+    });
+    
+    return {
+      total: entries.length,
+      avgMood: avgMood.toFixed(1),
+      triggerCount,
+      last7DaysCount: last7Days.length,
+    };
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    let filtered = entries.filter((entry) =>
+      entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    if (filterTag) {
+      filtered = filtered.filter(entry => entry.tags.includes(filterTag));
+    }
+
+    if (filterTrigger !== null) {
+      filtered = filtered.filter(entry => entry.isTrigger === filterTrigger);
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case 'oldest':
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case 'mood-high':
+          return (b.mood ?? 5) - (a.mood ?? 5);
+        case 'mood-low':
+          return (a.mood ?? 5) - (b.mood ?? 5);
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [entries, searchQuery, filterTag, filterTrigger, sortBy]);
 
   const handleToggleVoice = () => {
     if (isListening) {
@@ -150,6 +228,41 @@ export default function Journal() {
             Track your thoughts, moods, and recovery journey
           </p>
         </div>
+
+        {statistics && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Calendar className="h-4 w-4" />
+                <p className="text-xs font-medium">Total Entries</p>
+              </div>
+              <p className="text-2xl font-semibold">{statistics.total}</p>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Smile className="h-4 w-4" />
+                <p className="text-xs font-medium">Avg Mood</p>
+              </div>
+              <p className={cn("text-2xl font-semibold", getMoodColor(parseFloat(statistics.avgMood)))}>
+                {statistics.avgMood} {getMoodEmoji(parseFloat(statistics.avgMood))}
+              </p>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <TrendingUp className="h-4 w-4" />
+                <p className="text-xs font-medium">This Week</p>
+              </div>
+              <p className="text-2xl font-semibold">{statistics.last7DaysCount}</p>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <AlertTriangle className="h-4 w-4" />
+                <p className="text-xs font-medium">Triggers</p>
+              </div>
+              <p className="text-2xl font-semibold">{statistics.triggerCount}</p>
+            </Card>
+          </div>
+        )}
         
         <div className="flex gap-3 flex-col sm:flex-row">
           <div className="relative flex-1">
@@ -171,6 +284,73 @@ export default function Journal() {
             <Plus className="h-4 w-4" />
             <span>New Entry</span>
           </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Sort:</span>
+          </div>
+          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <SelectTrigger className="w-32" data-testid="select-sort">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value="mood-high">Mood (High)</SelectItem>
+              <SelectItem value="mood-low">Mood (Low)</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {allTags.length > 0 && (
+            <>
+              <span className="text-sm text-muted-foreground">Tags:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {allTags.slice(0, 5).map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={filterTag === tag ? 'default' : 'outline'}
+                    className="cursor-pointer hover-elevate"
+                    onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
+                    data-testid={`badge-filter-${tag}`}
+                  >
+                    {tag}
+                    {filterTag === tag && <X className="ml-1 h-3 w-3" />}
+                  </Badge>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div className="flex gap-1.5">
+            <Badge
+              variant={filterTrigger === true ? 'default' : 'outline'}
+              className="cursor-pointer hover-elevate gap-1"
+              onClick={() => setFilterTrigger(filterTrigger === true ? null : true)}
+              data-testid="badge-filter-triggers"
+            >
+              <AlertTriangle className="h-3 w-3" />
+              Triggers Only
+              {filterTrigger === true && <X className="ml-1 h-3 w-3" />}
+            </Badge>
+          </div>
+
+          {(filterTag || filterTrigger !== null) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterTag('');
+                setFilterTrigger(null);
+              }}
+              className="gap-1"
+              data-testid="button-clear-filters"
+            >
+              <X className="h-3 w-3" />
+              Clear filters
+            </Button>
+          )}
         </div>
       </header>
 
@@ -210,7 +390,7 @@ export default function Journal() {
       </section>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>New Journal Entry</DialogTitle>
             <DialogDescription>
@@ -218,7 +398,7 @@ export default function Journal() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6 py-4">
+          <div className="space-y-6 py-4 overflow-y-auto flex-1">
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -326,7 +506,12 @@ export default function Journal() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="mood">Mood ({mood}/10)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="mood">Mood</Label>
+                <span className={cn("text-2xl font-semibold", getMoodColor(mood))}>
+                  {mood}/10 {getMoodEmoji(mood)}
+                </span>
+              </div>
               <Slider
                 id="mood"
                 value={[mood]}
@@ -339,12 +524,32 @@ export default function Journal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Label htmlFor="tags">Tags</Label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {commonTags.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={tags.split(',').map(t => t.trim()).includes(tag) ? 'default' : 'outline'}
+                    className="cursor-pointer hover-elevate"
+                    onClick={() => {
+                      const currentTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+                      if (currentTags.includes(tag)) {
+                        setTags(currentTags.filter(t => t !== tag).join(', '));
+                      } else {
+                        setTags([...currentTags, tag].join(', '));
+                      }
+                    }}
+                    data-testid={`badge-tag-${tag}`}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
               <Input
                 id="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="gratitude, meeting, struggle"
+                placeholder="Add custom tags (comma-separated)"
                 data-testid="input-tags"
               />
             </div>
