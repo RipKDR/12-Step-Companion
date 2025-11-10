@@ -92,6 +92,24 @@ export default function TodayPanel({
 
       {/* Priority Support */}
       <section className="space-y-3" aria-label="Priority support">
+        <Link href="/emergency">
+          <Card className="cursor-pointer border-2 border-destructive/20 hover:border-destructive/40 hover-elevate active-elevate-2" data-testid="link-emergency">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive shrink-0">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm">Need Support Now?</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Crisis tools & emergency contacts
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/ai-sponsor">
           <Card className="cursor-pointer relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 hover-elevate active-elevate-2" data-testid="link-ai-sponsor">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/3 to-transparent pointer-events-none" />
