@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 8;
+export const CURRENT_VERSION = 9;
 
 type Migration = (state: any) => any;
 
@@ -89,6 +89,27 @@ const migrations: Record<number, Migration> = {
         retentionDays: 90,
       };
     }
+    return state;
+  },
+  9: (state: any) => {
+    // V9: Add harm reduction status and reminders
+    if (!state.harmReductionStatus) {
+      state.harmReductionStatus = {
+        naloxoneAvailable: false,
+        fentanylTestStripsAvailable: false,
+        sharpsContainerAvailable: false,
+        updatedAtISO: new Date().toISOString(),
+      };
+    }
+
+    if (state.settings && state.settings.notifications && !state.settings.notifications.harmReduction) {
+      state.settings.notifications.harmReduction = {
+        enabled: false,
+        time: '10:00',
+        message: 'Check your naloxone kit and safer-use supplies.',
+      };
+    }
+
     return state;
   },
 };

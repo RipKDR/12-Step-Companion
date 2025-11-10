@@ -16,7 +16,8 @@ import type {
   UnlockedAchievement,
   ChallengeCompletion,
   AnalyticsEvent,
-  AnalyticsEventType
+  AnalyticsEventType,
+  HarmReductionStatus
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -35,6 +36,7 @@ const defaultEmergencyActions: EmergencyAction[] = [
     type: 'call',
     data: 'tel:+61400000000',
     icon: 'phone',
+    isHarmReductionPreferred: false,
   },
   {
     id: 'breathing',
@@ -59,6 +61,13 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
+const defaultHarmReductionStatus: HarmReductionStatus = {
+  naloxoneAvailable: false,
+  fentanylTestStripsAvailable: false,
+  sharpsContainerAvailable: false,
+  updatedAtISO: new Date().toISOString(),
+};
+
 const initialStreaks: Streaks = {
   journaling: initializeStreak('journaling'),
   dailyCards: initializeStreak('dailyCards'),
@@ -76,6 +85,7 @@ const initialState: AppState = {
   meetings: [],
   emergencyActions: defaultEmergencyActions,
   fellowshipContacts: {},
+  harmReductionStatus: defaultHarmReductionStatus,
   favoriteQuotes: [],
   settings: {
     theme: 'system',
@@ -96,6 +106,11 @@ const initialState: AppState = {
       milestoneAlerts: true,
       streakReminders: true,
       challengeReminders: true,
+      harmReduction: {
+        enabled: false,
+        time: '10:00',
+        message: 'Check your naloxone kit and safer-use supplies.',
+      },
       quietHours: {
         enabled: true,
         start: '22:00',
@@ -154,7 +169,11 @@ interface AppStore extends AppState {
   deleteContact: (id: string) => void;
   getContacts: () => FellowshipContact[];
   getEmergencyContacts: () => FellowshipContact[];
-  
+  getHarmReductionContacts: () => FellowshipContact[];
+
+  // Harm Reduction Kit Status
+  updateHarmReductionStatus: (updates: Partial<HarmReductionStatus>) => void;
+
   // Favorite Quotes
   toggleFavoriteQuote: (quoteId: string) => void;
   isFavoriteQuote: (quoteId: string) => boolean;
@@ -392,8 +411,9 @@ export const useAppStore = create<AppStore>()(
           id,
           createdAtISO: now,
           updatedAtISO: now,
+          isHarmReductionContact: contact.isHarmReductionContact ?? false,
         };
-        
+
         return {
           fellowshipContacts: {
             ...state.fellowshipContacts,
@@ -436,6 +456,22 @@ export const useAppStore = create<AppStore>()(
           .filter((contact) => contact.isEmergencyContact)
           .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
       },
+
+      getHarmReductionContacts: () => {
+        const state = get();
+        return Object.values(state.fellowshipContacts)
+          .filter((contact) => contact.isHarmReductionContact)
+          .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
+      },
+
+      // Harm Reduction Kit Status
+      updateHarmReductionStatus: (updates) => set((state) => ({
+        harmReductionStatus: {
+          ...state.harmReductionStatus,
+          ...updates,
+          updatedAtISO: new Date().toISOString(),
+        },
+      })),
       
       // Favorite Quotes
       toggleFavoriteQuote: (quoteId) => set((state) => {
@@ -528,12 +564,22 @@ export const useAppStore = create<AppStore>()(
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
+          harmReductionStatus: data.harmReductionStatus
+            ? {
+                ...state.harmReductionStatus,
+                ...data.harmReductionStatus,
+              }
+            : state.harmReductionStatus,
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
         };
       }),
       
-      clearAllData: () => set(initialState),
+      clearAllData: () =>
+        set({
+          ...initialState,
+          harmReductionStatus: { ...initialState.harmReductionStatus },
+        }),
 
       // Streak Management (V2)
       updateStreakForJournal: () => set((state) => {

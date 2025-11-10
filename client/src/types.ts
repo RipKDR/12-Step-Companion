@@ -88,6 +88,7 @@ export interface EmergencyAction {
   type: 'call' | 'timer' | 'exercise' | 'notes';
   data: string; // tel: number, timer duration, exercise name, or notes text
   icon: string;
+  isHarmReductionPreferred?: boolean;
 }
 
 export interface FellowshipContact {
@@ -97,8 +98,16 @@ export interface FellowshipContact {
   email?: string;
   relationshipType: 'sponsor' | 'sponsee' | 'friend' | 'home-group' | 'other';
   isEmergencyContact: boolean;
+  isHarmReductionContact?: boolean;
   notes?: string;
   createdAtISO: string;
+  updatedAtISO: string;
+}
+
+export interface HarmReductionStatus {
+  naloxoneAvailable: boolean;
+  fentanylTestStripsAvailable: boolean;
+  sharpsContainerAvailable: boolean;
   updatedAtISO: string;
 }
 
@@ -127,6 +136,11 @@ export interface NotificationSettings {
   milestoneAlerts: boolean;
   streakReminders: boolean;
   challengeReminders: boolean;
+  harmReduction: {
+    enabled: boolean;
+    time: string; // HH:MM format
+    message: string;
+  };
 
   quietHours: {
     enabled: boolean;
@@ -310,6 +324,7 @@ export interface AppState {
   goals?: Record<string, Goal>; // id -> goal
   emergencyActions: EmergencyAction[];
   fellowshipContacts: Record<string, FellowshipContact>; // id -> contact
+  harmReductionStatus: HarmReductionStatus;
   favoriteQuotes: string[]; // quote IDs
   settings: AppSettings;
   onboardingComplete: boolean;

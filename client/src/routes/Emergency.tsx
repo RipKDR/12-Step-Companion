@@ -6,10 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SponsorCard from '@/components/SponsorCard';
-import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users } from 'lucide-react';
+import { Phone, Clock, Heart, FileText, AlertCircle, AlertTriangle, Loader2, MessageCircle, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
+import HarmReductionCard from '@/components/HarmReductionCard';
 
 export default function Emergency() {
   const profile = useAppStore((state) => state.profile);
@@ -298,6 +299,21 @@ export default function Emergency() {
           </div>
         </CardContent>
       </Card>
+
+      <section className="space-y-4">
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <div className="mt-0.5">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-destructive">Harm Reduction &amp; Overdose Support</h2>
+            <p className="text-sm text-destructive/80">
+              Follow the steps below to stay safe, support others, and reach trusted help quickly.
+            </p>
+          </div>
+        </div>
+        <HarmReductionCard />
+      </section>
 
       <SponsorCard
         sponsorName={profile?.sponsorName}

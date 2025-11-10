@@ -175,7 +175,23 @@ export default function Settings() {
     });
   };
 
-  const handleNotificationTimeChange = async (key: 'morningCheckIn' | 'eveningReflection', time: string) => {
+  const handleHarmReductionMessageChange = async (message: string) => {
+    updateNotificationSettings({
+      harmReduction: { ...settings.notifications.harmReduction, message }
+    });
+
+    if (settings.notifications.enabled) {
+      await notificationManager.scheduleNotifications({
+        ...settings.notifications,
+        harmReduction: { ...settings.notifications.harmReduction, message }
+      });
+    }
+  };
+
+  const handleNotificationTimeChange = async (
+    key: 'morningCheckIn' | 'eveningReflection' | 'harmReduction',
+    time: string
+  ) => {
     updateNotificationSettings({
       [key]: { ...settings.notifications[key], time }
     });
@@ -512,6 +528,60 @@ export default function Settings() {
                       updateNotificationSettings({ streakReminders: checked })
                     }
                   />
+                </div>
+
+                <div className="space-y-3 rounded-md border bg-muted/40 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="harm-reduction-reminder">Harm Reduction Reminder</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Gentle nudge to check naloxone kits and safer-use supplies
+                      </p>
+                    </div>
+                    <Switch
+                      id="harm-reduction-reminder"
+                      checked={settings.notifications.harmReduction.enabled}
+                      onCheckedChange={(checked) =>
+                        updateNotificationSettings({
+                          harmReduction: {
+                            ...settings.notifications.harmReduction,
+                            enabled: checked
+                          }
+                        })
+                      }
+                      data-testid="switch-harm-reduction-reminder"
+                    />
+                  </div>
+
+                  {settings.notifications.harmReduction.enabled && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="harm-reduction-time" className="text-sm text-muted-foreground">
+                          Reminder time
+                        </Label>
+                        <Input
+                          id="harm-reduction-time"
+                          type="time"
+                          value={settings.notifications.harmReduction.time}
+                          onChange={(e) => handleNotificationTimeChange('harmReduction', e.target.value)}
+                          className="w-32"
+                          data-testid="input-harm-reduction-time"
+                        />
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label htmlFor="harm-reduction-message" className="text-sm text-muted-foreground">
+                          Reminder message
+                        </Label>
+                        <Input
+                          id="harm-reduction-message"
+                          value={settings.notifications.harmReduction.message}
+                          onChange={(e) => handleHarmReductionMessageChange(e.target.value)}
+                          placeholder="Kit expires soon—swap it out"
+                          data-testid="input-harm-reduction-message"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
