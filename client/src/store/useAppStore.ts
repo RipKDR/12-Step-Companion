@@ -10,6 +10,8 @@ import type {
   EmergencyAction,
   AppSettings,
   FellowshipContact,
+  AvailabilityWindow,
+  ContactStatus,
   Streaks,
   StreakData,
   CelebratedMilestone,
@@ -27,6 +29,22 @@ import {
   breakStreak,
   initializeStreak
 } from '@/lib/streaks';
+
+const fallbackTimezone = 'UTC';
+
+const getDefaultTimezone = () => {
+  try {
+    if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
+    }
+  } catch (error) {
+    console.warn('Unable to determine timezone', error);
+  }
+
+  return fallbackTimezone;
+};
+
+const defaultTimezone = getDefaultTimezone();
 
 const defaultEmergencyActions: EmergencyAction[] = [
   {
@@ -93,6 +111,11 @@ const initialState: AppState = {
         enabled: true,
         time: '20:00'
       },
+      availabilityCheckIn: {
+        enabled: false,
+        time: '09:00',
+        message: 'Check in with your buddies to confirm warmline availability.'
+      },
       milestoneAlerts: true,
       streakReminders: true,
       challengeReminders: true,
@@ -154,6 +177,10 @@ interface AppStore extends AppState {
   deleteContact: (id: string) => void;
   getContacts: () => FellowshipContact[];
   getEmergencyContacts: () => FellowshipContact[];
+  setContactStatus: (id: string, status: ContactStatus) => void;
+  toggleContactOnCall: (id: string, onCall: boolean) => void;
+  recordContactCheckIn: (id: string, timestamp?: string) => void;
+  scheduleContactCheckIn: (id: string, nextCheckInISO: string) => void;
   
   // Favorite Quotes
   toggleFavoriteQuote: (quoteId: string) => void;
@@ -389,11 +416,15 @@ export const useAppStore = create<AppStore>()(
         const now = new Date().toISOString();
         const newContact: FellowshipContact = {
           ...contact,
+          timezone: contact.timezone ?? defaultTimezone,
+          availability: contact.availability ?? [],
+          status: contact.status ?? 'available',
+          onCall: contact.onCall ?? false,
           id,
           createdAtISO: now,
           updatedAtISO: now,
         };
-        
+
         return {
           fellowshipContacts: {
             ...state.fellowshipContacts,
@@ -412,6 +443,10 @@ export const useAppStore = create<AppStore>()(
             [id]: {
               ...existing,
               ...updates,
+              timezone: updates.timezone ?? existing.timezone,
+              availability: updates.availability ?? existing.availability,
+              status: updates.status ?? existing.status,
+              onCall: updates.onCall ?? existing.onCall,
               updatedAtISO: new Date().toISOString(),
             },
           },
@@ -436,6 +471,74 @@ export const useAppStore = create<AppStore>()(
           .filter((contact) => contact.isEmergencyContact)
           .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
       },
+
+      setContactStatus: (id, status) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              status,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
+
+      toggleContactOnCall: (id, onCall) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              onCall,
+              status: onCall ? 'on-call' : existing.status === 'on-call' ? 'available' : existing.status,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
+
+      recordContactCheckIn: (id, timestamp) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        const now = timestamp ?? new Date().toISOString();
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              lastCheckInISO: now,
+              nextCheckInISO: undefined,
+              updatedAtISO: now,
+            },
+          },
+        };
+      }),
+
+      scheduleContactCheckIn: (id, nextCheckInISO) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              nextCheckInISO,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
       
       // Favorite Quotes
       toggleFavoriteQuote: (quoteId) => set((state) => {

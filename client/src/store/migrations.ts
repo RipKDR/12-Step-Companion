@@ -1,7 +1,7 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 
-export const CURRENT_VERSION = 8;
+export const CURRENT_VERSION = 9;
 
 type Migration = (state: any) => any;
 
@@ -89,6 +89,31 @@ const migrations: Record<number, Migration> = {
         retentionDays: 90,
       };
     }
+    return state;
+  },
+  9: (state: any) => {
+    // V9: Warmline availability reminders and contact metadata
+    if (state.settings && state.settings.notifications) {
+      if (!state.settings.notifications.availabilityCheckIn) {
+        state.settings.notifications.availabilityCheckIn = {
+          enabled: false,
+          time: '09:00',
+          message: 'Check in with your buddies to confirm warmline availability.'
+        };
+      }
+    }
+
+    if (state.fellowshipContacts) {
+      Object.keys(state.fellowshipContacts).forEach((contactId) => {
+        const contact = state.fellowshipContacts[contactId];
+        if (!contact) return;
+        contact.timezone = contact.timezone || 'UTC';
+        contact.availability = contact.availability || [];
+        contact.status = contact.status || 'available';
+        contact.onCall = contact.onCall ?? false;
+      });
+    }
+
     return state;
   },
 };

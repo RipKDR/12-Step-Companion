@@ -90,12 +90,47 @@ export interface EmergencyAction {
   icon: string;
 }
 
+export type ContactStatus = 'available' | 'on-call' | 'resting' | 'offline';
+
+export type WarmlineRole = 'listener' | 'supporter' | 'coordinator' | 'backup';
+
+export type Weekday =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
+
+export interface AvailabilityWindow {
+  id: string;
+  day: Weekday;
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+  note?: string;
+}
+
+export interface SosPreferences {
+  channel: 'sms' | 'encrypted-chat';
+  target?: string; // Phone number for SMS or URL/handle for encrypted chat
+  message?: string;
+}
+
 export interface FellowshipContact {
   id: string;
   name: string;
   phone?: string;
   email?: string;
   relationshipType: 'sponsor' | 'sponsee' | 'friend' | 'home-group' | 'other';
+  timezone: string;
+  warmlineRole?: WarmlineRole;
+  availability?: AvailabilityWindow[];
+  status: ContactStatus;
+  onCall: boolean;
+  lastCheckInISO?: string;
+  nextCheckInISO?: string;
+  sosPreferences?: SosPreferences;
   isEmergencyContact: boolean;
   notes?: string;
   createdAtISO: string;
@@ -122,6 +157,12 @@ export interface NotificationSettings {
   eveningReflection: {
     enabled: boolean;
     time: string; // HH:MM format
+  };
+
+  availabilityCheckIn: {
+    enabled: boolean;
+    time: string; // HH:MM format
+    message?: string;
   };
 
   milestoneAlerts: boolean;
