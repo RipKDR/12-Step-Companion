@@ -34,21 +34,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check for API key
-      const apiKey = process.env.ANTHROPIC_API_KEY;
+      const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        console.error('ANTHROPIC_API_KEY not set');
+        console.error('GEMINI_API_KEY not set');
         return res.status(500).json({
           message: 'AI service not configured. Please contact administrator.',
           response: "I'm sorry, but I'm not properly configured at the moment. Please try reaching out to a human sponsor or check back later."
         });
       }
 
-      // Import Anthropic SDK dynamically
-      const Anthropic = (await import('@anthropic-ai/sdk')).default;
-      const anthropic = new Anthropic({ apiKey });
+      // Import Google Generative AI SDK dynamically
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(apiKey);
 
       // Build conversation context
-      const systemPrompt = `You are a compassionate, supportive AI sponsor for people in 12-step recovery programs. Your role is to:
+      const systemInstruction = `You are a compassionate, supportive AI sponsor for people in 12-step recovery programs. Your role is to:
 
 1. Provide emotional support and validation
 2. Listen without judgment
@@ -75,36 +75,37 @@ If someone is in crisis or danger, always encourage them to:
 
 Remember: You're a supportive tool, available 24/7, but you complement—not replace—human sponsors and fellowship.`;
 
-      // Format conversation history for Claude
-      const messages = conversationHistory?.map((msg: any) => ({
-        role: msg.role === 'assistant' ? 'assistant' : 'user',
-        content: msg.content
+      // Initialize model with system instruction
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        systemInstruction
+      });
+
+      // Format conversation history for Gemini
+      const history = conversationHistory?.map((msg: any) => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
       })) || [];
 
-      // Add the new message
-      messages.push({
-        role: 'user',
-        content: message
+      // Start chat with history
+      const chat = model.startChat({
+        history,
+        generationConfig: {
+          maxOutputTokens: 1024,
+          temperature: 0.7,
+        },
       });
 
-      // Call Claude API
-      const response = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages
-      });
-
-      const responseText = response.content[0].type === 'text'
-        ? response.content[0].text
-        : 'I apologize, but I had trouble generating a response. Please try again.';
+      // Send message and get response
+      const result = await chat.sendMessage(message);
+      const responseText = result.response.text();
 
       res.json({ response: responseText });
     } catch (error: any) {
       console.error('Error in AI sponsor chat:', error);
 
       // Handle rate limiting
-      if (error.status === 429) {
+      if (error.status === 429 || error.message?.includes('quota')) {
         return res.status(429).json({
           message: 'Too many requests. Please wait a moment and try again.',
           response: "I'm receiving a lot of messages right now. Please wait a moment and try again. If you need immediate support, consider calling your sponsor or attending a meeting."
