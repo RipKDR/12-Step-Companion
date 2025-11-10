@@ -116,31 +116,48 @@ export default function PracticePanel({
             Keep the momentum going
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <StreakCard
-            title="Journaling"
-            icon={PenLine}
-            streak={streaks.journaling}
-            color="blue"
-          />
-          <StreakCard
-            title="Daily Cards"
-            icon={Calendar}
-            streak={streaks.dailyCards}
-            color="green"
-          />
-          <StreakCard
-            title="Step Work"
-            icon={BookOpen}
-            streak={streaks.stepWork}
-            color="purple"
-          />
-          <StreakCard
-            title="Meetings"
-            icon={UserCheck}
-            streak={streaks.meetings}
-            color="orange"
-          />
+        <div className="space-y-3">
+          {/* Primary Streak - Hero Card */}
+          {(() => {
+            const streakConfigs = [
+              { key: 'journaling', title: 'Journaling', icon: PenLine, color: 'blue' as const, streak: streaks.journaling },
+              { key: 'dailyCards', title: 'Daily Cards', icon: Calendar, color: 'green' as const, streak: streaks.dailyCards },
+              { key: 'stepWork', title: 'Step Work', icon: BookOpen, color: 'purple' as const, streak: streaks.stepWork },
+              { key: 'meetings', title: 'Meetings', icon: UserCheck, color: 'orange' as const, streak: streaks.meetings },
+            ];
+
+            const primaryStreak = streakConfigs.reduce((prev, current) => 
+              current.streak.current > prev.streak.current ? current : prev
+            );
+
+            const secondaryStreaks = streakConfigs.filter(s => s.key !== primaryStreak.key);
+
+            return (
+              <>
+                <StreakCard
+                  title={primaryStreak.title}
+                  icon={primaryStreak.icon}
+                  streak={primaryStreak.streak}
+                  color={primaryStreak.color}
+                  variant="hero"
+                />
+                
+                {/* Secondary Streaks - Compact Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {secondaryStreaks.map((config) => (
+                    <StreakCard
+                      key={config.key}
+                      title={config.title}
+                      icon={config.icon}
+                      streak={config.streak}
+                      color={config.color}
+                      variant="compact"
+                    />
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </section>
     </div>
