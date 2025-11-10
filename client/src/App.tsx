@@ -27,6 +27,7 @@ import Contacts from "@/routes/Contacts";
 import Achievements from "@/routes/Achievements";
 import UsageInsights from "@/routes/UsageInsights";
 import Landing from "@/routes/Landing";
+import AISponsor from "@/routes/AISponsor";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -66,6 +67,7 @@ function Router() {
         <Route path="/usage-insights" component={UsageInsights} />
         <Route path="/contacts" component={Contacts} />
         <Route path="/achievements" component={Achievements} />
+        <Route path="/ai-sponsor" component={AISponsor} />
         <Route path="/settings" component={Settings} />
         <Route path="/onboarding" component={Onboarding} />
         <Route component={NotFound} />

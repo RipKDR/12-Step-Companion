@@ -8,7 +8,8 @@ import {
   Users,
   Trophy,
   Phone,
-  ChevronRight
+  ChevronRight,
+  Bot
 } from 'lucide-react';
 
 const menuItems = [
@@ -39,6 +40,13 @@ const menuItems = [
     icon: Phone,
     path: '/contacts',
     testId: 'more-contacts'
+  },
+  {
+    title: 'AI Sponsor',
+    description: '24/7 supportive chat for guidance and validation',
+    icon: Bot,
+    path: '/ai-sponsor',
+    testId: 'more-ai-sponsor'
   },
   {
     title: 'Achievements',

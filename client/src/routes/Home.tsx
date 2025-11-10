@@ -36,6 +36,8 @@ import {
   Zap,
   Trophy,
   Undo2,
+  Bot,
+  MessageCircle,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAppStore } from "@/store/useAppStore";
@@ -363,6 +365,36 @@ export default function Home() {
                     </p>
                   </div>
                   <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </section>
+
+        {/* AI Sponsor - V4 Feature */}
+        <section aria-labelledby="ai-sponsor-heading">
+          <h2 id="ai-sponsor-heading" className="sr-only">
+            AI Sponsor Chat
+          </h2>
+          <Link href="/ai-sponsor">
+            <Card className="cursor-pointer bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-lg bg-primary/20 text-primary shrink-0">
+                    <Bot className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
+                      Talk to Your AI Sponsor
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
+                        24/7
+                      </span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Get support, guidance, and validation anytime you need it
+                    </p>
+                  </div>
+                  <MessageCircle className="h-5 w-5 text-primary shrink-0" />
                 </div>
               </CardContent>
             </Card>

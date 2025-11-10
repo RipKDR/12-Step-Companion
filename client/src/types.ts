@@ -364,6 +364,19 @@ export interface ChallengeCompletion {
   notes?: string;
 }
 
+export interface AISponsorMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string; // ISO 8601
+}
+
+export interface AISponsorChatState {
+  messages: Record<string, AISponsorMessage>; // id -> message
+  isTyping: boolean;
+  lastMessageTimestamp?: string;
+}
+
 export type AnalyticsEventType =
   | "app_opened"
   | "profile_created"
@@ -385,7 +398,10 @@ export type AnalyticsEventType =
   | "streak_extended"
   | "recovery_points_awarded"
   | "recovery_reward_redeemed"
-  | "recovery_points_summary_exported";
+  | "recovery_points_summary_exported"
+  | "ai_sponsor_chat_opened"
+  | "ai_sponsor_message_sent"
+  | "ai_sponsor_message_received";
 
 export interface AnalyticsEvent {
   id: string;
@@ -426,4 +442,5 @@ export interface AppState {
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
   recoveryPoints: RecoveryPointLedger;
+  aiSponsorChat?: AISponsorChatState; // V4: AI Sponsor chat
 }
