@@ -123,7 +123,7 @@ export default function Meetings() {
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
+      <div className="max-w-3xl mx-auto px-6 pb-8 sm:pb-12 pt-8">
         <header className="mb-8">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">

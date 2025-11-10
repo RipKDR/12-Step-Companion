@@ -73,7 +73,7 @@ const menuItems = [
 
 export default function More() {
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
+    <div className="max-w-4xl mx-auto px-6 pb-8 sm:pb-12 pt-8">
       <header className="mb-8">
         <h1 className="text-3xl font-semibold text-foreground mb-2">
           More
