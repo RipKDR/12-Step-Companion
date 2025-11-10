@@ -53,6 +53,10 @@ self.addEventListener('notificationclick', (event) => {
       url = '/?modal=quick-journal';
       break;
 
+    case 'harm-reduction':
+      url = action === 'open-emergency' ? '/emergency' : '/';
+      break;
+
     default:
       url = '/';
   }
@@ -112,6 +116,23 @@ function scheduleAllNotifications(settings: any) {
         body: 'Take a moment to reflect',
         actions: [
           { action: 'quick-journal', title: 'Quick Journal' },
+          { action: 'dismiss', title: 'Dismiss' }
+        ]
+      },
+      settings.quietHours
+    );
+  }
+
+  // Harm reduction reminder
+  if (settings.harmReduction?.enabled) {
+    scheduleDailyNotification(
+      'harm-reduction',
+      settings.harmReduction.time,
+      {
+        title: 'Harm reduction check-in ❤️',
+        body: settings.harmReduction.message || 'Check your naloxone kit and safer-use supplies.',
+        actions: [
+          { action: 'open-emergency', title: 'Open emergency plan' },
           { action: 'dismiss', title: 'Dismiss' }
         ]
       },

@@ -1,6 +1,5 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
-import { createDefaultResetPlan } from './resetPlanDefaults';
 
 export const CURRENT_VERSION = 9;
 
@@ -93,13 +92,22 @@ const migrations: Record<number, Migration> = {
     return state;
   },
   9: (state: any) => {
-    // V9: Add recovery reset data structures
-    if (!state.useEpisodes) {
-      state.useEpisodes = {};
+    // V9: Add harm reduction status and reminders
+    if (!state.harmReductionStatus) {
+      state.harmReductionStatus = {
+        naloxoneAvailable: false,
+        fentanylTestStripsAvailable: false,
+        sharpsContainerAvailable: false,
+        updatedAtISO: new Date().toISOString(),
+      };
     }
 
-    if (!state.resetPlan) {
-      state.resetPlan = createDefaultResetPlan();
+    if (state.settings && state.settings.notifications && !state.settings.notifications.harmReduction) {
+      state.settings.notifications.harmReduction = {
+        enabled: false,
+        time: '10:00',
+        message: 'Check your naloxone kit and safer-use supplies.',
+      };
     }
 
     return state;

@@ -56,6 +56,7 @@ export default function Contacts() {
     email: '',
     relationshipType: 'friend' as RelationshipType,
     isEmergencyContact: false,
+    isHarmReductionContact: false,
     notes: '',
   });
 
@@ -71,6 +72,7 @@ export default function Contacts() {
         email: contact.email || '',
         relationshipType: contact.relationshipType,
         isEmergencyContact: contact.isEmergencyContact,
+        isHarmReductionContact: contact.isHarmReductionContact ?? false,
         notes: contact.notes || '',
       });
     } else {
@@ -81,6 +83,7 @@ export default function Contacts() {
         email: '',
         relationshipType: 'friend',
         isEmergencyContact: false,
+        isHarmReductionContact: false,
         notes: '',
       });
     }
@@ -207,9 +210,16 @@ export default function Contacts() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <CardTitle className="text-lg mb-1">{contact.name}</CardTitle>
-                          <Badge className={cn("text-xs", getRelationshipColor(contact.relationshipType))}>
-                            {getRelationshipLabel(contact.relationshipType)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={cn("text-xs", getRelationshipColor(contact.relationshipType))}>
+                              {getRelationshipLabel(contact.relationshipType)}
+                            </Badge>
+                            {contact.isHarmReductionContact && (
+                              <Badge className="text-xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                                Harm reduction ally
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         <div className="flex gap-1">
                           <Button
@@ -275,9 +285,16 @@ export default function Contacts() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <CardTitle className="text-lg mb-1">{contact.name}</CardTitle>
-                          <Badge className={cn("text-xs", getRelationshipColor(contact.relationshipType))}>
-                            {getRelationshipLabel(contact.relationshipType)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={cn("text-xs", getRelationshipColor(contact.relationshipType))}>
+                              {getRelationshipLabel(contact.relationshipType)}
+                            </Badge>
+                            {contact.isHarmReductionContact && (
+                              <Badge className="text-xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                                Harm reduction ally
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         <div className="flex gap-1">
                           <Button
@@ -411,6 +428,19 @@ export default function Contacts() {
                 checked={formData.isEmergencyContact}
                 onCheckedChange={(checked) => setFormData({ ...formData, isEmergencyContact: checked })}
                 data-testid="switch-emergency"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="harm-reduction">Harm Reduction Ally</Label>
+                <p className="text-sm text-muted-foreground">Show in overdose support quick actions</p>
+              </div>
+              <Switch
+                id="harm-reduction"
+                checked={formData.isHarmReductionContact}
+                onCheckedChange={(checked) => setFormData({ ...formData, isHarmReductionContact: checked })}
+                data-testid="switch-harm-reduction"
               />
             </div>
 

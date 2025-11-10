@@ -17,7 +17,7 @@ import type {
   ChallengeCompletion,
   AnalyticsEvent,
   AnalyticsEventType,
-  UseEpisode
+  HarmReductionStatus
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -28,18 +28,6 @@ import {
   breakStreak,
   initializeStreak
 } from '@/lib/streaks';
-import { createDefaultResetPlan } from './resetPlanDefaults';
-
-type LogUseEpisodeInput = {
-  occurredAtISO?: string;
-  triggers: string[];
-  whatHappened: string;
-  feelingsExperienced: string;
-  needItTriedToMeet: string;
-  supportAction: string;
-  implementationIntention: string;
-  selfCompassionStatement: string;
-};
 
 const defaultEmergencyActions: EmergencyAction[] = [
   {
@@ -48,6 +36,7 @@ const defaultEmergencyActions: EmergencyAction[] = [
     type: 'call',
     data: 'tel:+61400000000',
     icon: 'phone',
+    isHarmReductionPreferred: false,
   },
   {
     id: 'breathing',
@@ -72,6 +61,13 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
+const defaultHarmReductionStatus: HarmReductionStatus = {
+  naloxoneAvailable: false,
+  fentanylTestStripsAvailable: false,
+  sharpsContainerAvailable: false,
+  updatedAtISO: new Date().toISOString(),
+};
+
 const initialStreaks: Streaks = {
   journaling: initializeStreak('journaling'),
   dailyCards: initializeStreak('dailyCards'),
@@ -79,7 +75,7 @@ const initialStreaks: Streaks = {
   stepWork: initializeStreak('stepWork'),
 };
 
-const createInitialState = (): AppState => ({
+const initialState: AppState = {
   version: CURRENT_VERSION,
   profile: undefined,
   stepAnswers: {},
@@ -89,6 +85,7 @@ const createInitialState = (): AppState => ({
   meetings: [],
   emergencyActions: defaultEmergencyActions,
   fellowshipContacts: {},
+  harmReductionStatus: defaultHarmReductionStatus,
   favoriteQuotes: [],
   settings: {
     theme: 'system',
@@ -109,6 +106,11 @@ const createInitialState = (): AppState => ({
       milestoneAlerts: true,
       streakReminders: true,
       challengeReminders: true,
+      harmReduction: {
+        enabled: false,
+        time: '10:00',
+        message: 'Check your naloxone kit and safer-use supplies.',
+      },
       quietHours: {
         enabled: true,
         start: '22:00',
@@ -129,11 +131,7 @@ const createInitialState = (): AppState => ({
   unlockedAchievements: {},
   completedChallenges: {},
   analyticsEvents: {},
-  useEpisodes: {},
-  resetPlan: createDefaultResetPlan(),
-});
-
-const initialState: AppState = createInitialState();
+};
 
 interface AppStore extends AppState {
   // Profile
@@ -171,7 +169,11 @@ interface AppStore extends AppState {
   deleteContact: (id: string) => void;
   getContacts: () => FellowshipContact[];
   getEmergencyContacts: () => FellowshipContact[];
-  
+  getHarmReductionContacts: () => FellowshipContact[];
+
+  // Harm Reduction Kit Status
+  updateHarmReductionStatus: (updates: Partial<HarmReductionStatus>) => void;
+
   // Favorite Quotes
   toggleFavoriteQuote: (quoteId: string) => void;
   isFavoriteQuote: (quoteId: string) => boolean;
@@ -215,10 +217,6 @@ interface AppStore extends AppState {
   getAnalyticsEvents: () => Record<string, AnalyticsEvent>;
   clearOldAnalyticsEvents: () => void;
   updateAnalyticsSettings: (updates: Partial<AppSettings['analytics']>) => void;
-
-  // Recovery Reset
-  logUseEpisode: (episode: LogUseEpisodeInput) => UseEpisode;
-  completeResetPlan: (episodeId?: string) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -413,8 +411,9 @@ export const useAppStore = create<AppStore>()(
           id,
           createdAtISO: now,
           updatedAtISO: now,
+          isHarmReductionContact: contact.isHarmReductionContact ?? false,
         };
-        
+
         return {
           fellowshipContacts: {
             ...state.fellowshipContacts,
@@ -457,6 +456,22 @@ export const useAppStore = create<AppStore>()(
           .filter((contact) => contact.isEmergencyContact)
           .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
       },
+
+      getHarmReductionContacts: () => {
+        const state = get();
+        return Object.values(state.fellowshipContacts)
+          .filter((contact) => contact.isHarmReductionContact)
+          .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
+      },
+
+      // Harm Reduction Kit Status
+      updateHarmReductionStatus: (updates) => set((state) => ({
+        harmReductionStatus: {
+          ...state.harmReductionStatus,
+          ...updates,
+          updatedAtISO: new Date().toISOString(),
+        },
+      })),
       
       // Favorite Quotes
       toggleFavoriteQuote: (quoteId) => set((state) => {
@@ -549,39 +564,22 @@ export const useAppStore = create<AppStore>()(
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
+          harmReductionStatus: data.harmReductionStatus
+            ? {
+                ...state.harmReductionStatus,
+                ...data.harmReductionStatus,
+              }
+            : state.harmReductionStatus,
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
-          useEpisodes: data.useEpisodes
-            ? mergeByTimestamp(state.useEpisodes || {}, data.useEpisodes)
-            : state.useEpisodes,
-          resetPlan: (() => {
-            if (!data.resetPlan) {
-              return state.resetPlan;
-            }
-
-            if (!state.resetPlan) {
-              return data.resetPlan;
-            }
-
-            const importedUpdated = data.resetPlan.updatedAtISO;
-            const existingUpdated = state.resetPlan.updatedAtISO;
-
-            if (!existingUpdated) {
-              return data.resetPlan;
-            }
-
-            if (!importedUpdated) {
-              return state.resetPlan;
-            }
-
-            return new Date(importedUpdated) > new Date(existingUpdated)
-              ? data.resetPlan
-              : state.resetPlan;
-          })(),
         };
       }),
-
-      clearAllData: () => set(createInitialState()),
+      
+      clearAllData: () =>
+        set({
+          ...initialState,
+          harmReductionStatus: { ...initialState.harmReductionStatus },
+        }),
 
       // Streak Management (V2)
       updateStreakForJournal: () => set((state) => {
@@ -686,84 +684,6 @@ export const useAppStore = create<AppStore>()(
 
       getCompletedChallenges: () => {
         return get().completedChallenges || {};
-      },
-
-      // Recovery Reset (V4)
-      logUseEpisode: (episodeInput) => {
-        const id = `use_episode_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-        const loggedAt = new Date();
-        const loggedAtISO = loggedAt.toISOString();
-        const occurredAtISO = episodeInput.occurredAtISO
-          ? new Date(episodeInput.occurredAtISO).toISOString()
-          : loggedAtISO;
-
-        const newEpisode: UseEpisode = {
-          id,
-          occurredAtISO,
-          loggedAtISO,
-          createdAtISO: loggedAtISO,
-          updatedAtISO: loggedAtISO,
-          triggers: episodeInput.triggers || [],
-          whatHappened: episodeInput.whatHappened,
-          feelingsExperienced: episodeInput.feelingsExperienced,
-          needItTriedToMeet: episodeInput.needItTriedToMeet,
-          supportAction: episodeInput.supportAction,
-          implementationIntention: episodeInput.implementationIntention,
-          selfCompassionStatement: episodeInput.selfCompassionStatement,
-        };
-
-        set((state) => ({
-          useEpisodes: {
-            ...state.useEpisodes,
-            [id]: newEpisode,
-          },
-          resetPlan: state.resetPlan
-            ? {
-                ...state.resetPlan,
-                completedAtISO: undefined,
-                lastCompletedEpisodeId: undefined,
-                updatedAtISO: loggedAtISO,
-              }
-            : state.resetPlan,
-        }));
-
-        get().trackAnalyticsEvent('slip_logged', {
-          triggerCount: newEpisode.triggers.length,
-        });
-
-        return newEpisode;
-      },
-
-      completeResetPlan: (episodeId) => {
-        const completedAtISO = new Date().toISOString();
-
-        set((state) => {
-          const updates: Partial<AppState> = {
-            resetPlan: {
-              ...state.resetPlan,
-              completedAtISO,
-              lastCompletedEpisodeId: episodeId,
-              updatedAtISO: completedAtISO,
-            },
-          };
-
-          if (episodeId && state.useEpisodes[episodeId]) {
-            updates.useEpisodes = {
-              ...state.useEpisodes,
-              [episodeId]: {
-                ...state.useEpisodes[episodeId],
-                resetPlanCompletedAtISO: completedAtISO,
-                updatedAtISO: completedAtISO,
-              },
-            };
-          }
-
-          return updates;
-        });
-
-        get().trackAnalyticsEvent('reset_plan_completed', {
-          hasEpisode: Boolean(episodeId),
-        });
       },
 
       // Analytics (V3)
