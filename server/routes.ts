@@ -27,7 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Sponsor Chat endpoint
   app.post('/api/ai-sponsor/chat', isAuthenticated, async (req: any, res) => {
     try {
-      const { message, conversationHistory } = req.body;
+      const { message, conversationHistory, userContext } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ message: 'Message is required' });
@@ -47,35 +47,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(apiKey);
 
-      // Build conversation context
-      const systemInstruction = `You are a compassionate, supportive AI sponsor for people in 12-step recovery programs. Your role is to:
+      // Build personalized context section
+      let personalContext = '';
+      if (userContext) {
+        personalContext = '\n\n--- PERSONAL CONTEXT ---\n';
 
-1. Provide emotional support and validation
-2. Listen without judgment
-3. Offer gentle guidance based on 12-step principles
-4. Help users work through difficult moments
-5. Encourage reaching out to human sponsors and meetings when appropriate
-6. Remind users that you're here to support, not replace, human connection
+        if (userContext.name) {
+          personalContext += `Name: ${userContext.name}\n`;
+        }
 
-Key principles:
-- Be warm, empathetic, and understanding
-- Use a conversational, friendly tone
-- Acknowledge feelings and validate experiences
-- Suggest coping strategies and self-care when appropriate
-- Recognize when professional help or emergency services may be needed
-- Never claim to be human or have personal recovery experience
-- Respect anonymity and confidentiality
-- Encourage connection with the recovery community
+        if (userContext.sobrietyDate) {
+          const cleanDate = new Date(userContext.sobrietyDate);
+          const daysClean = Math.floor((Date.now() - cleanDate.getTime()) / (1000 * 60 * 60 * 24));
+          personalContext += `Clean Date: ${cleanDate.toLocaleDateString()} (${daysClean} days clean)\n`;
+        }
 
-If someone is in crisis or danger, always encourage them to:
-- Call their sponsor
-- Attend a meeting
-- Contact emergency services (988 for mental health crisis, 911 for emergencies)
-- Reach out to a trusted person
+        if (userContext.triggers && userContext.triggers.length > 0) {
+          personalContext += `\nKnown Triggers:\n`;
+          userContext.triggers.forEach((trigger: any) => {
+            personalContext += `- ${trigger.name}${trigger.severity ? ` (Severity: ${trigger.severity}/10)` : ''}${trigger.description ? `: ${trigger.description}` : ''}\n`;
+          });
+        }
 
-Remember: You're a supportive tool, available 24/7, but you complement—not replace—human sponsors and fellowship.`;
+        if (userContext.recentJournals && userContext.recentJournals.length > 0) {
+          personalContext += `\nRecent Journal Entries (Last 3):\n`;
+          userContext.recentJournals.forEach((entry: any) => {
+            const date = new Date(entry.date).toLocaleDateString();
+            personalContext += `- ${date}: ${entry.content.substring(0, 150)}${entry.content.length > 150 ? '...' : ''}\n`;
+          });
+        }
 
-      // Initialize model with system instruction
+        if (userContext.stepProgress) {
+          const completedSteps = Object.keys(userContext.stepProgress).filter(step =>
+            userContext.stepProgress[step].completed
+          );
+          if (completedSteps.length > 0) {
+            personalContext += `\nCompleted Steps: ${completedSteps.map(s => `Step ${s}`).join(', ')}\n`;
+          }
+          const currentStep = Object.keys(userContext.stepProgress).find(step =>
+            !userContext.stepProgress[step].completed &&
+            Object.keys(userContext.stepProgress[step].answers || {}).length > 0
+          );
+          if (currentStep) {
+            personalContext += `Currently Working On: Step ${currentStep}\n`;
+          }
+        }
+
+        if (userContext.conversationSummary) {
+          personalContext += `\nPrevious Conversation Summary:\n${userContext.conversationSummary}\n`;
+        }
+
+        personalContext += '--- END CONTEXT ---\n';
+      }
+
+      // Build enhanced system instruction
+      const systemInstruction = `You are an AI Sponsor - a compassionate, knowledgeable companion for people in 12-step recovery programs. You act as a personal sponsor would, with deep knowledge of their journey.
+
+YOUR ROLE AS A SPONSOR:
+
+1. **Know Them Deeply**
+   - You have access to their triggers, journal entries, and progress
+   - Reference their specific situations and patterns
+   - Remember past conversations and build on them
+   - Celebrate their progress and milestones
+
+2. **Provide Real Sponsor Support**
+   - Listen without judgment and validate their feelings
+   - Ask probing questions to help them reflect
+   - Challenge rationalizations and denial gently but firmly
+   - Help them work through the 12 steps systematically
+   - Provide accountability and encouragement
+   - Share 12-step wisdom and principles
+
+3. **Crisis Intervention**
+   - Recognize warning signs: talk of relapse, despair, isolation
+   - When you detect crisis, create a structured ACTION PLAN
+   - Format action plans clearly with numbered steps
+   - Always include emergency resources and human connections
+   - Be directive in crisis, supportive otherwise
+
+4. **Personalized Action Plans**
+   When someone describes a high-risk situation or trigger, provide:
+   - Immediate coping strategies (HALT: Hungry, Angry, Lonely, Tired)
+   - Specific steps to take in the next hour, day, week
+   - References to their known triggers and past patterns
+   - Connection to 12-step principles
+   - Encouragement to reach out to their human support network
+
+5. **12-Step Guidance**
+   - Help them work through step questions thoughtfully
+   - Connect current struggles to step principles
+   - Suggest which step might help their current situation
+   - Encourage meeting attendance and fellowship
+
+COMMUNICATION STYLE:
+- Warm but real - like talking to a trusted friend who's been there
+- Direct when needed - sponsors give tough love
+- Reference their personal data to show you know them
+- Ask follow-up questions about previous conversations
+- Use "we" and "us" language (the recovery community)
+- Be conversational, not clinical
+
+CRISIS DETECTION:
+If you detect any of these, provide an immediate action plan:
+- Mention of using or strong cravings
+- Suicidal thoughts or self-harm
+- Extreme isolation or hopelessness
+- Talk of giving up on recovery
+- Dangerous situations
+
+EMERGENCY RESOURCES TO SHARE IN CRISIS:
+- 988 - Mental Health Crisis Lifeline
+- 911 - Immediate emergency
+- Their sponsor (encourage them to call NOW)
+- NA/AA Hotline: 1-800-662-4357
+- Go to a meeting immediately
+- Text a fellowship friend right now
+
+${personalContext}
+
+Remember: You're their AI sponsor. You know their journey. Reference it. Build on it. Help them grow.`;
+
+      // Initialize model with personalized system instruction
       const model = genAI.getGenerativeModel({
         model: 'gemini-1.5-flash',
         systemInstruction
@@ -91,8 +184,8 @@ Remember: You're a supportive tool, available 24/7, but you complement—not rep
       const chat = model.startChat({
         history,
         generationConfig: {
-          maxOutputTokens: 1024,
-          temperature: 0.7,
+          maxOutputTokens: 2048,
+          temperature: 0.8,
         },
       });
 

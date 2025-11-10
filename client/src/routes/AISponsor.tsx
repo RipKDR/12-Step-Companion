@@ -2,11 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +23,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { useAppStore } from '@/store/useAppStore';
 import {
   Bot,
@@ -35,6 +40,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   Check,
+  Info,
+  ChevronDown,
+  Heart,
+  Calendar,
+  FileText,
+  List,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -46,6 +57,7 @@ export default function AISponsor() {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [feedbackGiven, setFeedbackGiven] = useState<Record<string, 'up' | 'down'>>({});
+  const [showContext, setShowContext] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -56,6 +68,12 @@ export default function AISponsor() {
   const isTyping = useAppStore((state) => state.aiSponsorChat?.isTyping || false);
   const setTyping = useAppStore((state) => state.setAISponsorTyping);
   const trackEvent = useAppStore((state) => state.trackAnalyticsEvent);
+
+  // Get user data for context
+  const profile = useAppStore((state) => state.profile);
+  const triggers = useAppStore((state) => state.triggers);
+  const journals = useAppStore((state) => state.journals);
+  const stepAnswers = useAppStore((state) => state.stepAnswers);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -69,7 +87,7 @@ export default function AISponsor() {
     if (messages.length === 0) {
       addMessage({
         role: 'assistant',
-        content: "Hi! I'm your AI Sponsor. I'm here to listen and support you through difficult moments. How can I help you today?",
+        content: "Hi! I'm your AI Sponsor. I'm here to listen and support you through difficult moments. I have access to your triggers, journal entries, and step progress to provide personalized guidance. How can I help you today?",
       });
     }
   }, []);
@@ -80,6 +98,31 @@ export default function AISponsor() {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
     }
   }, [input]);
+
+  // Build user context from app data
+  const buildUserContext = () => {
+    const triggersList = Object.values(triggers || {});
+    const journalsList = Object.values(journals || {}).sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    ).slice(0, 3);
+
+    return {
+      name: profile?.name,
+      sobrietyDate: profile?.cleanDate,
+      triggers: triggersList.map(t => ({
+        name: t.name,
+        description: t.description,
+        severity: t.severity,
+      })),
+      recentJournals: journalsList.map(j => ({
+        date: j.date,
+        content: j.content,
+        mood: j.mood,
+      })),
+      stepProgress: stepAnswers,
+      conversationSummary: (useAppStore.getState().aiSponsorChat as any)?.summary,
+    };
+  };
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
@@ -99,6 +142,8 @@ export default function AISponsor() {
     }
 
     try {
+      const userContext = buildUserContext();
+
       const response = await fetch('/api/ai-sponsor/chat', {
         method: 'POST',
         headers: {
@@ -107,6 +152,7 @@ export default function AISponsor() {
         body: JSON.stringify({
           message: trimmedInput,
           conversationHistory: messages.slice(-10),
+          userContext,
         }),
       });
 
@@ -185,6 +231,8 @@ export default function AISponsor() {
     setTyping(true);
 
     try {
+      const userContext = buildUserContext();
+
       const response = await fetch('/api/ai-sponsor/chat', {
         method: 'POST',
         headers: {
@@ -193,6 +241,7 @@ export default function AISponsor() {
         body: JSON.stringify({
           message: lastUserMessage.content,
           conversationHistory: messages.slice(-10),
+          userContext,
         }),
       });
 
@@ -218,14 +267,96 @@ export default function AISponsor() {
     }
   };
 
+  const ContextPanel = () => {
+    const userContext = buildUserContext();
+    const daysClean = userContext.sobrietyDate
+      ? Math.floor((Date.now() - new Date(userContext.sobrietyDate).getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return (
+      <Collapsible open={showContext} onOpenChange={setShowContext}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <Info className="h-4 w-4" />
+            <span className="text-xs">Personal Context</span>
+            <ChevronDown className={cn('h-3 w-3 transition-transform', showContext && 'rotate-180')} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
+            <p className="text-xs text-muted-foreground">
+              AI Sponsor uses this information to provide personalized support:
+            </p>
+
+            {daysClean !== null && (
+              <div className="flex items-start gap-2">
+                <Calendar className="h-4 w-4 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium">Clean Date</div>
+                  <div className="text-muted-foreground">{daysClean} days clean</div>
+                </div>
+              </div>
+            )}
+
+            {userContext.triggers.length > 0 && (
+              <div className="flex items-start gap-2">
+                <Heart className="h-4 w-4 text-primary mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-medium mb-1">Known Triggers</div>
+                  <div className="flex flex-wrap gap-1">
+                    {userContext.triggers.slice(0, 5).map((t, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {t.name}
+                      </Badge>
+                    ))}
+                    {userContext.triggers.length > 5 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{userContext.triggers.length - 5} more
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {userContext.recentJournals.length > 0 && (
+              <div className="flex items-start gap-2">
+                <FileText className="h-4 w-4 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium">Recent Journals</div>
+                  <div className="text-muted-foreground">Last {userContext.recentJournals.length} entries</div>
+                </div>
+              </div>
+            )}
+
+            {userContext.stepProgress && Object.keys(userContext.stepProgress).length > 0 && (
+              <div className="flex items-start gap-2">
+                <List className="h-4 w-4 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium">Step Progress</div>
+                  <div className="text-muted-foreground">
+                    {Object.keys(userContext.stepProgress).filter(s => userContext.stepProgress[s].completed).length} steps completed
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
+
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center h-full py-16 px-4">
       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
         <Bot className="h-8 w-8 text-primary" />
       </div>
-      <h2 className="text-2xl font-semibold mb-2">AI Sponsor</h2>
-      <p className="text-muted-foreground text-center max-w-md mb-8">
-        A safe space for support and guidance. Share what's on your mind.
+      <h2 className="text-2xl font-semibold mb-2">Your Personal AI Sponsor</h2>
+      <p className="text-muted-foreground text-center max-w-md mb-2">
+        I know your triggers, progress, and journey. Share what's on your mind.
+      </p>
+      <p className="text-xs text-muted-foreground mb-8">
+        Available 24/7 for personalized support and guidance
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
         <button
@@ -233,28 +364,28 @@ export default function AISponsor() {
           className="text-left p-4 rounded-lg border hover:bg-accent transition-colors"
         >
           <div className="font-medium mb-1">Struggling with cravings</div>
-          <div className="text-sm text-muted-foreground">Talk through difficult moments</div>
+          <div className="text-sm text-muted-foreground">Get a personalized action plan</div>
         </button>
         <button
           onClick={() => setInput("I need someone to talk to")}
           className="text-left p-4 rounded-lg border hover:bg-accent transition-colors"
         >
           <div className="font-medium mb-1">Need to talk</div>
-          <div className="text-sm text-muted-foreground">Someone to listen right now</div>
+          <div className="text-sm text-muted-foreground">Vent and process your feelings</div>
         </button>
         <button
-          onClick={() => setInput("Can you help me understand step 1?")}
+          onClick={() => setInput("Can you help me with my current step?")}
           className="text-left p-4 rounded-lg border hover:bg-accent transition-colors"
         >
-          <div className="font-medium mb-1">Understanding the steps</div>
-          <div className="text-sm text-muted-foreground">Guidance on the 12 steps</div>
+          <div className="font-medium mb-1">Help with my step work</div>
+          <div className="text-sm text-muted-foreground">Work through the 12 steps</div>
         </button>
         <button
           onClick={() => setInput("I'm feeling overwhelmed")}
           className="text-left p-4 rounded-lg border hover:bg-accent transition-colors"
         >
           <div className="font-medium mb-1">Feeling overwhelmed</div>
-          <div className="text-sm text-muted-foreground">Help managing emotions</div>
+          <div className="text-sm text-muted-foreground">Find immediate coping strategies</div>
         </button>
       </div>
     </div>
@@ -298,7 +429,7 @@ export default function AISponsor() {
                   {message.content}
                 </div>
               ) : (
-                <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-1 prose-pre:bg-muted prose-pre:text-foreground">
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-1 prose-pre:bg-muted prose-pre:text-foreground prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-primary">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {message.content}
                   </ReactMarkdown>
@@ -405,25 +536,28 @@ export default function AISponsor() {
             </div>
             <div>
               <h1 className="font-semibold">AI Sponsor</h1>
-              <p className="text-xs text-muted-foreground">Available 24/7</p>
+              <p className="text-xs text-muted-foreground">Personal recovery companion</p>
             </div>
           </div>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowClearDialog(true)}
-                  disabled={messages.length === 0}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Clear conversation</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center gap-2">
+            <ContextPanel />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowClearDialog(true)}
+                    disabled={messages.length === 0}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Clear conversation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         {/* Messages */}
@@ -477,7 +611,7 @@ export default function AISponsor() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Message AI Sponsor..."
+                placeholder="Share what's on your mind..."
                 className="min-h-[60px] max-h-[200px] resize-none"
                 disabled={isLoading}
                 rows={1}
@@ -496,7 +630,7 @@ export default function AISponsor() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              AI Sponsor can make mistakes. For immediate help, contact your sponsor or call emergency services.
+              AI Sponsor uses your personal data to provide tailored support. For crisis, call 988 or your sponsor immediately.
             </p>
           </div>
         </div>
