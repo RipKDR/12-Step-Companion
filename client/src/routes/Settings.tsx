@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell, BarChart3 } from 'lucide-react';
+import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell, BarChart3, Settings as SettingsIcon, Shield } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportJSON, exportEncrypted } from '@/lib/export';
@@ -178,7 +179,7 @@ export default function Settings() {
   };
 
   const handleNotificationTimeChange = async (
-    key: 'morningCheckIn' | 'eveningReflection' | 'availabilityCheckIn',
+    key: 'morningCheckIn' | 'eveningReflection',
     time: string
   ) => {
     const existing = (settings.notifications as any)[key];
@@ -196,7 +197,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
       <header className="mb-8">
         <h1 className="text-3xl font-semibold text-foreground mb-2">
           Settings
@@ -206,8 +207,30 @@ export default function Settings() {
         </p>
       </header>
 
-      {/* Profile */}
-      <Card>
+      <Tabs defaultValue="general" className="space-y-6" data-testid="tabs-settings">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="general" data-testid="tab-general">
+            <SettingsIcon className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">General</span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" data-testid="tab-notifications">
+            <Bell className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Notifications</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-analytics">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="privacy" data-testid="tab-privacy">
+            <Shield className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Privacy</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* General Tab */}
+        <TabsContent value="general" className="space-y-6">
+          {/* Profile */}
+          <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <User className="h-5 w-5 text-primary" />
@@ -292,114 +315,11 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
 
-      {/* Analytics */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <CardTitle>Usage Analytics</CardTitle>
-          </div>
-          <CardDescription>Privacy-first insights (stored locally only)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="analytics-enabled">Enable Analytics</Label>
-              <p className="text-sm text-muted-foreground">Track your usage patterns (never sent to servers)</p>
-            </div>
-            <Switch
-              id="analytics-enabled"
-              checked={settings.analytics.enabled}
-              onCheckedChange={(checked) =>
-                updateSettings({
-                  analytics: { ...settings.analytics, enabled: checked }
-                })
-              }
-              data-testid="switch-analytics-enabled"
-            />
-          </div>
-
-          {settings.analytics.enabled && (
-            <>
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="usage-data">Collect Usage Data</Label>
-                  <p className="text-sm text-muted-foreground">Track feature usage and activity</p>
-                </div>
-                <Switch
-                  id="usage-data"
-                  checked={settings.analytics.collectUsageData}
-                  onCheckedChange={(checked) =>
-                    updateSettings({
-                      analytics: { ...settings.analytics, collectUsageData: checked }
-                    })
-                  }
-                  data-testid="switch-usage-data"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="performance-data">Collect Performance Data</Label>
-                  <p className="text-sm text-muted-foreground">Track app performance metrics</p>
-                </div>
-                <Switch
-                  id="performance-data"
-                  checked={settings.analytics.collectPerformanceData}
-                  onCheckedChange={(checked) =>
-                    updateSettings({
-                      analytics: { ...settings.analytics, collectPerformanceData: checked }
-                    })
-                  }
-                  data-testid="switch-performance-data"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="retention-days">Data Retention (days)</Label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    id="retention-days"
-                    type="number"
-                    min="7"
-                    max="365"
-                    value={settings.analytics.retentionDays}
-                    onChange={(e) =>
-                      updateSettings({
-                        analytics: {
-                          ...settings.analytics,
-                          retentionDays: parseInt(e.target.value) || 90
-                        }
-                      })
-                    }
-                    className="w-24"
-                    data-testid="input-retention-days"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Delete analytics data older than this
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="rounded-lg bg-muted p-4 space-y-2">
-                <p className="text-sm font-medium">Privacy Guarantee</p>
-                <p className="text-xs text-muted-foreground">
-                  All analytics data is stored locally on your device. Nothing is ever sent to external servers.
-                  You can view and export all collected data on the Usage Insights page.
-                </p>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
+        {/* Notifications Tab */}
+        <TabsContent value="notifications" className="space-y-6">
+          <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <Bell className="h-5 w-5 text-primary" />
@@ -431,6 +351,7 @@ export default function Settings() {
                 }
               }}
               disabled={settings.notifications.permission === 'denied'}
+              data-testid="switch-notifications-enabled"
             />
           </div>
 
@@ -448,6 +369,7 @@ export default function Settings() {
                         morningCheckIn: { ...settings.notifications.morningCheckIn, enabled: checked }
                       })
                     }
+                    data-testid="switch-morning-checkin"
                   />
                 </div>
                 {settings.notifications.morningCheckIn.enabled && (
@@ -459,6 +381,7 @@ export default function Settings() {
                       value={settings.notifications.morningCheckIn.time}
                       onChange={(e) => handleNotificationTimeChange('morningCheckIn', e.target.value)}
                       className="w-32"
+                      data-testid="input-morning-time"
                     />
                   </div>
                 )}
@@ -476,6 +399,7 @@ export default function Settings() {
                         eveningReflection: { ...settings.notifications.eveningReflection, enabled: checked }
                       })
                     }
+                    data-testid="switch-evening-reflection"
                   />
                 </div>
                 {settings.notifications.eveningReflection.enabled && (
@@ -487,58 +411,7 @@ export default function Settings() {
                       value={settings.notifications.eveningReflection.time}
                       onChange={(e) => handleNotificationTimeChange('eveningReflection', e.target.value)}
                       className="w-32"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Warmline Availability Reminder */}
-              <div className="space-y-2 pt-2 border-t">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="availability-checkin">Warmline Availability</Label>
-                    <p className="text-sm text-muted-foreground">Prompt buddies to confirm daily availability</p>
-                  </div>
-                  <Switch
-                    id="availability-checkin"
-                    checked={settings.notifications.availabilityCheckIn.enabled}
-                    onCheckedChange={(checked) =>
-                      updateNotificationSettings({
-                        availabilityCheckIn: {
-                          ...settings.notifications.availabilityCheckIn,
-                          enabled: checked
-                        }
-                      })
-                    }
-                  />
-                </div>
-                {settings.notifications.availabilityCheckIn.enabled && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="availability-time" className="text-sm text-muted-foreground">
-                        Time:
-                      </Label>
-                      <Input
-                        id="availability-time"
-                        type="time"
-                        value={settings.notifications.availabilityCheckIn.time}
-                        onChange={(e) => handleNotificationTimeChange('availabilityCheckIn', e.target.value)}
-                        className="w-32"
-                      />
-                    </div>
-                    <Textarea
-                      id="availability-message"
-                      value={settings.notifications.availabilityCheckIn.message ?? ''}
-                      onChange={(e) =>
-                        updateNotificationSettings({
-                          availabilityCheckIn: {
-                            ...settings.notifications.availabilityCheckIn,
-                            message: e.target.value
-                          }
-                        })
-                      }
-                      rows={2}
-                      placeholder="Gentle nudge to confirm warmline status"
+                      data-testid="input-evening-time"
                     />
                   </div>
                 )}
@@ -557,6 +430,7 @@ export default function Settings() {
                     onCheckedChange={(checked) =>
                       updateNotificationSettings({ milestoneAlerts: checked })
                     }
+                    data-testid="switch-milestone-alerts"
                   />
                 </div>
 
@@ -571,6 +445,7 @@ export default function Settings() {
                     onCheckedChange={(checked) =>
                       updateNotificationSettings({ streakReminders: checked })
                     }
+                    data-testid="switch-streak-reminders"
                   />
                 </div>
               </div>
@@ -590,6 +465,7 @@ export default function Settings() {
                         quietHours: { ...settings.notifications.quietHours, enabled: checked }
                       })
                     }
+                    data-testid="switch-quiet-hours"
                   />
                 </div>
                 {settings.notifications.quietHours.enabled && (
@@ -606,6 +482,7 @@ export default function Settings() {
                           })
                         }
                         className="w-32"
+                        data-testid="input-quiet-start"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -620,6 +497,7 @@ export default function Settings() {
                           })
                         }
                         className="w-32"
+                        data-testid="input-quiet-end"
                       />
                     </div>
                   </div>
@@ -629,16 +507,126 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
 
-      {/* Data Management */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Data Management</CardTitle>
-          </div>
-          <CardDescription>Export, import, and backup your data</CardDescription>
-        </CardHeader>
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <CardTitle>Usage Analytics</CardTitle>
+              </div>
+              <CardDescription>Privacy-first insights (stored locally only)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="analytics-enabled">Enable Analytics</Label>
+                  <p className="text-sm text-muted-foreground">Track your usage patterns (never sent to servers)</p>
+                </div>
+                <Switch
+                  id="analytics-enabled"
+                  checked={settings.analytics.enabled}
+                  onCheckedChange={(checked) =>
+                    updateSettings({
+                      analytics: { ...settings.analytics, enabled: checked }
+                    })
+                  }
+                  data-testid="switch-analytics-enabled"
+                />
+              </div>
+
+              {settings.analytics.enabled && (
+                <>
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="usage-data">Collect Usage Data</Label>
+                      <p className="text-sm text-muted-foreground">Track feature usage and activity</p>
+                    </div>
+                    <Switch
+                      id="usage-data"
+                      checked={settings.analytics.collectUsageData}
+                      onCheckedChange={(checked) =>
+                        updateSettings({
+                          analytics: { ...settings.analytics, collectUsageData: checked }
+                        })
+                      }
+                      data-testid="switch-usage-data"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="performance-data">Collect Performance Data</Label>
+                      <p className="text-sm text-muted-foreground">Track app performance metrics</p>
+                    </div>
+                    <Switch
+                      id="performance-data"
+                      checked={settings.analytics.collectPerformanceData}
+                      onCheckedChange={(checked) =>
+                        updateSettings({
+                          analytics: { ...settings.analytics, collectPerformanceData: checked }
+                        })
+                      }
+                      data-testid="switch-performance-data"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="retention-days">Data Retention (days)</Label>
+                    <div className="flex items-center gap-4">
+                      <Input
+                        id="retention-days"
+                        type="number"
+                        min="7"
+                        max="365"
+                        value={settings.analytics.retentionDays}
+                        onChange={(e) =>
+                          updateSettings({
+                            analytics: {
+                              ...settings.analytics,
+                              retentionDays: parseInt(e.target.value) || 90
+                            }
+                          })
+                        }
+                        className="w-24"
+                        data-testid="input-retention-days"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Delete analytics data older than this
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="rounded-lg bg-muted p-4 space-y-2">
+                    <p className="text-sm font-medium">Privacy Guarantee</p>
+                    <p className="text-xs text-muted-foreground">
+                      All analytics data is stored locally on your device. Nothing is ever sent to external servers.
+                      You can view and export all collected data on the Usage Insights page.
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Privacy & Data Tab */}
+        <TabsContent value="privacy" className="space-y-6">
+          {/* Data Management */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <CardTitle>Data Management</CardTitle>
+              </div>
+              <CardDescription>Export, import, and backup your data</CardDescription>
+            </CardHeader>
         <CardContent className="space-y-3">
           <Button 
             variant="outline" 
@@ -691,10 +679,12 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <div className="text-center text-sm text-muted-foreground pt-4">
-        <p>Recovery Companion v1.0.0</p>
-        <p className="mt-1">Privacy-first • Offline-capable • Open source</p>
-      </div>
+          <div className="text-center text-sm text-muted-foreground pt-4">
+            <p>Recovery Companion v1.0.0</p>
+            <p className="mt-1">Privacy-first • Offline-capable • Open source</p>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Encrypted Backup Dialog */}
       <Dialog open={showEncryptDialog} onOpenChange={setShowEncryptDialog}>
