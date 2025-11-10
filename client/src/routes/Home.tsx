@@ -388,7 +388,7 @@ export default function Home() {
             <CarouselItem className="h-full">
               <div className="h-full overflow-y-auto pb-8 pt-2">
                 <RoutinePanel
-                  dailyCard={dailyCard}
+                  dailyCard={dailyCard || null}
                   stepProgress={stepProgress}
                   onMorningChange={handleMorningChange}
                   onMorningComplete={handleMorningComplete}

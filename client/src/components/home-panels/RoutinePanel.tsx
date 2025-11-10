@@ -8,10 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sunrise, Moon, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "wouter";
-import type { DailyCard } from "@/types";
+import type { DailyCard as DailyCardData } from "@/types";
 
 interface RoutinePanelProps {
-  dailyCard: DailyCard | null;
+  dailyCard: DailyCardData | null;
   stepProgress: {
     currentStep: number;
     answeredQuestions: number;
