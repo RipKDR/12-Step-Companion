@@ -59,8 +59,6 @@ export class AnalyticsManager {
       'streakLength',
       'milestoneDays',
       'achievementCategory',
-      'triggerCount',
-      'hasEpisode',
     ];
 
     for (const key of allowedKeys) {
@@ -116,8 +114,9 @@ export class AnalyticsManager {
       milestone_celebrated: 0,
       daily_challenge_completed: 0,
       streak_extended: 0,
-      slip_logged: 0,
-      reset_plan_completed: 0,
+      recovery_points_awarded: 0,
+      recovery_reward_redeemed: 0,
+      recovery_points_summary_exported: 0,
     };
 
     // Count events by type

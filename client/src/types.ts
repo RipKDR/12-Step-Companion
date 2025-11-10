@@ -82,22 +82,6 @@ export interface WorksheetResponse {
   updatedAtISO: string;
 }
 
-export interface MindfulnessReflection {
-  sensation?: string;
-  compassionateAction?: string;
-  [key: string]: string | undefined;
-}
-
-export interface MindfulnessSessionLog {
-  id: string;
-  title: string;
-  audioUrl?: string;
-  durationSeconds: number;
-  completedAtISO: string;
-  hapticsEnabled: boolean;
-  reflections?: MindfulnessReflection;
-}
-
 export interface EmergencyAction {
   id: string;
   label: string;
@@ -207,7 +191,7 @@ export interface StreakHistoryEntry {
 }
 
 export interface StreakData {
-  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork' | 'mindfulness';
+  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork';
   current: number;
   longest: number;
   lastActivityDate: string; // ISO 8601
@@ -220,7 +204,6 @@ export interface Streaks {
   dailyCards: StreakData;
   meetings: StreakData;
   stepWork: StreakData;
-  mindfulness: StreakData;
 }
 
 export interface CelebratedMilestone {
@@ -239,6 +222,83 @@ export interface AchievementCriteria {
   target: number;
 }
 
+export interface RecoveryPointAwardConfig {
+  amount: number;
+  behavior: string;
+  trigger?: 'unlock' | 'streak' | 'completion';
+  notes?: string;
+}
+
+export type RecoveryPointSource =
+  | 'achievement'
+  | 'streak'
+  | 'daily_card'
+  | 'journal'
+  | 'meeting'
+  | 'meditation'
+  | 'manual'
+  | 'redemption';
+
+export interface RecoveryPointTransaction {
+  id: string;
+  type: 'award' | 'redeem';
+  amount: number;
+  reason: string;
+  source: RecoveryPointSource;
+  relatedId?: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+export interface RecoveryPointReward {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  category: 'content' | 'coaching' | 'community' | 'support';
+  available: boolean;
+  tags?: string[];
+}
+
+export interface RecoveryPointRedemption {
+  id: string;
+  rewardId: string;
+  redeemedAtISO: string;
+  notes?: string;
+  transactionId: string;
+}
+
+export interface RecoveryPointBalance {
+  current: number;
+  lifetimeEarned: number;
+  lifetimeRedeemed: number;
+}
+
+export interface RecoveryPointLedger {
+  balance: RecoveryPointBalance;
+  transactions: Record<string, RecoveryPointTransaction>;
+  rewards: Record<string, RecoveryPointReward>;
+  redemptions: Record<string, RecoveryPointRedemption>;
+}
+
+export interface RecoveryPointSummary {
+  currentBalance: number;
+  lifetimeEarned: number;
+  lifetimeRedeemed: number;
+  transactionCount: number;
+  awardsBySource: Partial<Record<RecoveryPointSource, number>>;
+  lastAwardedAt?: string;
+  lastRedeemedAt?: string;
+}
+
+export interface RecoveryPointAwardPayload {
+  amount: number;
+  reason: string;
+  source: RecoveryPointSource;
+  relatedId?: string;
+  metadata?: Record<string, any>;
+}
+
 export interface Achievement {
   id: string;
   category: 'sobriety' | 'step-work' | 'community' | 'self-care' | 'crisis';
@@ -247,6 +307,7 @@ export interface Achievement {
   description: string;
   icon: string;
   criteria: AchievementCriteria;
+  recoveryPoints?: RecoveryPointAwardConfig;
 }
 
 export interface UnlockedAchievement {
@@ -296,7 +357,9 @@ export type AnalyticsEventType =
   | 'milestone_celebrated'
   | 'daily_challenge_completed'
   | 'streak_extended'
-  | 'mindfulness_session_completed';
+  | 'recovery_points_awarded'
+  | 'recovery_reward_redeemed'
+  | 'recovery_points_summary_exported';
 
 export interface AnalyticsEvent {
   id: string;
@@ -336,5 +399,5 @@ export interface AppState {
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
-  mindfulnessSessions?: Record<string, MindfulnessSessionLog>;
+  recoveryPoints: RecoveryPointLedger;
 }

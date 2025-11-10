@@ -43,6 +43,7 @@ export default function Home() {
   const completedChallenges = useAppStore((state) => state.completedChallenges || {});
   const completeChallenge = useAppStore((state) => state.completeChallenge);
   const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
+  const awardPoints = useAppStore((state) => state.awardPoints);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
@@ -153,6 +154,19 @@ export default function Home() {
           achievementCategory: achievement.category,
           rarity: achievement.rarity,
         });
+
+        if (achievement.recoveryPoints) {
+          awardPoints({
+            amount: achievement.recoveryPoints.amount,
+            reason: `Achievement unlocked: ${achievement.title}`,
+            source: 'achievement',
+            relatedId: achievement.id,
+            metadata: {
+              behavior: achievement.recoveryPoints.behavior,
+              trigger: achievement.recoveryPoints.trigger,
+            },
+          });
+        }
 
         // Show celebration modal for achievement
         if (!currentMilestone) {

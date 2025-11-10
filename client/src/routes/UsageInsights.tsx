@@ -79,8 +79,9 @@ export default function UsageInsights() {
     milestone_celebrated: 'Milestones',
     daily_challenge_completed: 'Challenges',
     streak_extended: 'Streaks Extended',
-    slip_logged: 'Slips Logged',
-    reset_plan_completed: 'Reset Plans Completed',
+    recovery_points_awarded: 'Points Awarded',
+    recovery_reward_redeemed: 'Rewards Redeemed',
+    recovery_points_summary_exported: 'Reward Summary Exports',
   };
 
   const topEvents = Object.entries(metrics.eventsByType)

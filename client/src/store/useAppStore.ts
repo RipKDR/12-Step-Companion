@@ -10,8 +10,6 @@ import type {
   EmergencyAction,
   AppSettings,
   FellowshipContact,
-  AvailabilityWindow,
-  ContactStatus,
   Streaks,
   StreakData,
   CelebratedMilestone,
@@ -19,8 +17,13 @@ import type {
   ChallengeCompletion,
   AnalyticsEvent,
   AnalyticsEventType,
-  MindfulnessSessionLog,
-  MindfulnessReflection,
+  RecoveryPointLedger,
+  RecoveryPointTransaction,
+  RecoveryPointReward,
+  RecoveryPointRedemption,
+  RecoveryPointAwardPayload,
+  RecoveryPointSummary,
+  RecoveryPointSource
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -31,22 +34,7 @@ import {
   breakStreak,
   initializeStreak
 } from '@/lib/streaks';
-
-const fallbackTimezone = 'UTC';
-
-const getDefaultTimezone = () => {
-  try {
-    if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
-    }
-  } catch (error) {
-    console.warn('Unable to determine timezone', error);
-  }
-
-  return fallbackTimezone;
-};
-
-const defaultTimezone = getDefaultTimezone();
+import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
 const defaultEmergencyActions: EmergencyAction[] = [
   {
@@ -79,22 +67,14 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
-type MindfulnessSessionInput = {
-  title: string;
-  durationSeconds: number;
-  audioUrl?: string;
-  hapticsEnabled: boolean;
-  reflections?: MindfulnessReflection;
-  completedAtISO?: string;
-};
-
 const initialStreaks: Streaks = {
   journaling: initializeStreak('journaling'),
   dailyCards: initializeStreak('dailyCards'),
   meetings: initializeStreak('meetings'),
   stepWork: initializeStreak('stepWork'),
-  mindfulness: initializeStreak('mindfulness'),
 };
+
+const initialRecoveryPoints: RecoveryPointLedger = createInitialRecoveryPoints();
 
 const initialState: AppState = {
   version: CURRENT_VERSION,
@@ -123,11 +103,6 @@ const initialState: AppState = {
         enabled: true,
         time: '20:00'
       },
-      availabilityCheckIn: {
-        enabled: false,
-        time: '09:00',
-        message: 'Check in with your buddies to confirm warmline availability.'
-      },
       milestoneAlerts: true,
       streakReminders: true,
       challengeReminders: true,
@@ -151,7 +126,7 @@ const initialState: AppState = {
   unlockedAchievements: {},
   completedChallenges: {},
   analyticsEvents: {},
-  mindfulnessSessions: {},
+  recoveryPoints: initialRecoveryPoints,
 };
 
 interface AppStore extends AppState {
@@ -175,9 +150,6 @@ interface AppStore extends AppState {
   updateJournalEntry: (id: string, updates: Partial<JournalEntry>) => void;
   deleteJournalEntry: (id: string) => void;
   getJournalEntries: () => JournalEntry[];
-
-  // Mindfulness
-  logMindfulnessSession: (session: MindfulnessSessionInput) => void;
   
   // Worksheets
   saveWorksheetResponse: (response: Omit<WorksheetResponse, 'id' | 'createdAtISO' | 'updatedAtISO'>) => void;
@@ -193,10 +165,6 @@ interface AppStore extends AppState {
   deleteContact: (id: string) => void;
   getContacts: () => FellowshipContact[];
   getEmergencyContacts: () => FellowshipContact[];
-  setContactStatus: (id: string, status: ContactStatus) => void;
-  toggleContactOnCall: (id: string, onCall: boolean) => void;
-  recordContactCheckIn: (id: string, timestamp?: string) => void;
-  scheduleContactCheckIn: (id: string, nextCheckInISO: string) => void;
   
   // Favorite Quotes
   toggleFavoriteQuote: (quoteId: string) => void;
@@ -241,6 +209,11 @@ interface AppStore extends AppState {
   getAnalyticsEvents: () => Record<string, AnalyticsEvent>;
   clearOldAnalyticsEvents: () => void;
   updateAnalyticsSettings: (updates: Partial<AppSettings['analytics']>) => void;
+
+  // Recovery Points (V3)
+  awardPoints: (payload: RecoveryPointAwardPayload) => void;
+  redeemReward: (rewardId: string, notes?: string) => void;
+  exportRecoveryPointsSummary: () => RecoveryPointSummary;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -376,42 +349,7 @@ export const useAppStore = create<AppStore>()(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
       },
-
-      // Mindfulness
-      logMindfulnessSession: (session) => {
-        const id = `mindfulness_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const completedAtISO = session.completedAtISO ?? new Date().toISOString();
-
-        set((state) => {
-          const newEntry: MindfulnessSessionLog = {
-            id,
-            title: session.title,
-            audioUrl: session.audioUrl,
-            durationSeconds: session.durationSeconds,
-            completedAtISO,
-            hapticsEnabled: session.hapticsEnabled,
-            reflections: session.reflections,
-          };
-
-          return {
-            mindfulnessSessions: {
-              ...(state.mindfulnessSessions || {}),
-              [id]: newEntry,
-            },
-            streaks: {
-              ...state.streaks,
-              mindfulness: updateStreak(state.streaks.mindfulness, completedAtISO),
-            },
-          };
-        });
-
-        const { trackAnalyticsEvent } = get();
-        trackAnalyticsEvent?.('mindfulness_session_completed', {
-          durationSeconds: session.durationSeconds,
-          hapticsEnabled: session.hapticsEnabled,
-        });
-      },
-
+      
       // Worksheets
       saveWorksheetResponse: (response) => set((state) => {
         const id = `worksheet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -467,15 +405,11 @@ export const useAppStore = create<AppStore>()(
         const now = new Date().toISOString();
         const newContact: FellowshipContact = {
           ...contact,
-          timezone: contact.timezone ?? defaultTimezone,
-          availability: contact.availability ?? [],
-          status: contact.status ?? 'available',
-          onCall: contact.onCall ?? false,
           id,
           createdAtISO: now,
           updatedAtISO: now,
         };
-
+        
         return {
           fellowshipContacts: {
             ...state.fellowshipContacts,
@@ -494,10 +428,6 @@ export const useAppStore = create<AppStore>()(
             [id]: {
               ...existing,
               ...updates,
-              timezone: updates.timezone ?? existing.timezone,
-              availability: updates.availability ?? existing.availability,
-              status: updates.status ?? existing.status,
-              onCall: updates.onCall ?? existing.onCall,
               updatedAtISO: new Date().toISOString(),
             },
           },
@@ -522,74 +452,6 @@ export const useAppStore = create<AppStore>()(
           .filter((contact) => contact.isEmergencyContact)
           .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
       },
-
-      setContactStatus: (id, status) => set((state) => {
-        const existing = state.fellowshipContacts[id];
-        if (!existing) return state;
-
-        return {
-          fellowshipContacts: {
-            ...state.fellowshipContacts,
-            [id]: {
-              ...existing,
-              status,
-              updatedAtISO: new Date().toISOString(),
-            },
-          },
-        };
-      }),
-
-      toggleContactOnCall: (id, onCall) => set((state) => {
-        const existing = state.fellowshipContacts[id];
-        if (!existing) return state;
-
-        return {
-          fellowshipContacts: {
-            ...state.fellowshipContacts,
-            [id]: {
-              ...existing,
-              onCall,
-              status: onCall ? 'on-call' : existing.status === 'on-call' ? 'available' : existing.status,
-              updatedAtISO: new Date().toISOString(),
-            },
-          },
-        };
-      }),
-
-      recordContactCheckIn: (id, timestamp) => set((state) => {
-        const existing = state.fellowshipContacts[id];
-        if (!existing) return state;
-
-        const now = timestamp ?? new Date().toISOString();
-
-        return {
-          fellowshipContacts: {
-            ...state.fellowshipContacts,
-            [id]: {
-              ...existing,
-              lastCheckInISO: now,
-              nextCheckInISO: undefined,
-              updatedAtISO: now,
-            },
-          },
-        };
-      }),
-
-      scheduleContactCheckIn: (id, nextCheckInISO) => set((state) => {
-        const existing = state.fellowshipContacts[id];
-        if (!existing) return state;
-
-        return {
-          fellowshipContacts: {
-            ...state.fellowshipContacts,
-            [id]: {
-              ...existing,
-              nextCheckInISO,
-              updatedAtISO: new Date().toISOString(),
-            },
-          },
-        };
-      }),
       
       // Favorite Quotes
       toggleFavoriteQuote: (quoteId) => set((state) => {
@@ -661,19 +523,63 @@ export const useAppStore = create<AppStore>()(
           imported: Record<string, T>
         ): Record<string, T> => {
           const merged = { ...existing };
-          
+
           Object.entries(imported).forEach(([key, value]) => {
             const existingItem = merged[key];
-            if (!existingItem || 
-                (value.updatedAtISO && existingItem.updatedAtISO && 
+            if (!existingItem ||
+                (value.updatedAtISO && existingItem.updatedAtISO &&
                  new Date(value.updatedAtISO) > new Date(existingItem.updatedAtISO))) {
               merged[key] = value;
             }
           });
-          
+
           return merged;
         };
-        
+
+        const mergeRecoveryLedger = (
+          existing: RecoveryPointLedger,
+          incoming?: RecoveryPointLedger | null
+        ): RecoveryPointLedger => {
+          if (!incoming) return existing;
+
+          const mergedTransactions: Record<string, RecoveryPointTransaction> = {
+            ...existing.transactions,
+            ...incoming.transactions,
+          };
+
+          const mergedRewards: Record<string, RecoveryPointReward> = {
+            ...existing.rewards,
+            ...incoming.rewards,
+          };
+
+          const mergedRedemptions: Record<string, RecoveryPointRedemption> = {
+            ...existing.redemptions,
+            ...incoming.redemptions,
+          };
+
+          const balance: RecoveryPointLedger['balance'] = {
+            current:
+              typeof incoming.balance?.current === 'number'
+                ? incoming.balance.current
+                : existing.balance.current,
+            lifetimeEarned: Math.max(
+              existing.balance.lifetimeEarned,
+              incoming.balance?.lifetimeEarned ?? 0
+            ),
+            lifetimeRedeemed: Math.max(
+              existing.balance.lifetimeRedeemed,
+              incoming.balance?.lifetimeRedeemed ?? 0
+            ),
+          };
+
+          return {
+            balance,
+            transactions: mergedTransactions,
+            rewards: mergedRewards,
+            redemptions: mergedRedemptions,
+          };
+        };
+
         return {
           ...state,
           profile: data.profile || state.profile,
@@ -682,14 +588,14 @@ export const useAppStore = create<AppStore>()(
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
-          mindfulnessSessions: data.mindfulnessSessions
-            ? { ...(state.mindfulnessSessions || {}), ...data.mindfulnessSessions }
-            : (state.mindfulnessSessions || {}),
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
+          recoveryPoints: data.recoveryPoints
+            ? mergeRecoveryLedger(state.recoveryPoints, data.recoveryPoints)
+            : state.recoveryPoints,
         };
       }),
-      
+
       clearAllData: () => set(initialState),
 
       // Streak Management (V2)
@@ -795,6 +701,152 @@ export const useAppStore = create<AppStore>()(
 
       getCompletedChallenges: () => {
         return get().completedChallenges || {};
+      },
+
+      // Recovery Points (V3)
+      awardPoints: (payload) => {
+        if (!payload || payload.amount <= 0) {
+          return;
+        }
+
+        const transactionId = `points_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const timestamp = new Date().toISOString();
+
+        const transaction: RecoveryPointTransaction = {
+          id: transactionId,
+          type: 'award',
+          amount: payload.amount,
+          reason: payload.reason,
+          source: payload.source,
+          relatedId: payload.relatedId,
+          timestamp,
+          metadata: payload.metadata,
+        };
+
+        set((state) => ({
+          recoveryPoints: {
+            ...state.recoveryPoints,
+            balance: {
+              current: state.recoveryPoints.balance.current + payload.amount,
+              lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned + payload.amount,
+              lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed,
+            },
+            transactions: {
+              ...state.recoveryPoints.transactions,
+              [transactionId]: transaction,
+            },
+          },
+        }));
+
+        get().trackAnalyticsEvent('recovery_points_awarded', {
+          amount: payload.amount,
+          source: payload.source,
+          reason: payload.reason,
+          relatedId: payload.relatedId,
+          ...payload.metadata,
+        });
+      },
+
+      redeemReward: (rewardId, notes) => {
+        const state = get();
+        const reward = state.recoveryPoints.rewards[rewardId];
+        if (!reward || !reward.available) {
+          return;
+        }
+
+        if (state.recoveryPoints.balance.current < reward.cost) {
+          return;
+        }
+
+        const timestamp = new Date().toISOString();
+        const transactionId = `points_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const redemptionId = `redemption_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const transaction: RecoveryPointTransaction = {
+          id: transactionId,
+          type: 'redeem',
+          amount: reward.cost,
+          reason: `Redeemed ${reward.name}`,
+          source: 'redemption',
+          relatedId: rewardId,
+          timestamp,
+          metadata: notes ? { notes } : undefined,
+        };
+
+        const redemption: RecoveryPointRedemption = {
+          id: redemptionId,
+          rewardId,
+          redeemedAtISO: timestamp,
+          notes,
+          transactionId,
+        };
+
+        set((state) => ({
+          recoveryPoints: {
+            ...state.recoveryPoints,
+            balance: {
+              current: state.recoveryPoints.balance.current - reward.cost,
+              lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned,
+              lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed + reward.cost,
+            },
+            transactions: {
+              ...state.recoveryPoints.transactions,
+              [transactionId]: transaction,
+            },
+            redemptions: {
+              ...state.recoveryPoints.redemptions,
+              [redemptionId]: redemption,
+            },
+          },
+        }));
+
+        get().trackAnalyticsEvent('recovery_reward_redeemed', {
+          rewardId,
+          cost: reward.cost,
+          notes,
+        });
+      },
+
+      exportRecoveryPointsSummary: () => {
+        const state = get();
+        const transactions = Object.values(state.recoveryPoints.transactions || {});
+
+        const awardsBySource: Partial<Record<RecoveryPointSource, number>> = {};
+        let lastAwardedAt: string | undefined;
+        let lastRedeemedAt: string | undefined;
+
+        transactions.forEach((transaction) => {
+          if (transaction.type === 'award') {
+            awardsBySource[transaction.source] =
+              (awardsBySource[transaction.source] || 0) + transaction.amount;
+            if (!lastAwardedAt || transaction.timestamp > lastAwardedAt) {
+              lastAwardedAt = transaction.timestamp;
+            }
+          } else if (transaction.type === 'redeem') {
+            if (!lastRedeemedAt || transaction.timestamp > lastRedeemedAt) {
+              lastRedeemedAt = transaction.timestamp;
+            }
+          }
+        });
+
+        const summary: RecoveryPointSummary = {
+          currentBalance: state.recoveryPoints.balance.current,
+          lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned,
+          lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed,
+          transactionCount: transactions.length,
+          awardsBySource: awardsBySource as RecoveryPointSummary['awardsBySource'],
+          lastAwardedAt,
+          lastRedeemedAt,
+        };
+
+        get().trackAnalyticsEvent('recovery_points_summary_exported', {
+          transactionCount: summary.transactionCount,
+          currentBalance: summary.currentBalance,
+          lifetimeEarned: summary.lifetimeEarned,
+          lifetimeRedeemed: summary.lifetimeRedeemed,
+        });
+
+        return summary;
       },
 
       // Analytics (V3)

@@ -1,5 +1,6 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
+import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
 export const CURRENT_VERSION = 9;
 
@@ -92,27 +93,24 @@ const migrations: Record<number, Migration> = {
     return state;
   },
   9: (state: any) => {
-    // V9: Warmline availability reminders and contact metadata
-    if (state.settings && state.settings.notifications) {
-      if (!state.settings.notifications.availabilityCheckIn) {
-        state.settings.notifications.availabilityCheckIn = {
-          enabled: false,
-          time: '09:00',
-          message: 'Check in with your buddies to confirm warmline availability.'
-        };
-      }
+    // V9: Introduce recovery points ledger
+    if (!state.recoveryPoints) {
+      state.recoveryPoints = createInitialRecoveryPoints();
+      return state;
     }
 
-    if (state.fellowshipContacts) {
-      Object.keys(state.fellowshipContacts).forEach((contactId) => {
-        const contact = state.fellowshipContacts[contactId];
-        if (!contact) return;
-        contact.timezone = contact.timezone || 'UTC';
-        contact.availability = contact.availability || [];
-        contact.status = contact.status || 'available';
-        contact.onCall = contact.onCall ?? false;
-      });
-    }
+    const defaults = createInitialRecoveryPoints();
+    state.recoveryPoints.balance = {
+      current: state.recoveryPoints.balance?.current ?? defaults.balance.current,
+      lifetimeEarned: state.recoveryPoints.balance?.lifetimeEarned ?? defaults.balance.lifetimeEarned,
+      lifetimeRedeemed: state.recoveryPoints.balance?.lifetimeRedeemed ?? defaults.balance.lifetimeRedeemed,
+    };
+    state.recoveryPoints.transactions = state.recoveryPoints.transactions || {};
+    state.recoveryPoints.redemptions = state.recoveryPoints.redemptions || {};
+    state.recoveryPoints.rewards = {
+      ...defaults.rewards,
+      ...(state.recoveryPoints.rewards || {}),
+    };
 
     return state;
   },
