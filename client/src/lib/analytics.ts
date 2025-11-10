@@ -1,5 +1,10 @@
-import type { AppState, AnalyticsEvent, AnalyticsEventType, AnalyticsMetrics } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import type {
+  AppState,
+  AnalyticsEvent,
+  AnalyticsEventType,
+  AnalyticsMetrics,
+} from "@/types";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Privacy-First Analytics Manager
@@ -25,7 +30,7 @@ export class AnalyticsManager {
    */
   trackEvent(
     type: AnalyticsEventType,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): AnalyticsEvent {
     const event: AnalyticsEvent = {
       id: uuidv4(),
@@ -41,24 +46,26 @@ export class AnalyticsManager {
   /**
    * Sanitize metadata to ensure no PII is included
    */
-  private sanitizeMetadata(metadata?: Record<string, any>): Record<string, any> | undefined {
+  private sanitizeMetadata(
+    metadata?: Record<string, any>,
+  ): Record<string, any> | undefined {
     if (!metadata) return undefined;
 
     const sanitized: Record<string, any> = {};
     const allowedKeys = [
-      'category',
-      'type',
-      'duration',
-      'count',
-      'rarity',
-      'theme',
-      'stepNumber',
-      'hasSponsor',
-      'hasAudio',
-      'hasVoice',
-      'streakLength',
-      'milestoneDays',
-      'achievementCategory',
+      "category",
+      "type",
+      "duration",
+      "count",
+      "rarity",
+      "theme",
+      "stepNumber",
+      "hasSponsor",
+      "hasAudio",
+      "hasVoice",
+      "streakLength",
+      "milestoneDays",
+      "achievementCategory",
     ];
 
     for (const key of allowedKeys) {
@@ -75,7 +82,7 @@ export class AnalyticsManager {
    */
   cleanupOldEvents(
     events: Record<string, AnalyticsEvent>,
-    retentionDays: number
+    retentionDays: number,
   ): Record<string, AnalyticsEvent> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
@@ -114,6 +121,9 @@ export class AnalyticsManager {
       milestone_celebrated: 0,
       daily_challenge_completed: 0,
       streak_extended: 0,
+      recovery_points_awarded: 0,
+      recovery_reward_redeemed: 0,
+      recovery_points_summary_exported: 0,
     };
 
     // Count events by type
@@ -147,9 +157,10 @@ export class AnalyticsManager {
       ...Object.values(state.dailyCards).map((c) => c.date),
       ...(state.meetings?.map((m) => m.date) || []),
     ];
-    const lastActivityDate = allDates.length > 0
-      ? allDates.sort().reverse()[0]
-      : new Date().toISOString();
+    const lastActivityDate =
+      allDates.length > 0
+        ? allDates.sort().reverse()[0]
+        : new Date().toISOString();
 
     return {
       totalEvents: Object.keys(events).length,
@@ -169,13 +180,13 @@ export class AnalyticsManager {
   getEventsByDateRange(
     events: Record<string, AnalyticsEvent>,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): AnalyticsEvent[] {
     const startISO = startDate.toISOString();
     const endISO = endDate.toISOString();
 
     return Object.values(events).filter(
-      (event) => event.timestamp >= startISO && event.timestamp <= endISO
+      (event) => event.timestamp >= startISO && event.timestamp <= endISO,
     );
   }
 
@@ -186,7 +197,7 @@ export class AnalyticsManager {
     events: Record<string, AnalyticsEvent>,
     type: AnalyticsEventType,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): number {
     let filteredEvents = Object.values(events).filter((e) => e.type === type);
 
@@ -194,7 +205,7 @@ export class AnalyticsManager {
       const startISO = startDate.toISOString();
       const endISO = endDate.toISOString();
       filteredEvents = filteredEvents.filter(
-        (e) => e.timestamp >= startISO && e.timestamp <= endISO
+        (e) => e.timestamp >= startISO && e.timestamp <= endISO,
       );
     }
 
@@ -206,7 +217,7 @@ export class AnalyticsManager {
    */
   getDailyEventCounts(
     events: Record<string, AnalyticsEvent>,
-    days: number
+    days: number,
   ): Record<string, number> {
     const counts: Record<string, number> = {};
     const today = new Date();
@@ -215,13 +226,13 @@ export class AnalyticsManager {
     for (let i = 0; i < days; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = date.toISOString().split("T")[0];
       counts[dateKey] = 0;
     }
 
     // Count events per day
     for (const event of Object.values(events)) {
-      const dateKey = event.timestamp.split('T')[0];
+      const dateKey = event.timestamp.split("T")[0];
       if (dateKey in counts) {
         counts[dateKey]++;
       }
@@ -269,7 +280,7 @@ export function getAnalyticsManager(): AnalyticsManager {
 export function trackEvent(
   state: AppState,
   type: AnalyticsEventType,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): AnalyticsEvent | null {
   if (!state.settings.analytics.enabled) {
     return null;

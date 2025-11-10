@@ -1,12 +1,24 @@
-import { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { BarChart3, TrendingUp, Calendar, Activity, Download } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
-import { getAnalyticsManager } from '@/lib/analytics';
-import type { AnalyticsEventType } from '@/types';
+import { useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  BarChart3,
+  TrendingUp,
+  Calendar,
+  Activity,
+  Download,
+} from "lucide-react";
+import { useAppStore } from "@/store/useAppStore";
+import { getAnalyticsManager } from "@/lib/analytics";
+import type { AnalyticsEventType } from "@/types";
 
 export default function UsageInsights() {
   const analyticsEvents = useAppStore((state) => state.analyticsEvents || {});
@@ -14,20 +26,25 @@ export default function UsageInsights() {
   const appState = useAppStore((state) => state);
 
   const manager = useMemo(() => getAnalyticsManager(), []);
-  const metrics = useMemo(() => manager.calculateMetrics(appState), [appState, manager]);
+  const metrics = useMemo(
+    () => manager.calculateMetrics(appState),
+    [appState, manager],
+  );
 
   const dailyCounts = useMemo(
     () => manager.getDailyEventCounts(analyticsEvents, 30),
-    [analyticsEvents, manager]
+    [analyticsEvents, manager],
   );
 
   const handleExport = () => {
     const data = manager.exportAnalyticsData(appState);
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `analytics-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `analytics-export-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -51,8 +68,9 @@ export default function UsageInsights() {
                 Enable analytics in Settings to see your usage insights.
               </p>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                All analytics data is stored locally on your device and never sent to external servers.
-                You have complete control over what is tracked.
+                All analytics data is stored locally on your device and never
+                sent to external servers. You have complete control over what is
+                tracked.
               </p>
             </div>
           </CardContent>
@@ -62,23 +80,26 @@ export default function UsageInsights() {
   }
 
   const eventTypeLabels: Record<AnalyticsEventType, string> = {
-    app_opened: 'App Sessions',
-    profile_created: 'Profile Created',
-    journal_entry_created: 'Journal Entries',
-    journal_entry_voice_used: 'Voice Transcription',
-    journal_entry_audio_recorded: 'Audio Recordings',
-    daily_card_morning_completed: 'Morning Cards',
-    daily_card_evening_completed: 'Evening Cards',
-    step_answer_saved: 'Step Answers',
-    meeting_logged: 'Meetings',
-    goal_created: 'Goals Created',
-    goal_completed: 'Goals Completed',
-    crisis_mode_activated: 'Crisis Mode',
-    emergency_contact_called: 'Emergency Calls',
-    achievement_unlocked: 'Achievements',
-    milestone_celebrated: 'Milestones',
-    daily_challenge_completed: 'Challenges',
-    streak_extended: 'Streaks Extended',
+    app_opened: "App Sessions",
+    profile_created: "Profile Created",
+    journal_entry_created: "Journal Entries",
+    journal_entry_voice_used: "Voice Transcription",
+    journal_entry_audio_recorded: "Audio Recordings",
+    daily_card_morning_completed: "Morning Cards",
+    daily_card_evening_completed: "Evening Cards",
+    step_answer_saved: "Step Answers",
+    meeting_logged: "Meetings",
+    goal_created: "Goals Created",
+    goal_completed: "Goals Completed",
+    crisis_mode_activated: "Crisis Mode",
+    emergency_contact_called: "Emergency Calls",
+    achievement_unlocked: "Achievements",
+    milestone_celebrated: "Milestones",
+    daily_challenge_completed: "Challenges",
+    streak_extended: "Streaks Extended",
+    recovery_points_awarded: "Points Awarded",
+    recovery_reward_redeemed: "Rewards Redeemed",
+    recovery_points_summary_exported: "Reward Summary Exports",
   };
 
   const topEvents = Object.entries(metrics.eventsByType)
@@ -101,10 +122,13 @@ export default function UsageInsights() {
           <div className="flex items-start gap-3">
             <Activity className="h-5 w-5 text-green-600 mt-0.5" />
             <div className="space-y-1">
-              <h3 className="font-semibold text-green-900 dark:text-green-100">Privacy-First Analytics</h3>
+              <h3 className="font-semibold text-green-900 dark:text-green-100">
+                Privacy-First Analytics
+              </h3>
               <p className="text-sm text-green-800 dark:text-green-200">
-                All data is stored locally on your device. Nothing is sent to external servers.
-                You can export or delete this data at any time.
+                All data is stored locally on your device. Nothing is sent to
+                external servers. You can export or delete this data at any
+                time.
               </p>
             </div>
           </div>
@@ -137,7 +161,9 @@ export default function UsageInsights() {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Journal Entries</CardDescription>
-            <CardTitle className="text-3xl">{metrics.totalJournalEntries}</CardTitle>
+            <CardTitle className="text-3xl">
+              {metrics.totalJournalEntries}
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -148,7 +174,9 @@ export default function UsageInsights() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Activity Breakdown</CardTitle>
-              <CardDescription>Top activities in your recovery journey</CardDescription>
+              <CardDescription>
+                Top activities in your recovery journey
+              </CardDescription>
             </div>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </div>
@@ -156,7 +184,8 @@ export default function UsageInsights() {
         <CardContent>
           {topEvents.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              No activity recorded yet. Start using the app to see your insights!
+              No activity recorded yet. Start using the app to see your
+              insights!
             </p>
           ) : (
             <div className="space-y-4">
@@ -190,7 +219,9 @@ export default function UsageInsights() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>30-Day Activity</CardTitle>
-              <CardDescription>Daily event counts for the past month</CardDescription>
+              <CardDescription>
+                Daily event counts for the past month
+              </CardDescription>
             </div>
             <Calendar className="h-5 w-5 text-muted-foreground" />
           </div>
@@ -201,8 +232,11 @@ export default function UsageInsights() {
               .sort((a, b) => a[0].localeCompare(b[0]))
               .slice(-28)
               .map(([date, count]) => {
-                const opacity = count === 0 ? 0.1 : Math.min(0.3 + (count / 20) * 0.7, 1);
-                const day = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+                const opacity =
+                  count === 0 ? 0.1 : Math.min(0.3 + (count / 20) * 0.7, 1);
+                const day = new Date(date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                });
                 return (
                   <div key={date} className="text-center">
                     <div
@@ -244,13 +278,18 @@ export default function UsageInsights() {
 
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              <strong>Retention Period:</strong> {analyticsSettings.retentionDays} days
+              <strong>Retention Period:</strong>{" "}
+              {analyticsSettings.retentionDays} days
             </p>
             <p>
-              <strong>Usage Data:</strong> {analyticsSettings.collectUsageData ? 'Enabled' : 'Disabled'}
+              <strong>Usage Data:</strong>{" "}
+              {analyticsSettings.collectUsageData ? "Enabled" : "Disabled"}
             </p>
             <p>
-              <strong>Performance Data:</strong> {analyticsSettings.collectPerformanceData ? 'Enabled' : 'Disabled'}
+              <strong>Performance Data:</strong>{" "}
+              {analyticsSettings.collectPerformanceData
+                ? "Enabled"
+                : "Disabled"}
             </p>
           </div>
         </CardContent>

@@ -53,6 +53,10 @@ self.addEventListener('notificationclick', (event) => {
       url = '/?modal=quick-journal';
       break;
 
+    case 'availability-checkin':
+      url = action === 'open-contacts' ? '/contacts?focus=warmline' : '/contacts';
+      break;
+
     default:
       url = '/';
   }
@@ -112,6 +116,23 @@ function scheduleAllNotifications(settings: any) {
         body: 'Take a moment to reflect',
         actions: [
           { action: 'quick-journal', title: 'Quick Journal' },
+          { action: 'dismiss', title: 'Dismiss' }
+        ]
+      },
+      settings.quietHours
+    );
+  }
+
+  // Warmline availability check-ins
+  if (settings.availabilityCheckIn && settings.availabilityCheckIn.enabled) {
+    scheduleDailyNotification(
+      'availability-checkin',
+      settings.availabilityCheckIn.time,
+      {
+        title: 'Warmline availability check',
+        body: settings.availabilityCheckIn.message || 'Take a moment to confirm your warmline status for today.',
+        actions: [
+          { action: 'open-contacts', title: 'Update Status' },
           { action: 'dismiss', title: 'Dismiss' }
         ]
       },

@@ -101,7 +101,10 @@ function App() {
         <Toaster />
         <Router />
         {updateAvailable && (
-          <UpdateNotification onUpdate={handleUpdate} onDismiss={handleDismiss} />
+          <UpdateNotification
+            onUpdate={handleUpdate}
+            onDismiss={handleDismiss}
+          />
         )}
       </TooltipProvider>
     </QueryClientProvider>

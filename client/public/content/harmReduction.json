@@ -1,0 +1,72 @@
+{
+  "naloxone": {
+    "title": "Administering Naloxone",
+    "summary": "Steps to reverse an opioid overdose until emergency responders arrive.",
+    "steps": [
+      {
+        "title": "Check for responsiveness",
+        "details": "Shout the person's name, rub their sternum with your knuckles, and look for slow or absent breathing."
+      },
+      {
+        "title": "Call emergency services",
+        "details": "Dial 000 immediately. Put the phone on speaker so you can follow the operator's instructions while helping."
+      },
+      {
+        "title": "Administer naloxone",
+        "details": "Peel back the package, place the nozzle in one nostril, and press the plunger firmly. Use one device per dose."
+      },
+      {
+        "title": "Support breathing",
+        "details": "Lay the person on their back, tilt the head, lift the chin, and give one breath every 5 seconds if they are not breathing."
+      },
+      {
+        "title": "Monitor and repeat if needed",
+        "details": "If there is no response after 2-3 minutes, administer another naloxone dose. Stay until help arrives."
+      }
+    ],
+    "aftercare": [
+      "Place the person in the recovery position once they are breathing on their own.",
+      "Explain what happened—they may feel disoriented or agitated.",
+      "Naloxone wears off in 30-90 minutes. Watch for return of overdose signs."
+    ]
+  },
+  "saferUse": {
+    "title": "Safer-Use Tips",
+    "summary": "Practical harm-reduction strategies to lower overdose risk.",
+    "tips": [
+      "Avoid using alone—arrange a trusted contact or phone call check-in.",
+      "Start low, go slow when using a new batch or source.",
+      "Test a small amount first and wait to feel the effects before taking more.",
+      "Keep naloxone and breathing barriers with your kit at all times.",
+      "Use clean equipment and rotate sites to reduce infection risk.",
+      "Store substances safely away from children and pets."
+    ]
+  },
+  "resources": [
+    {
+      "name": "Penington Institute Naloxone Finder",
+      "description": "Map of free naloxone providers across Australia.",
+      "url": "https://www.penington.org.au/naloxone/",
+      "type": "web"
+    },
+    {
+      "name": "Take Home Naloxone - Department of Health",
+      "description": "National program information and pharmacies offering free naloxone.",
+      "url": "https://www.health.gov.au/our-work/take-home-naloxone-program",
+      "type": "web"
+    },
+    {
+      "name": "National Alcohol and Other Drug Hotline",
+      "description": "24/7 confidential counselling and referrals.",
+      "phone": "1800250665",
+      "display": "1800 250 665",
+      "type": "phone"
+    },
+    {
+      "name": "CanTEST Health and Drug Checking (ACT)",
+      "description": "Free drug-checking and harm-reduction advice in Canberra.",
+      "url": "https://www.health.act.gov.au/services-and-programs/alcohol-and-other-drugs/cantest",
+      "type": "web"
+    }
+  ]
+}

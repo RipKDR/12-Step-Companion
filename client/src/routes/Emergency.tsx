@@ -6,10 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SponsorCard from '@/components/SponsorCard';
-import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users } from 'lucide-react';
+import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users, Waves } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
+import MindfulnessPack from '@/components/MindfulnessPack';
 
 export default function Emergency() {
   const profile = useAppStore((state) => state.profile);
@@ -22,6 +23,7 @@ export default function Emergency() {
   const [breathingPhase, setBreathingPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
   const [breathingCount, setBreathingCount] = useState(4);
   const [groundingActive, setGroundingActive] = useState(false);
+  const [mindfulnessActive, setMindfulnessActive] = useState(false);
   const [copingNotesVisible, setCopingNotesVisible] = useState(false);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [sponsorName, setSponsorName] = useState('');
@@ -355,6 +357,16 @@ export default function Emergency() {
         </Button>
 
         <Button
+          variant={mindfulnessActive ? "default" : "outline"}
+          className="h-24 flex-col gap-2"
+          onClick={() => setMindfulnessActive(!mindfulnessActive)}
+          data-testid="button-mindfulness"
+        >
+          <Waves className="h-8 w-8" />
+          <span className="font-medium">Mindfulness Pack</span>
+        </Button>
+
+        <Button
           variant={copingNotesVisible ? "default" : "outline"}
           className="h-24 flex-col gap-2"
           onClick={() => setCopingNotesVisible(!copingNotesVisible)}
@@ -408,6 +420,10 @@ export default function Emergency() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {mindfulnessActive && (
+        <MindfulnessPack />
       )}
 
       {groundingActive && (

@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -176,16 +177,20 @@ export default function Settings() {
     });
   };
 
-  const handleNotificationTimeChange = async (key: 'morningCheckIn' | 'eveningReflection', time: string) => {
+  const handleNotificationTimeChange = async (
+    key: 'morningCheckIn' | 'eveningReflection' | 'availabilityCheckIn',
+    time: string
+  ) => {
+    const existing = (settings.notifications as any)[key];
     updateNotificationSettings({
-      [key]: { ...settings.notifications[key], time }
+      [key]: { ...existing, time }
     });
 
     // Reschedule if enabled
     if (settings.notifications.enabled) {
       await notificationManager.scheduleNotifications({
         ...settings.notifications,
-        [key]: { ...settings.notifications[key], time }
+        [key]: { ...existing, time }
       });
     }
   };
@@ -480,6 +485,58 @@ export default function Settings() {
                       value={settings.notifications.eveningReflection.time}
                       onChange={(e) => handleNotificationTimeChange('eveningReflection', e.target.value)}
                       className="w-32"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Warmline Availability Reminder */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="availability-checkin">Warmline Availability</Label>
+                    <p className="text-sm text-muted-foreground">Prompt buddies to confirm daily availability</p>
+                  </div>
+                  <Switch
+                    id="availability-checkin"
+                    checked={settings.notifications.availabilityCheckIn.enabled}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        availabilityCheckIn: {
+                          ...settings.notifications.availabilityCheckIn,
+                          enabled: checked
+                        }
+                      })
+                    }
+                  />
+                </div>
+                {settings.notifications.availabilityCheckIn.enabled && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="availability-time" className="text-sm text-muted-foreground">
+                        Time:
+                      </Label>
+                      <Input
+                        id="availability-time"
+                        type="time"
+                        value={settings.notifications.availabilityCheckIn.time}
+                        onChange={(e) => handleNotificationTimeChange('availabilityCheckIn', e.target.value)}
+                        className="w-32"
+                      />
+                    </div>
+                    <Textarea
+                      id="availability-message"
+                      value={settings.notifications.availabilityCheckIn.message ?? ''}
+                      onChange={(e) =>
+                        updateNotificationSettings({
+                          availabilityCheckIn: {
+                            ...settings.notifications.availabilityCheckIn,
+                            message: e.target.value
+                          }
+                        })
+                      }
+                      rows={2}
+                      placeholder="Gentle nudge to confirm warmline status"
                     />
                   </div>
                 )}

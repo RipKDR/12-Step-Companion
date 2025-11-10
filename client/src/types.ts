@@ -61,7 +61,7 @@ export interface JournalEntry {
 export interface WorksheetField {
   id: string;
   label: string;
-  type: 'text' | 'textarea' | 'select' | 'number';
+  type: "text" | "textarea" | "select" | "number";
   options?: string[];
   required?: boolean;
   help?: string;
@@ -85,7 +85,7 @@ export interface WorksheetResponse {
 export interface EmergencyAction {
   id: string;
   label: string;
-  type: 'call' | 'timer' | 'exercise' | 'notes';
+  type: "call" | "timer" | "exercise" | "notes";
   data: string; // tel: number, timer duration, exercise name, or notes text
   icon: string;
 }
@@ -95,7 +95,7 @@ export interface FellowshipContact {
   name: string;
   phone?: string;
   email?: string;
-  relationshipType: 'sponsor' | 'sponsee' | 'friend' | 'home-group' | 'other';
+  relationshipType: "sponsor" | "sponsee" | "friend" | "home-group" | "other";
   isEmergencyContact: boolean;
   notes?: string;
   createdAtISO: string;
@@ -107,12 +107,18 @@ export interface RecoveryQuote {
   text: string;
   author?: string;
   source?: string;
-  category: 'hope' | 'strength' | 'connection' | 'principles' | 'service' | 'gratitude';
+  category:
+    | "hope"
+    | "strength"
+    | "connection"
+    | "principles"
+    | "service"
+    | "gratitude";
 }
 
 export interface NotificationSettings {
   enabled: boolean;
-  permission: 'granted' | 'denied' | 'default';
+  permission: "granted" | "denied" | "default";
 
   morningCheckIn: {
     enabled: boolean;
@@ -143,7 +149,7 @@ export interface AnalyticsSettings {
 }
 
 export interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   highContrast: boolean;
   reducedMotion: boolean;
   cloudSync: boolean; // stub
@@ -191,7 +197,7 @@ export interface StreakHistoryEntry {
 }
 
 export interface StreakData {
-  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork';
+  type: "journaling" | "dailyCards" | "meetings" | "stepWork";
   current: number;
   longest: number;
   lastActivityDate: string; // ISO 8601
@@ -208,28 +214,118 @@ export interface Streaks {
 
 export interface CelebratedMilestone {
   id: string;
-  type: 'sobriety' | 'streak' | 'achievement' | 'step';
+  type: "sobriety" | "streak" | "achievement" | "step";
   milestone: string; // e.g., "1d", "7d", "30d", "step-1"
   celebratedAtISO: string;
 }
 
 export interface AchievementCriteria {
-  type: 'sobriety_days' | 'step_completed' | 'journal_count' | 'journal_streak' |
-        'daily_card_count' | 'daily_card_streak' | 'gratitude_count' |
-        'meeting_count' | 'has_sponsor' | 'contact_count' |
-        'crisis_mode_used' | 'emergency_contact_used' |
-        'morning_card_count' | 'evening_card_count' | 'meditation_count' | 'any_streak';
+  type:
+    | "sobriety_days"
+    | "step_completed"
+    | "journal_count"
+    | "journal_streak"
+    | "daily_card_count"
+    | "daily_card_streak"
+    | "gratitude_count"
+    | "meeting_count"
+    | "has_sponsor"
+    | "contact_count"
+    | "crisis_mode_used"
+    | "emergency_contact_used"
+    | "morning_card_count"
+    | "evening_card_count"
+    | "meditation_count"
+    | "any_streak";
   target: number;
+}
+
+export interface RecoveryPointAwardConfig {
+  amount: number;
+  behavior: string;
+  trigger?: "unlock" | "streak" | "completion";
+  notes?: string;
+}
+
+export type RecoveryPointSource =
+  | "achievement"
+  | "streak"
+  | "daily_card"
+  | "journal"
+  | "meeting"
+  | "meditation"
+  | "manual"
+  | "redemption";
+
+export interface RecoveryPointTransaction {
+  id: string;
+  type: "award" | "redeem";
+  amount: number;
+  reason: string;
+  source: RecoveryPointSource;
+  relatedId?: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+export interface RecoveryPointReward {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  category: "content" | "coaching" | "community" | "support";
+  available: boolean;
+  tags?: string[];
+}
+
+export interface RecoveryPointRedemption {
+  id: string;
+  rewardId: string;
+  redeemedAtISO: string;
+  notes?: string;
+  transactionId: string;
+}
+
+export interface RecoveryPointBalance {
+  current: number;
+  lifetimeEarned: number;
+  lifetimeRedeemed: number;
+}
+
+export interface RecoveryPointLedger {
+  balance: RecoveryPointBalance;
+  transactions: Record<string, RecoveryPointTransaction>;
+  rewards: Record<string, RecoveryPointReward>;
+  redemptions: Record<string, RecoveryPointRedemption>;
+}
+
+export interface RecoveryPointSummary {
+  currentBalance: number;
+  lifetimeEarned: number;
+  lifetimeRedeemed: number;
+  transactionCount: number;
+  awardsBySource: Partial<Record<RecoveryPointSource, number>>;
+  lastAwardedAt?: string;
+  lastRedeemedAt?: string;
+}
+
+export interface RecoveryPointAwardPayload {
+  amount: number;
+  reason: string;
+  source: RecoveryPointSource;
+  relatedId?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Achievement {
   id: string;
-  category: 'sobriety' | 'step-work' | 'community' | 'self-care' | 'crisis';
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic';
+  category: "sobriety" | "step-work" | "community" | "self-care" | "crisis";
+  rarity: "common" | "uncommon" | "rare" | "epic";
   title: string;
   description: string;
   icon: string;
   criteria: AchievementCriteria;
+  recoveryPoints?: RecoveryPointAwardConfig;
 }
 
 export interface UnlockedAchievement {
@@ -248,7 +344,14 @@ export interface ChallengeTheme {
 
 export interface DailyChallenge {
   id: string;
-  theme: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  theme:
+    | "monday"
+    | "tuesday"
+    | "wednesday"
+    | "thursday"
+    | "friday"
+    | "saturday"
+    | "sunday";
   title: string;
   description: string;
   reason: string;
@@ -262,23 +365,27 @@ export interface ChallengeCompletion {
 }
 
 export type AnalyticsEventType =
-  | 'app_opened'
-  | 'profile_created'
-  | 'journal_entry_created'
-  | 'journal_entry_voice_used'
-  | 'journal_entry_audio_recorded'
-  | 'daily_card_morning_completed'
-  | 'daily_card_evening_completed'
-  | 'step_answer_saved'
-  | 'meeting_logged'
-  | 'goal_created'
-  | 'goal_completed'
-  | 'crisis_mode_activated'
-  | 'emergency_contact_called'
-  | 'achievement_unlocked'
-  | 'milestone_celebrated'
-  | 'daily_challenge_completed'
-  | 'streak_extended';
+  | "app_opened"
+  | "profile_created"
+  | "journal_entry_created"
+  | "journal_entry_voice_used"
+  | "journal_entry_audio_recorded"
+  | "daily_card_morning_completed"
+  | "daily_card_evening_completed"
+  | "step_answer_saved"
+  | "meeting_logged"
+  | "goal_created"
+  | "goal_completed"
+  | "crisis_mode_activated"
+  | "emergency_contact_called"
+  | "achievement_unlocked"
+  | "milestone_celebrated"
+  | "daily_challenge_completed"
+  | "streak_extended"
+  | "streak_extended"
+  | "recovery_points_awarded"
+  | "recovery_reward_redeemed"
+  | "recovery_points_summary_exported";
 
 export interface AnalyticsEvent {
   id: string;
@@ -318,4 +425,5 @@ export interface AppState {
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
+  recoveryPoints: RecoveryPointLedger;
 }

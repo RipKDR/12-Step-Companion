@@ -1,7 +1,7 @@
 import type { DailyChallenge, ChallengeTheme, ChallengeCompletion, AppState } from '@/types';
 
-let cachedChallenges: DailyChallenge[] | null = null;
-let cachedThemes: Record<string, ChallengeTheme> | null = null;
+let cachedChallenges: DailyChallenge[] | undefined;
+let cachedThemes: Record<string, ChallengeTheme> | undefined;
 
 /**
  * Load challenges from JSON file
@@ -10,20 +10,23 @@ export async function loadChallenges(): Promise<{
   challenges: DailyChallenge[];
   themes: Record<string, ChallengeTheme>;
 }> {
-  if (cachedChallenges && cachedThemes) {
-    return { challenges: cachedChallenges, themes: cachedThemes };
+  if (!cachedChallenges || !cachedThemes) {
+    try {
+      const response = await fetch('/content/challenges.json');
+      const data = await response.json();
+      cachedChallenges = data.challenges || [];
+      cachedThemes = data.themes || {};
+    } catch (error) {
+      console.error('Failed to load challenges:', error);
+      cachedChallenges = [];
+      cachedThemes = {};
+    }
   }
 
-  try {
-    const response = await fetch('/content/challenges.json');
-    const data = await response.json();
-    cachedChallenges = data.challenges;
-    cachedThemes = data.themes;
-    return { challenges: cachedChallenges, themes: cachedThemes };
-  } catch (error) {
-    console.error('Failed to load challenges:', error);
-    return { challenges: [], themes: {} };
-  }
+  return {
+    challenges: cachedChallenges ?? [],
+    themes: cachedThemes ?? {},
+  };
 }
 
 /**

@@ -10,6 +10,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 25,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -22,6 +27,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 7
+      },
+      "recoveryPoints": {
+        "amount": 40,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -34,6 +44,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 30
+      },
+      "recoveryPoints": {
+        "amount": 75,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -46,6 +61,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 90
+      },
+      "recoveryPoints": {
+        "amount": 120,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -58,6 +78,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 180
+      },
+      "recoveryPoints": {
+        "amount": 180,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -70,6 +95,11 @@
       "criteria": {
         "type": "sobriety_days",
         "target": 365
+      },
+      "recoveryPoints": {
+        "amount": 260,
+        "behavior": "sobriety_milestone",
+        "trigger": "unlock"
       }
     },
     {
@@ -82,6 +112,11 @@
       "criteria": {
         "type": "step_completed",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 35,
+        "behavior": "step_work",
+        "trigger": "completion"
       }
     },
     {
@@ -94,6 +129,11 @@
       "criteria": {
         "type": "step_completed",
         "target": 3
+      },
+      "recoveryPoints": {
+        "amount": 55,
+        "behavior": "step_work",
+        "trigger": "completion"
       }
     },
     {
@@ -106,6 +146,11 @@
       "criteria": {
         "type": "step_completed",
         "target": 4
+      },
+      "recoveryPoints": {
+        "amount": 85,
+        "behavior": "step_work",
+        "trigger": "completion"
       }
     },
     {
@@ -118,6 +163,11 @@
       "criteria": {
         "type": "step_completed",
         "target": 9
+      },
+      "recoveryPoints": {
+        "amount": 130,
+        "behavior": "step_work",
+        "trigger": "completion"
       }
     },
     {
@@ -130,6 +180,11 @@
       "criteria": {
         "type": "step_completed",
         "target": 12
+      },
+      "recoveryPoints": {
+        "amount": 210,
+        "behavior": "step_work",
+        "trigger": "completion"
       }
     },
     {
@@ -142,6 +197,11 @@
       "criteria": {
         "type": "journal_count",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 20,
+        "behavior": "journaling",
+        "trigger": "unlock"
       }
     },
     {
@@ -154,6 +214,11 @@
       "criteria": {
         "type": "journal_streak",
         "target": 7
+      },
+      "recoveryPoints": {
+        "amount": 45,
+        "behavior": "journaling",
+        "trigger": "streak"
       }
     },
     {
@@ -166,6 +231,11 @@
       "criteria": {
         "type": "journal_streak",
         "target": 30
+      },
+      "recoveryPoints": {
+        "amount": 95,
+        "behavior": "journaling",
+        "trigger": "streak"
       }
     },
     {
@@ -178,6 +248,11 @@
       "criteria": {
         "type": "journal_count",
         "target": 100
+      },
+      "recoveryPoints": {
+        "amount": 150,
+        "behavior": "journaling",
+        "trigger": "unlock"
       }
     },
     {
@@ -190,6 +265,11 @@
       "criteria": {
         "type": "daily_card_count",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 15,
+        "behavior": "daily_reflection",
+        "trigger": "unlock"
       }
     },
     {
@@ -202,6 +282,11 @@
       "criteria": {
         "type": "daily_card_streak",
         "target": 7
+      },
+      "recoveryPoints": {
+        "amount": 45,
+        "behavior": "daily_reflection",
+        "trigger": "streak"
       }
     },
     {
@@ -214,6 +299,11 @@
       "criteria": {
         "type": "gratitude_count",
         "target": 100
+      },
+      "recoveryPoints": {
+        "amount": 70,
+        "behavior": "gratitude",
+        "trigger": "unlock"
       }
     },
     {
@@ -226,6 +316,11 @@
       "criteria": {
         "type": "meeting_count",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 25,
+        "behavior": "meeting_engagement",
+        "trigger": "completion"
       }
     },
     {
@@ -238,6 +333,11 @@
       "criteria": {
         "type": "meeting_count",
         "target": 10
+      },
+      "recoveryPoints": {
+        "amount": 60,
+        "behavior": "meeting_engagement",
+        "trigger": "completion"
       }
     },
     {
@@ -250,6 +350,11 @@
       "criteria": {
         "type": "meeting_count",
         "target": 50
+      },
+      "recoveryPoints": {
+        "amount": 110,
+        "behavior": "meeting_engagement",
+        "trigger": "completion"
       }
     },
     {
@@ -262,6 +367,11 @@
       "criteria": {
         "type": "meeting_count",
         "target": 100
+      },
+      "recoveryPoints": {
+        "amount": 160,
+        "behavior": "meeting_engagement",
+        "trigger": "completion"
       }
     },
     {
@@ -274,6 +384,11 @@
       "criteria": {
         "type": "has_sponsor",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 40,
+        "behavior": "community_support",
+        "trigger": "unlock"
       }
     },
     {
@@ -286,6 +401,11 @@
       "criteria": {
         "type": "contact_count",
         "target": 5
+      },
+      "recoveryPoints": {
+        "amount": 90,
+        "behavior": "community_support",
+        "trigger": "completion"
       }
     },
     {
@@ -298,6 +418,11 @@
       "criteria": {
         "type": "crisis_mode_used",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 80,
+        "behavior": "crisis_response",
+        "trigger": "unlock"
       }
     },
     {
@@ -310,6 +435,11 @@
       "criteria": {
         "type": "emergency_contact_used",
         "target": 1
+      },
+      "recoveryPoints": {
+        "amount": 120,
+        "behavior": "crisis_response",
+        "trigger": "unlock"
       }
     },
     {
@@ -322,6 +452,11 @@
       "criteria": {
         "type": "crisis_mode_used",
         "target": 5
+      },
+      "recoveryPoints": {
+        "amount": 180,
+        "behavior": "crisis_response",
+        "trigger": "unlock"
       }
     },
     {
@@ -334,6 +469,11 @@
       "criteria": {
         "type": "morning_card_count",
         "target": 10
+      },
+      "recoveryPoints": {
+        "amount": 30,
+        "behavior": "morning_practice",
+        "trigger": "completion"
       }
     },
     {
@@ -346,6 +486,11 @@
       "criteria": {
         "type": "evening_card_count",
         "target": 10
+      },
+      "recoveryPoints": {
+        "amount": 30,
+        "behavior": "evening_reflection",
+        "trigger": "completion"
       }
     },
     {
@@ -358,6 +503,11 @@
       "criteria": {
         "type": "meditation_count",
         "target": 20
+      },
+      "recoveryPoints": {
+        "amount": 100,
+        "behavior": "meditation",
+        "trigger": "completion"
       }
     },
     {
@@ -370,6 +520,11 @@
       "criteria": {
         "type": "any_streak",
         "target": 90
+      },
+      "recoveryPoints": {
+        "amount": 150,
+        "behavior": "habit_streak",
+        "trigger": "streak"
       }
     }
   ]

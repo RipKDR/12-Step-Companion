@@ -1,0 +1,12 @@
+{
+  "title": "Urge Surfing Mindfulness Practice",
+  "durationMinutes": 11,
+  "audioUrl": "https://cdn.12stepcompanion.app/audio/mindfulness/urge-surfing.mp3",
+  "overview": "Guided mindfulness session to help you ride out cravings with awareness and compassion.",
+  "chapters": [
+    { "label": "Arriving", "start": "00:00" },
+    { "label": "Body Scan", "start": "02:15" },
+    { "label": "Urge Surfing", "start": "05:40" },
+    { "label": "Integration", "start": "09:20" }
+  ]
+}
