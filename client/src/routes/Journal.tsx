@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import JournalEntryCard from '@/components/JournalEntryCard';
-import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,12 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square, BookOpen } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
 import { startSpeechRecognition, startAudioRecording, isSpeechRecognitionSupported, isMediaRecordingSupported } from '@/lib/voice';
-import { showJournalSaved } from '@/lib/toastHelpers';
-import { trackEmptyStateView } from '@/lib/userJourney';
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,8 +125,6 @@ export default function Journal() {
         hasAudio: !!audioData,
       });
 
-      showJournalSaved();
-
       // Reset form
       setContent('');
       setMood(5);
@@ -143,13 +138,6 @@ export default function Journal() {
       setIsDialogOpen(false);
     }
   };
-
-  // Track empty state view
-  useEffect(() => {
-    if (filteredEntries.length === 0 && !searchQuery) {
-      trackEmptyStateView('journal', 'no_entries');
-    }
-  }, [filteredEntries.length, searchQuery]);
 
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
@@ -188,20 +176,20 @@ export default function Journal() {
 
       <section className="space-y-4" aria-label="Journal entries">
         {filteredEntries.length === 0 ? (
-          searchQuery ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">No entries found</p>
-            </div>
-          ) : (
-            <EmptyState
-              icon={BookOpen}
-              title="No journal entries yet"
-              description="Start documenting your recovery journey. Journaling helps you track your progress, understand patterns, and celebrate milestones."
-              actionLabel="Create your first entry"
-              onAction={() => setIsDialogOpen(true)}
-              helpText="You can add voice notes, audio recordings, and track your mood with each entry."
-            />
-          )
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? 'No entries found' : 'No journal entries yet'}
+            </p>
+            {!searchQuery && (
+              <Button 
+                variant="outline" 
+                onClick={() => setIsDialogOpen(true)}
+                data-testid="button-create-first"
+              >
+                Create your first entry
+              </Button>
+            )}
+          </div>
         ) : (
           filteredEntries.map((entry) => (
             <JournalEntryCard

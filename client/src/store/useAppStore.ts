@@ -109,7 +109,6 @@ const initialState: AppState = {
       collectPerformanceData: false,
       retentionDays: 90,
     },
-    featureFlags: defaultFeatureFlags,
   },
   onboardingComplete: false,
   streaks: initialStreaks,
