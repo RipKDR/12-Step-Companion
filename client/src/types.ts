@@ -82,6 +82,22 @@ export interface WorksheetResponse {
   updatedAtISO: string;
 }
 
+export interface MindfulnessReflection {
+  sensation?: string;
+  compassionateAction?: string;
+  [key: string]: string | undefined;
+}
+
+export interface MindfulnessSessionLog {
+  id: string;
+  title: string;
+  audioUrl?: string;
+  durationSeconds: number;
+  completedAtISO: string;
+  hapticsEnabled: boolean;
+  reflections?: MindfulnessReflection;
+}
+
 export interface EmergencyAction {
   id: string;
   label: string;
@@ -191,7 +207,7 @@ export interface StreakHistoryEntry {
 }
 
 export interface StreakData {
-  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork';
+  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork' | 'mindfulness';
   current: number;
   longest: number;
   lastActivityDate: string; // ISO 8601
@@ -204,6 +220,7 @@ export interface Streaks {
   dailyCards: StreakData;
   meetings: StreakData;
   stepWork: StreakData;
+  mindfulness: StreakData;
 }
 
 export interface CelebratedMilestone {
@@ -278,7 +295,8 @@ export type AnalyticsEventType =
   | 'achievement_unlocked'
   | 'milestone_celebrated'
   | 'daily_challenge_completed'
-  | 'streak_extended';
+  | 'streak_extended'
+  | 'mindfulness_session_completed';
 
 export interface AnalyticsEvent {
   id: string;
@@ -318,4 +336,5 @@ export interface AppState {
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
+  mindfulnessSessions?: Record<string, MindfulnessSessionLog>;
 }

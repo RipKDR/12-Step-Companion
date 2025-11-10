@@ -16,7 +16,9 @@ import type {
   UnlockedAchievement,
   ChallengeCompletion,
   AnalyticsEvent,
-  AnalyticsEventType
+  AnalyticsEventType,
+  MindfulnessSessionLog,
+  MindfulnessReflection,
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -59,11 +61,21 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
+type MindfulnessSessionInput = {
+  title: string;
+  durationSeconds: number;
+  audioUrl?: string;
+  hapticsEnabled: boolean;
+  reflections?: MindfulnessReflection;
+  completedAtISO?: string;
+};
+
 const initialStreaks: Streaks = {
   journaling: initializeStreak('journaling'),
   dailyCards: initializeStreak('dailyCards'),
   meetings: initializeStreak('meetings'),
   stepWork: initializeStreak('stepWork'),
+  mindfulness: initializeStreak('mindfulness'),
 };
 
 const initialState: AppState = {
@@ -116,6 +128,7 @@ const initialState: AppState = {
   unlockedAchievements: {},
   completedChallenges: {},
   analyticsEvents: {},
+  mindfulnessSessions: {},
 };
 
 interface AppStore extends AppState {
@@ -139,6 +152,9 @@ interface AppStore extends AppState {
   updateJournalEntry: (id: string, updates: Partial<JournalEntry>) => void;
   deleteJournalEntry: (id: string) => void;
   getJournalEntries: () => JournalEntry[];
+
+  // Mindfulness
+  logMindfulnessSession: (session: MindfulnessSessionInput) => void;
   
   // Worksheets
   saveWorksheetResponse: (response: Omit<WorksheetResponse, 'id' | 'createdAtISO' | 'updatedAtISO'>) => void;
@@ -333,7 +349,42 @@ export const useAppStore = create<AppStore>()(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
       },
-      
+
+      // Mindfulness
+      logMindfulnessSession: (session) => {
+        const id = `mindfulness_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const completedAtISO = session.completedAtISO ?? new Date().toISOString();
+
+        set((state) => {
+          const newEntry: MindfulnessSessionLog = {
+            id,
+            title: session.title,
+            audioUrl: session.audioUrl,
+            durationSeconds: session.durationSeconds,
+            completedAtISO,
+            hapticsEnabled: session.hapticsEnabled,
+            reflections: session.reflections,
+          };
+
+          return {
+            mindfulnessSessions: {
+              ...(state.mindfulnessSessions || {}),
+              [id]: newEntry,
+            },
+            streaks: {
+              ...state.streaks,
+              mindfulness: updateStreak(state.streaks.mindfulness, completedAtISO),
+            },
+          };
+        });
+
+        const { trackAnalyticsEvent } = get();
+        trackAnalyticsEvent?.('mindfulness_session_completed', {
+          durationSeconds: session.durationSeconds,
+          hapticsEnabled: session.hapticsEnabled,
+        });
+      },
+
       // Worksheets
       saveWorksheetResponse: (response) => set((state) => {
         const id = `worksheet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -528,6 +579,9 @@ export const useAppStore = create<AppStore>()(
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
+          mindfulnessSessions: data.mindfulnessSessions
+            ? { ...(state.mindfulnessSessions || {}), ...data.mindfulnessSessions }
+            : (state.mindfulnessSessions || {}),
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
         };

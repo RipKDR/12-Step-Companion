@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Trophy, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Filter, Flame } from 'lucide-react';
 import AchievementCard from '@/components/AchievementCard';
 import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
 import { useAppStore } from '@/store/useAppStore';
@@ -28,6 +29,7 @@ export default function Achievements() {
 
   const state = useAppStore((state) => state);
   const unlockedAchievements = useAppStore((state) => state.unlockedAchievements || {});
+  const mindfulnessStreak = state.streaks?.mindfulness;
 
   useEffect(() => {
     loadAchievements().then(setAchievements);
@@ -83,6 +85,24 @@ export default function Achievements() {
               className="h-full bg-primary transition-all duration-500"
               style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
             />
+          </div>
+          <Separator className="my-6" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Flame className="h-4 w-4 text-primary" />
+              Mindfulness streak badges
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary" className="text-sm">
+                Current: {mindfulnessStreak?.current ?? 0} days
+              </Badge>
+              <Badge variant="outline" className="text-sm">
+                Longest: {mindfulnessStreak?.longest ?? 0} days
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Each guided practice adds fuel to your calm. Keep showing up to grow your streak.
+            </p>
           </div>
         </CardContent>
       </Card>
