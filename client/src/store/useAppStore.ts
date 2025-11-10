@@ -16,7 +16,14 @@ import type {
   UnlockedAchievement,
   ChallengeCompletion,
   AnalyticsEvent,
-  AnalyticsEventType
+  AnalyticsEventType,
+  RecoveryPointLedger,
+  RecoveryPointTransaction,
+  RecoveryPointReward,
+  RecoveryPointRedemption,
+  RecoveryPointAwardPayload,
+  RecoveryPointSummary,
+  RecoveryPointSource
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -27,6 +34,7 @@ import {
   breakStreak,
   initializeStreak
 } from '@/lib/streaks';
+import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
 const defaultEmergencyActions: EmergencyAction[] = [
   {
@@ -65,6 +73,8 @@ const initialStreaks: Streaks = {
   meetings: initializeStreak('meetings'),
   stepWork: initializeStreak('stepWork'),
 };
+
+const initialRecoveryPoints: RecoveryPointLedger = createInitialRecoveryPoints();
 
 const initialState: AppState = {
   version: CURRENT_VERSION,
@@ -116,6 +126,7 @@ const initialState: AppState = {
   unlockedAchievements: {},
   completedChallenges: {},
   analyticsEvents: {},
+  recoveryPoints: initialRecoveryPoints,
 };
 
 interface AppStore extends AppState {
@@ -198,6 +209,11 @@ interface AppStore extends AppState {
   getAnalyticsEvents: () => Record<string, AnalyticsEvent>;
   clearOldAnalyticsEvents: () => void;
   updateAnalyticsSettings: (updates: Partial<AppSettings['analytics']>) => void;
+
+  // Recovery Points (V3)
+  awardPoints: (payload: RecoveryPointAwardPayload) => void;
+  redeemReward: (rewardId: string, notes?: string) => void;
+  exportRecoveryPointsSummary: () => RecoveryPointSummary;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -507,19 +523,63 @@ export const useAppStore = create<AppStore>()(
           imported: Record<string, T>
         ): Record<string, T> => {
           const merged = { ...existing };
-          
+
           Object.entries(imported).forEach(([key, value]) => {
             const existingItem = merged[key];
-            if (!existingItem || 
-                (value.updatedAtISO && existingItem.updatedAtISO && 
+            if (!existingItem ||
+                (value.updatedAtISO && existingItem.updatedAtISO &&
                  new Date(value.updatedAtISO) > new Date(existingItem.updatedAtISO))) {
               merged[key] = value;
             }
           });
-          
+
           return merged;
         };
-        
+
+        const mergeRecoveryLedger = (
+          existing: RecoveryPointLedger,
+          incoming?: RecoveryPointLedger | null
+        ): RecoveryPointLedger => {
+          if (!incoming) return existing;
+
+          const mergedTransactions: Record<string, RecoveryPointTransaction> = {
+            ...existing.transactions,
+            ...incoming.transactions,
+          };
+
+          const mergedRewards: Record<string, RecoveryPointReward> = {
+            ...existing.rewards,
+            ...incoming.rewards,
+          };
+
+          const mergedRedemptions: Record<string, RecoveryPointRedemption> = {
+            ...existing.redemptions,
+            ...incoming.redemptions,
+          };
+
+          const balance: RecoveryPointLedger['balance'] = {
+            current:
+              typeof incoming.balance?.current === 'number'
+                ? incoming.balance.current
+                : existing.balance.current,
+            lifetimeEarned: Math.max(
+              existing.balance.lifetimeEarned,
+              incoming.balance?.lifetimeEarned ?? 0
+            ),
+            lifetimeRedeemed: Math.max(
+              existing.balance.lifetimeRedeemed,
+              incoming.balance?.lifetimeRedeemed ?? 0
+            ),
+          };
+
+          return {
+            balance,
+            transactions: mergedTransactions,
+            rewards: mergedRewards,
+            redemptions: mergedRedemptions,
+          };
+        };
+
         return {
           ...state,
           profile: data.profile || state.profile,
@@ -530,9 +590,12 @@ export const useAppStore = create<AppStore>()(
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
+          recoveryPoints: data.recoveryPoints
+            ? mergeRecoveryLedger(state.recoveryPoints, data.recoveryPoints)
+            : state.recoveryPoints,
         };
       }),
-      
+
       clearAllData: () => set(initialState),
 
       // Streak Management (V2)
@@ -638,6 +701,152 @@ export const useAppStore = create<AppStore>()(
 
       getCompletedChallenges: () => {
         return get().completedChallenges || {};
+      },
+
+      // Recovery Points (V3)
+      awardPoints: (payload) => {
+        if (!payload || payload.amount <= 0) {
+          return;
+        }
+
+        const transactionId = `points_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const timestamp = new Date().toISOString();
+
+        const transaction: RecoveryPointTransaction = {
+          id: transactionId,
+          type: 'award',
+          amount: payload.amount,
+          reason: payload.reason,
+          source: payload.source,
+          relatedId: payload.relatedId,
+          timestamp,
+          metadata: payload.metadata,
+        };
+
+        set((state) => ({
+          recoveryPoints: {
+            ...state.recoveryPoints,
+            balance: {
+              current: state.recoveryPoints.balance.current + payload.amount,
+              lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned + payload.amount,
+              lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed,
+            },
+            transactions: {
+              ...state.recoveryPoints.transactions,
+              [transactionId]: transaction,
+            },
+          },
+        }));
+
+        get().trackAnalyticsEvent('recovery_points_awarded', {
+          amount: payload.amount,
+          source: payload.source,
+          reason: payload.reason,
+          relatedId: payload.relatedId,
+          ...payload.metadata,
+        });
+      },
+
+      redeemReward: (rewardId, notes) => {
+        const state = get();
+        const reward = state.recoveryPoints.rewards[rewardId];
+        if (!reward || !reward.available) {
+          return;
+        }
+
+        if (state.recoveryPoints.balance.current < reward.cost) {
+          return;
+        }
+
+        const timestamp = new Date().toISOString();
+        const transactionId = `points_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const redemptionId = `redemption_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const transaction: RecoveryPointTransaction = {
+          id: transactionId,
+          type: 'redeem',
+          amount: reward.cost,
+          reason: `Redeemed ${reward.name}`,
+          source: 'redemption',
+          relatedId: rewardId,
+          timestamp,
+          metadata: notes ? { notes } : undefined,
+        };
+
+        const redemption: RecoveryPointRedemption = {
+          id: redemptionId,
+          rewardId,
+          redeemedAtISO: timestamp,
+          notes,
+          transactionId,
+        };
+
+        set((state) => ({
+          recoveryPoints: {
+            ...state.recoveryPoints,
+            balance: {
+              current: state.recoveryPoints.balance.current - reward.cost,
+              lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned,
+              lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed + reward.cost,
+            },
+            transactions: {
+              ...state.recoveryPoints.transactions,
+              [transactionId]: transaction,
+            },
+            redemptions: {
+              ...state.recoveryPoints.redemptions,
+              [redemptionId]: redemption,
+            },
+          },
+        }));
+
+        get().trackAnalyticsEvent('recovery_reward_redeemed', {
+          rewardId,
+          cost: reward.cost,
+          notes,
+        });
+      },
+
+      exportRecoveryPointsSummary: () => {
+        const state = get();
+        const transactions = Object.values(state.recoveryPoints.transactions || {});
+
+        const awardsBySource: Partial<Record<RecoveryPointSource, number>> = {};
+        let lastAwardedAt: string | undefined;
+        let lastRedeemedAt: string | undefined;
+
+        transactions.forEach((transaction) => {
+          if (transaction.type === 'award') {
+            awardsBySource[transaction.source] =
+              (awardsBySource[transaction.source] || 0) + transaction.amount;
+            if (!lastAwardedAt || transaction.timestamp > lastAwardedAt) {
+              lastAwardedAt = transaction.timestamp;
+            }
+          } else if (transaction.type === 'redeem') {
+            if (!lastRedeemedAt || transaction.timestamp > lastRedeemedAt) {
+              lastRedeemedAt = transaction.timestamp;
+            }
+          }
+        });
+
+        const summary: RecoveryPointSummary = {
+          currentBalance: state.recoveryPoints.balance.current,
+          lifetimeEarned: state.recoveryPoints.balance.lifetimeEarned,
+          lifetimeRedeemed: state.recoveryPoints.balance.lifetimeRedeemed,
+          transactionCount: transactions.length,
+          awardsBySource: awardsBySource as RecoveryPointSummary['awardsBySource'],
+          lastAwardedAt,
+          lastRedeemedAt,
+        };
+
+        get().trackAnalyticsEvent('recovery_points_summary_exported', {
+          transactionCount: summary.transactionCount,
+          currentBalance: summary.currentBalance,
+          lifetimeEarned: summary.lifetimeEarned,
+          lifetimeRedeemed: summary.lifetimeRedeemed,
+        });
+
+        return summary;
       },
 
       // Analytics (V3)

@@ -14,8 +14,9 @@ export async function loadAchievements(): Promise<Achievement[]> {
   try {
     const response = await fetch('/content/achievements.json');
     const data = await response.json();
-    cachedAchievements = data.achievements;
-    return cachedAchievements;
+    const achievements = (data?.achievements || []) as Achievement[];
+    cachedAchievements = achievements;
+    return achievements;
   } catch (error) {
     console.error('Failed to load achievements:', error);
     return [];

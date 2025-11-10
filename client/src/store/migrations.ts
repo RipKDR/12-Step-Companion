@@ -1,7 +1,8 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
+import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
-export const CURRENT_VERSION = 8;
+export const CURRENT_VERSION = 9;
 
 type Migration = (state: any) => any;
 
@@ -89,6 +90,28 @@ const migrations: Record<number, Migration> = {
         retentionDays: 90,
       };
     }
+    return state;
+  },
+  9: (state: any) => {
+    // V9: Introduce recovery points ledger
+    if (!state.recoveryPoints) {
+      state.recoveryPoints = createInitialRecoveryPoints();
+      return state;
+    }
+
+    const defaults = createInitialRecoveryPoints();
+    state.recoveryPoints.balance = {
+      current: state.recoveryPoints.balance?.current ?? defaults.balance.current,
+      lifetimeEarned: state.recoveryPoints.balance?.lifetimeEarned ?? defaults.balance.lifetimeEarned,
+      lifetimeRedeemed: state.recoveryPoints.balance?.lifetimeRedeemed ?? defaults.balance.lifetimeRedeemed,
+    };
+    state.recoveryPoints.transactions = state.recoveryPoints.transactions || {};
+    state.recoveryPoints.redemptions = state.recoveryPoints.redemptions || {};
+    state.recoveryPoints.rewards = {
+      ...defaults.rewards,
+      ...(state.recoveryPoints.rewards || {}),
+    };
+
     return state;
   },
 };
