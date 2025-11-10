@@ -38,7 +38,10 @@ export default function BottomNav() {
     
     const windowHeight = window.innerHeight;
     const isBottomZone = startY > windowHeight - bottomGestureZoneHeight;
-    isSwipeFromBottomRef.current = isBottomZone;
+    
+    // Allow swipe from bottom zone, or from nav when it's visible
+    const touchingNav = navRef.current?.contains(e.target as Node) ?? false;
+    isSwipeFromBottomRef.current = isBottomZone || (isVisible && touchingNav);
   };
 
   const onTouchMove = (e: TouchEvent) => {
