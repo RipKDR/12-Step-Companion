@@ -20,7 +20,8 @@ import { Plus, Search, AlertTriangle, Mic, MicOff, Disc, Square, BookOpen } from
 import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
 import { startSpeechRecognition, startAudioRecording, isSpeechRecognitionSupported, isMediaRecordingSupported } from '@/lib/voice';
-import { showJournalSaved, trackEmptyStateView } from '@/lib/userJourney';
+import { showJournalSaved } from '@/lib/toastHelpers';
+import { trackEmptyStateView } from '@/lib/userJourney';
 
 export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');

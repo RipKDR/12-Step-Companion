@@ -11,7 +11,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { Calendar, Plus, MapPin, Clock, Users, Trash2, MessageCircle, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
-import { showMeetingLogged, trackEmptyStateView } from '@/lib/userJourney';
+import { showMeetingLogged } from '@/lib/toastHelpers';
+import { trackEmptyStateView } from '@/lib/userJourney';
 import { format } from 'date-fns';
 
 interface Meeting {

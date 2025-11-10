@@ -1,4 +1,4 @@
-import { onCLS, onFID, onLCP, onFCP, onTTFB, Metric } from 'web-vitals';
+import { onCLS, onINP, onLCP, onFCP, onTTFB, Metric } from 'web-vitals';
 import { useAppStore } from '@/store/useAppStore';
 
 /**
@@ -23,7 +23,7 @@ export const initPerformanceMonitoring = () => {
   };
 
   onCLS(reportMetric);
-  onFID(reportMetric);
+  onINP(reportMetric);
   onLCP(reportMetric);
   onFCP(reportMetric);
   onTTFB(reportMetric);
