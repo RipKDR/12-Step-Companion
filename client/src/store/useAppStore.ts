@@ -23,7 +23,9 @@ import type {
   RecoveryPointRedemption,
   RecoveryPointAwardPayload,
   RecoveryPointSummary,
-  RecoveryPointSource
+  RecoveryPointSource,
+  AISponsorMessage,
+  AISponsorChatState
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -127,6 +129,10 @@ const initialState: AppState = {
   completedChallenges: {},
   analyticsEvents: {},
   recoveryPoints: initialRecoveryPoints,
+  aiSponsorChat: {
+    messages: {},
+    isTyping: false,
+  },
 };
 
 interface AppStore extends AppState {
@@ -214,6 +220,12 @@ interface AppStore extends AppState {
   awardPoints: (payload: RecoveryPointAwardPayload) => void;
   redeemReward: (rewardId: string, notes?: string) => void;
   exportRecoveryPointsSummary: () => RecoveryPointSummary;
+
+  // AI Sponsor Chat (V4)
+  addAISponsorMessage: (message: Omit<AISponsorMessage, 'id' | 'timestamp'>) => void;
+  getAISponsorMessages: () => AISponsorMessage[];
+  setAISponsorTyping: (isTyping: boolean) => void;
+  clearAISponsorChat: () => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -901,6 +913,58 @@ export const useAppStore = create<AppStore>()(
           },
         },
       })),
+
+      // AI Sponsor Chat (V4)
+      addAISponsorMessage: (message) => {
+        const id = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const timestamp = new Date().toISOString();
+
+        set((state) => ({
+          aiSponsorChat: {
+            ...state.aiSponsorChat,
+            messages: {
+              ...state.aiSponsorChat?.messages,
+              [id]: {
+                id,
+                timestamp,
+                ...message,
+              },
+            },
+            lastMessageTimestamp: timestamp,
+          },
+        }));
+
+        // Track analytics if enabled
+        if (get().settings.analytics.enabled) {
+          const eventType: AnalyticsEventType =
+            message.role === 'user'
+              ? 'ai_sponsor_message_sent'
+              : 'ai_sponsor_message_received';
+          get().trackAnalyticsEvent(eventType, { messageLength: message.content.length });
+        }
+      },
+
+      getAISponsorMessages: () => {
+        const messages = get().aiSponsorChat?.messages || {};
+        return Object.values(messages).sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+      },
+
+      setAISponsorTyping: (isTyping) => set((state) => ({
+        aiSponsorChat: {
+          ...state.aiSponsorChat,
+          messages: state.aiSponsorChat?.messages || {},
+          isTyping,
+        },
+      })),
+
+      clearAISponsorChat: () => set({
+        aiSponsorChat: {
+          messages: {},
+          isTyping: false,
+        },
+      }),
     }),
     {
       name: 'recovery-companion-storage',
