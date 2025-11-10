@@ -300,7 +300,7 @@ export default function Home() {
   const highestStreak = Math.max(...Object.values(streaks).map(s => s.current));
 
   return (
-    <div className="h-screen flex flex-col pb-16">
+    <div className="h-screen flex flex-col pb-20 sm:pb-24">
       {/* Skip to main content link */}
       <a
         href="#main-content"

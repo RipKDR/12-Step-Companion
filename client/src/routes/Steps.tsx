@@ -110,7 +110,7 @@ export default function Steps() {
 
   if (selectedStep === null) {
     return (
-      <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
+      <div className="max-w-3xl mx-auto px-6 pb-20 sm:pb-24 pt-6">
         <header className="space-y-4 mb-8">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -143,7 +143,7 @@ export default function Steps() {
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
+    <div className="max-w-3xl mx-auto px-6 pb-20 sm:pb-24 pt-6">
       <header className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"

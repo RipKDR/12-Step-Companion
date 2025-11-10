@@ -13,12 +13,15 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 safe-area-bottom pb-2 px-4"
+      className="fixed bottom-0 left-0 right-0 z-40 pb-3 sm:pb-4 px-3 sm:px-4"
       role="navigation"
       aria-label="Main navigation"
+      style={{
+        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))'
+      }}
     >
       <div className="bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-lg max-w-md mx-auto">
-        <div className="flex justify-around items-center gap-1 p-2">
+        <div className="flex justify-around items-center gap-1 p-1.5 sm:p-2">
           {navItems.map((item) => {
             const isActive = location === item.path;
             const Icon = item.icon;

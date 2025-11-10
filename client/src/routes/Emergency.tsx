@@ -206,7 +206,7 @@ export default function Emergency() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-3xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
       <header className="text-center mb-8">
         <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="h-8 w-8 text-destructive" />

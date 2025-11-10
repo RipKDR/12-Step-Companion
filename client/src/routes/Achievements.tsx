@@ -120,7 +120,7 @@ export default function Achievements() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-6xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Trophy className="h-8 w-8 text-primary" />

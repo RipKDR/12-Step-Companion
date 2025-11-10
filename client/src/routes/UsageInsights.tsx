@@ -51,7 +51,7 @@ export default function UsageInsights() {
 
   if (!analyticsSettings.enabled) {
     return (
-      <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
+      <div className="max-w-4xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Usage Insights</h1>
           <p className="text-muted-foreground mt-2">
@@ -108,7 +108,7 @@ export default function UsageInsights() {
     .slice(0, 10);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-4xl mx-auto px-6 pb-20 sm:pb-24 pt-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Usage Insights</h1>
         <p className="text-muted-foreground mt-2">
