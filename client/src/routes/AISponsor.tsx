@@ -12,6 +12,7 @@ export default function AISponsor() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasShownWelcome = useRef(false);
   const { toast } = useToast();
 
   const messages = useAppStore((state) => state.getAISponsorMessages());
@@ -26,14 +27,15 @@ export default function AISponsor() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // Track when chat is opened
+  // Track when chat is opened (only once)
   useEffect(() => {
     trackEvent('ai_sponsor_chat_opened');
-  }, [trackEvent]);
+  }, []);
 
-  // Show welcome message if no messages
+  // Show welcome message if no messages (only once on mount)
   useEffect(() => {
-    if (messages.length === 0) {
+    if (messages.length === 0 && !hasShownWelcome.current) {
+      hasShownWelcome.current = true;
       addMessage({
         role: 'assistant',
         content: "Hi there! I'm your AI Sponsor - a supportive companion here to listen, offer guidance, and help you through difficult moments. I'm here 24/7, whenever you need someone to talk to. How are you feeling today?",
