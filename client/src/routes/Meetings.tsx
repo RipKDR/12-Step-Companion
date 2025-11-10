@@ -105,11 +105,11 @@ export default function Meetings() {
 
   const getMeetingTypeColor = (type: string) => {
     switch(type) {
-      case 'NA': return 'bg-blue-500';
-      case 'AA': return 'bg-purple-500';
-      case 'CA': return 'bg-green-500';
-      case 'SMART': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+      case 'NA': return 'bg-primary text-primary-foreground';
+      case 'AA': return 'bg-accent text-accent-foreground';
+      case 'CA': return 'bg-secondary text-secondary-foreground';
+      case 'SMART': return 'bg-muted text-muted-foreground';
+      default: return 'bg-secondary text-secondary-foreground';
     }
   };
 

@@ -89,10 +89,10 @@ export default function AchievementCard({
       <div
         className={cn(
           'absolute bottom-0 left-0 right-0 h-1',
-          achievement.rarity === 'common' && 'bg-gray-400',
-          achievement.rarity === 'uncommon' && 'bg-green-500',
-          achievement.rarity === 'rare' && 'bg-blue-500',
-          achievement.rarity === 'epic' && 'bg-purple-500'
+          achievement.rarity === 'common' && 'bg-muted',
+          achievement.rarity === 'uncommon' && 'bg-secondary',
+          achievement.rarity === 'rare' && 'bg-primary',
+          achievement.rarity === 'epic' && 'bg-accent'
         )}
       />
     </Card>
