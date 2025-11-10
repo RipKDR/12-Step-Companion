@@ -17,9 +17,10 @@ import MilestoneCelebrationModal, {
 } from "@/components/MilestoneCelebrationModal";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import ChallengeCompletionModal from "@/components/ChallengeCompletionModal";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Sunrise,
   Moon,
@@ -33,11 +34,14 @@ import {
   PenLine,
   Calendar,
   UserCheck,
-  Zap,
   Trophy,
   Undo2,
   Bot,
   MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Target,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAppStore } from "@/store/useAppStore";
@@ -95,6 +99,7 @@ export default function Home() {
     null,
   );
   const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
+  const [showDailyPractice, setShowDailyPractice] = useState(false);
 
   const todayDate = useMemo(
     () => getTodayDate(profile?.timezone || "Australia/Melbourne"),
@@ -128,7 +133,6 @@ export default function Home() {
   // Check and break stale streaks on mount
   useEffect(() => {
     checkAllStreaks();
-    // Track app opened event
     trackAnalyticsEvent("app_opened");
   }, [checkAllStreaks, trackAnalyticsEvent]);
 
@@ -136,7 +140,6 @@ export default function Home() {
   useEffect(() => {
     if (!profile?.cleanDate) return;
 
-    // Check sobriety milestones
     const sobrietyMilestone = checkSobrietyMilestone(
       profile.cleanDate,
       celebratedMilestones,
@@ -146,7 +149,6 @@ export default function Home() {
       return;
     }
 
-    // Check streak milestones
     const streakTypes: Array<
       "journaling" | "dailyCards" | "meetings" | "stepWork"
     > = ["journaling", "dailyCards", "meetings", "stepWork"];
@@ -165,7 +167,6 @@ export default function Home() {
     }
   }, [profile?.cleanDate, celebratedMilestones, streaks]);
 
-  // Handle milestone celebration
   const handleMilestoneCelebrated = () => {
     if (currentMilestone) {
       const celebratedMilestoneData: CelebratedMilestone = {
@@ -175,13 +176,10 @@ export default function Home() {
         celebratedAtISO: new Date().toISOString(),
       };
       celebrateMilestone(celebratedMilestoneData);
-
-      // Track milestone celebration
       trackAnalyticsEvent("milestone_celebrated", {
         type: currentMilestone.type,
         milestone: currentMilestone.milestone,
       });
-
       setCurrentMilestone(null);
     }
   };
@@ -196,8 +194,6 @@ export default function Home() {
           unlockedAtISO: new Date().toISOString(),
         };
         unlockAchievement(unlockedAchievement);
-
-        // Track achievement unlock
         trackAnalyticsEvent("achievement_unlocked", {
           achievementCategory: achievement.category,
           rarity: achievement.rarity,
@@ -216,7 +212,6 @@ export default function Home() {
           });
         }
 
-        // Show celebration modal for achievement
         if (!currentMilestone) {
           setCurrentMilestone({
             id: achievement.id,
@@ -248,13 +243,11 @@ export default function Home() {
         break;
       }
 
-      // This step is complete, move to next
       currentStep = step + 1;
       currentStepAnswers = 0;
       currentStepTotalQuestions = stepQuestionCounts.get(step + 1) || 0;
     }
 
-    // If we've gone past step 12, stay on step 12
     if (currentStep > totalSteps) {
       currentStep = totalSteps;
       const lastStepTotal = stepQuestionCounts.get(totalSteps) || 0;
@@ -297,7 +290,6 @@ export default function Home() {
     updateDailyCard(todayDate, { quickNotes: value });
   };
 
-  // Challenge state
   const isChallengeCompleted = isTodayChallengeCompleted(completedChallenges);
   const weeklyCount = getWeeklyCompletionCount(completedChallenges);
 
@@ -308,17 +300,17 @@ export default function Home() {
   const handleChallengeCompletionSave = (notes?: string) => {
     if (todaysChallenge) {
       completeChallenge(todaysChallenge.id, notes);
-
-      // Track challenge completion
       trackAnalyticsEvent("daily_challenge_completed", {
         theme: todaysChallenge.theme,
       });
     }
   };
 
+  const totalActiveStreaks = Object.values(streaks).filter(s => s.current > 0).length;
+  const highestStreak = Math.max(...Object.values(streaks).map(s => s.current));
+
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
-      {/* Skip to main content link */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"
@@ -326,8 +318,8 @@ export default function Home() {
         Skip to main content
       </a>
 
-      <main id="main-content" role="main" className="space-y-12">
-        {/* Sobriety Counter */}
+      <main id="main-content" role="main" className="space-y-6">
+        {/* Hero Section - Sobriety Counter */}
         <section aria-labelledby="sobriety-heading">
           <h1 id="sobriety-heading" className="sr-only">
             Your Clean Time
@@ -338,61 +330,82 @@ export default function Home() {
               timezone={profile.timezone}
             />
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>Complete onboarding to start tracking your clean time</p>
-            </div>
+            <Card className="text-center py-12">
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Complete onboarding to start tracking your clean time
+                </p>
+              </CardContent>
+            </Card>
           )}
         </section>
 
-        {/* Emergency Support - Always Accessible */}
-        <section aria-labelledby="emergency-heading">
-          <h2 id="emergency-heading" className="sr-only">
-            Emergency Support
-          </h2>
+        {/* Quick Stats Overview */}
+        <section className="grid grid-cols-2 sm:grid-cols-3 gap-3" aria-label="Quick statistics">
+          <Card className="p-3 sm:p-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-1.5 sm:mb-2">
+                <Zap className="h-4 w-4 text-orange-500" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{totalActiveStreaks}</p>
+              <p className="text-xs text-muted-foreground">Active</p>
+            </div>
+          </Card>
+          <Card className="p-3 sm:p-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-1.5 sm:mb-2">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{highestStreak}</p>
+              <p className="text-xs text-muted-foreground">Best</p>
+            </div>
+          </Card>
+          <Card className="p-3 sm:p-4 col-span-2 sm:col-span-1">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-1.5 sm:mb-2">
+                <Target className="h-4 w-4 text-blue-500" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{stepProgress.currentStep}</p>
+              <p className="text-xs text-muted-foreground">Current Step</p>
+            </div>
+          </Card>
+        </section>
+
+        {/* Priority Actions - Emergency & AI Sponsor */}
+        <section className="space-y-3" aria-label="Priority support">
           <Link href="/emergency">
-            <Card className="cursor-pointer border-2 border-destructive/20 hover:border-destructive/40 hover-elevate active-elevate-2 transition-colors duration-200">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive shrink-0">
+            <Card className="cursor-pointer border-2 border-destructive/20 hover:border-destructive/40 hover-elevate active-elevate-2">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive shrink-0">
                     <Phone className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">
-                      Need Support Right Now?
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Crisis tools, breathing exercises, and emergency contacts
+                    <h3 className="font-semibold text-sm">Need Support Now?</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Crisis tools & emergency contacts
                     </p>
                   </div>
-                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
               </CardContent>
             </Card>
           </Link>
-        </section>
 
-        {/* AI Sponsor - V4 Feature */}
-        <section aria-labelledby="ai-sponsor-heading">
-          <h2 id="ai-sponsor-heading" className="sr-only">
-            AI Sponsor Chat
-          </h2>
           <Link href="/ai-sponsor">
-            <Card className="cursor-pointer relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 hover-elevate active-elevate-2 transition-colors duration-200">
+            <Card className="cursor-pointer relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 hover-elevate active-elevate-2">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/3 to-transparent pointer-events-none" />
-              <CardContent className="p-5 relative">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-primary/15 text-primary shrink-0">
+              <CardContent className="p-4 relative">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-primary/15 text-primary shrink-0">
                     <Bot className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground flex items-center gap-2">
-                      Talk to Your AI Sponsor
-                      <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">
-                        24/7
-                      </span>
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Get support, guidance, and validation anytime you need it
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-sm">AI Sponsor</h3>
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0">24/7</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Get support & guidance anytime
                     </p>
                   </div>
                   <MessageCircle className="h-4 w-4 text-primary shrink-0" />
@@ -402,7 +415,7 @@ export default function Home() {
           </Link>
         </section>
 
-        {/* Daily Challenge - V2 Feature */}
+        {/* Today's Challenge */}
         {todaysChallenge && challengeTheme && (
           <section aria-labelledby="challenge-heading">
             <h2 id="challenge-heading" className="sr-only">
@@ -418,48 +431,126 @@ export default function Home() {
           </section>
         )}
 
-        {/* Daily Affirmation */}
-        <section aria-labelledby="affirmation-heading">
-          <h2 id="affirmation-heading" className="sr-only">
-            Daily Affirmation
-          </h2>
+        {/* Daily Inspiration */}
+        <section className="space-y-3" aria-label="Daily inspiration">
           <DailyAffirmation date={new Date()} />
-        </section>
-
-        {/* Daily Recovery Quote */}
-        <section aria-labelledby="quote-heading">
-          <h2 id="quote-heading" className="sr-only">
-            Daily Recovery Quote
-          </h2>
           <DailyQuote />
         </section>
 
-        {/* Progress Ring */}
-        <section
-          className="flex justify-center py-4"
-          aria-labelledby="progress-heading"
-        >
-          <h2 id="progress-heading" className="sr-only">
-            Current Step Progress
-          </h2>
-          <ProgressRing
-            current={stepProgress.answeredQuestions}
-            total={stepProgress.totalQuestions}
-            stepNumber={stepProgress.currentStep}
-          />
-        </section>
-
-        {/* Streaks - V2 Feature */}
-        <section className="space-y-4" aria-labelledby="streaks-heading">
-          <div>
-            <h2 id="streaks-heading" className="text-2xl font-semibold tracking-tight">
-              Your Streaks
+        {/* Quick Actions */}
+        <section aria-labelledby="quick-actions-heading">
+          <div className="mb-4">
+            <h2 id="quick-actions-heading" className="text-xl font-semibold tracking-tight">
+              Quick Actions
             </h2>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Build daily habits and track your consistency
+            <p className="text-xs text-muted-foreground mt-1">
+              Log your progress in seconds
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-20 flex flex-col gap-1.5 p-2"
+              onClick={() => setShowQuickJournal(true)}
+              data-testid="quick-action-journal"
+            >
+              <PenLine className="h-5 w-5" />
+              <span className="text-xs font-medium">Journal</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-20 flex flex-col gap-1.5 p-2"
+              onClick={() => setShowQuickGratitude(true)}
+              data-testid="quick-action-gratitude"
+            >
+              <Sparkles className="h-5 w-5" />
+              <span className="text-xs font-medium">Gratitude</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-20 flex flex-col gap-1.5 p-2 col-span-2 sm:col-span-1"
+              onClick={() => setShowQuickMeeting(true)}
+              data-testid="quick-action-meeting"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs font-medium">Meeting</span>
+            </Button>
+
+            <Link href="/steps" className="col-span-2">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full h-20 flex flex-col gap-1.5 p-2"
+                data-testid="quick-action-steps"
+              >
+                <BookOpen className="h-5 w-5" />
+                <span className="text-xs font-medium">Step Work</span>
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-20 flex flex-col gap-1.5 p-2 border-destructive/30 text-destructive hover:border-destructive/50"
+              onClick={() => setShowRelapseReset(true)}
+              data-testid="quick-action-relapse"
+            >
+              <Undo2 className="h-5 w-5" />
+              <span className="text-xs font-medium">Log Slip</span>
+            </Button>
+          </div>
+        </section>
+
+        {/* Current Step Progress */}
+        <section aria-labelledby="progress-heading">
+          <Link href="/steps">
+            <Card className="cursor-pointer hover-elevate active-elevate-2">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-4">
+                  <ProgressRing
+                    current={stepProgress.answeredQuestions}
+                    total={stepProgress.totalQuestions}
+                    stepNumber={stepProgress.currentStep}
+                    size={80}
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Step {stepProgress.currentStep}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {stepProgress.answeredQuestions} of {stepProgress.totalQuestions} questions answered
+                    </p>
+                    <div className="mt-2">
+                      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${stepProgress.totalQuestions > 0 ? (stepProgress.answeredQuestions / stepProgress.totalQuestions) * 100 : 0}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </section>
+
+        {/* Streaks - Compact */}
+        <section aria-labelledby="streaks-heading">
+          <div className="mb-4">
+            <h2 id="streaks-heading" className="text-xl font-semibold tracking-tight">
+              Streaks
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Keep the momentum going
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <StreakCard
               title="Journaling"
               icon={PenLine}
@@ -487,206 +578,144 @@ export default function Home() {
           </div>
         </section>
 
-        <Separator className="my-8" />
-
-        {/* Quick Actions - V2 Feature */}
-        <section className="space-y-4" aria-labelledby="quick-actions-heading">
-          <div>
-            <h2 id="quick-actions-heading" className="text-2xl font-semibold tracking-tight">
-              Quick Actions
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Log your progress in under 30 seconds
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-24 flex flex-col gap-2"
-              onClick={() => setShowQuickJournal(true)}
-              data-testid="quick-action-journal"
-            >
-              <PenLine className="h-5 w-5" />
-              <span className="text-sm font-medium">Journal</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-24 flex flex-col gap-2"
-              onClick={() => setShowQuickGratitude(true)}
-              data-testid="quick-action-gratitude"
-            >
-              <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-medium">Gratitude</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-24 flex flex-col gap-2"
-              onClick={() => setShowQuickMeeting(true)}
-              data-testid="quick-action-meeting"
-            >
-              <Users className="h-5 w-5" />
-              <span className="text-sm font-medium">Meeting</span>
-            </Button>
-
-            <Link href="/steps" className="md:col-span-2">
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full h-24 flex flex-col gap-2"
-                data-testid="quick-action-steps"
-              >
-                <BookOpen className="h-5 w-5" />
-                <span className="text-sm font-medium">Step Work</span>
-              </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-24 flex flex-col gap-2 border-destructive/30 text-destructive hover:border-destructive/50"
-              onClick={() => setShowRelapseReset(true)}
-              data-testid="quick-action-relapse"
-            >
-              <Undo2 className="h-5 w-5" />
-              <span className="text-sm font-medium">Log a Slip</span>
-            </Button>
-          </div>
+        {/* Daily Practice - Collapsible */}
+        <section aria-labelledby="daily-practice-heading">
+          <h2 id="daily-practice-heading" className="sr-only">Daily Practice</h2>
+          <Collapsible open={showDailyPractice} onOpenChange={setShowDailyPractice}>
+            <Card>
+              <CollapsibleTrigger asChild>
+                <CardHeader 
+                  className="cursor-pointer hover:bg-accent/50 transition-colors pb-4"
+                  data-testid="daily-practice-toggle"
+                  aria-expanded={showDailyPractice}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Daily Practice</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Morning, evening, and gratitude reflections
+                      </p>
+                    </div>
+                    {showDailyPractice ? (
+                      <ChevronUp className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="space-y-4 pt-0">
+                  <DailyCard
+                    title="Morning Intent"
+                    icon={<Sunrise className="h-5 w-5" />}
+                    value={dailyCard?.morningIntent || ""}
+                    completed={dailyCard?.morningCompleted || false}
+                    onChange={handleMorningChange}
+                    onComplete={handleMorningComplete}
+                    testId="morning-card"
+                  />
+                  <DailyCard
+                    title="Evening Reflection"
+                    icon={<Moon className="h-5 w-5" />}
+                    value={dailyCard?.eveningReflection || ""}
+                    completed={dailyCard?.eveningCompleted || false}
+                    onChange={handleEveningChange}
+                    onComplete={handleEveningComplete}
+                    testId="evening-card"
+                  />
+                  <GratitudeList
+                    items={dailyCard?.gratitudeItems || []}
+                    onChange={handleGratitudeChange}
+                    testId="gratitude-list"
+                  />
+                  <QuickNotes
+                    value={dailyCard?.quickNotes || ""}
+                    onChange={handleQuickNotesChange}
+                    testId="quick-notes"
+                  />
+                  <MeditationTimer testId="meditation-timer" />
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </section>
 
-        {/* Daily Cards */}
-        <section className="space-y-4" aria-labelledby="daily-heading">
-          <div>
-            <h2 id="daily-heading" className="text-2xl font-semibold tracking-tight">
-              Daily Practice
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Complete your daily reflections and gratitude
-            </p>
-          </div>
-          <DailyCard
-            title="Morning Intent"
-            icon={<Sunrise className="h-5 w-5" />}
-            value={dailyCard?.morningIntent || ""}
-            completed={dailyCard?.morningCompleted || false}
-            onChange={handleMorningChange}
-            onComplete={handleMorningComplete}
-            testId="morning-card"
-          />
-          <DailyCard
-            title="Evening Reflection"
-            icon={<Moon className="h-5 w-5" />}
-            value={dailyCard?.eveningReflection || ""}
-            completed={dailyCard?.eveningCompleted || false}
-            onChange={handleEveningChange}
-            onComplete={handleEveningComplete}
-            testId="evening-card"
-          />
-          <GratitudeList
-            items={dailyCard?.gratitudeItems || []}
-            onChange={handleGratitudeChange}
-            testId="gratitude-list"
-          />
-          <QuickNotes
-            value={dailyCard?.quickNotes || ""}
-            onChange={handleQuickNotesChange}
-            testId="quick-notes"
-          />
-          <MeditationTimer testId="meditation-timer" />
-
+        {/* Resources */}
+        <section className="space-y-3" aria-label="Resources">
           <a
             href="https://www.na.org.au/multi/category/na-today-blog/"
             target="_blank"
             rel="noopener noreferrer"
-            className="block"
             data-testid="link-daily-inspiration"
           >
-            <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all duration-200">
-              <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    <Sparkles className="h-5 w-5" />
+            <Card className="cursor-pointer hover-elevate active-elevate-2">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm">Daily Fellowship</h3>
+                      <p className="text-xs text-muted-foreground">Recovery stories & insights</p>
+                    </div>
                   </div>
-                  <CardTitle className="text-base font-semibold">
-                    Daily Fellowship Reading
-                  </CardTitle>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Read recovery stories and insights from members across
-                  Australia
-                </p>
               </CardContent>
             </Card>
           </a>
-        </section>
 
-        {/* Continue Your Journey */}
-        <section className="space-y-4" aria-labelledby="actions-heading">
-          <div>
-            <h2 id="actions-heading" className="text-2xl font-semibold tracking-tight">
-              Continue Your Journey
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Explore tools and track your progress
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link
-              href="/steps"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "justify-start gap-3",
-              )}
-              data-testid="button-step-work"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>Continue Step Work</span>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/journal">
+              <Card className="cursor-pointer hover-elevate active-elevate-2" data-testid="button-journal">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <BookMarked className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium">Journal</span>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
-            <Link
-              href="/journal"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "justify-start gap-3",
-              )}
-              data-testid="button-journal"
-            >
-              <BookMarked className="h-4 w-4" />
-              <span>New Journal Entry</span>
+
+            <Link href="/analytics">
+              <Card className="cursor-pointer hover-elevate active-elevate-2" data-testid="button-analytics">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium">Analytics</span>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
-            <Link
-              href="/analytics"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "justify-start gap-3",
-              )}
-              data-testid="button-analytics"
-            >
-              <TrendingUp className="h-4 w-4" />
-              <span>Mood Analytics</span>
+
+            <Link href="/achievements">
+              <Card className="cursor-pointer hover-elevate active-elevate-2" data-testid="button-achievements">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <Trophy className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium">Achievements</span>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
-            <Link
-              href="/achievements"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "justify-start gap-3",
-              )}
-              data-testid="button-achievements"
-            >
-              <Trophy className="h-4 w-4" />
-              <span>View Achievements</span>
+
+            <Link href="/contacts">
+              <Card className="cursor-pointer hover-elevate active-elevate-2">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium">Contacts</span>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
           </div>
         </section>
       </main>
 
-      {/* Quick Action Modals */}
+      {/* Modals */}
       <QuickJournalModal
         open={showQuickJournal}
         onOpenChange={setShowQuickJournal}
@@ -703,8 +732,6 @@ export default function Home() {
         open={showRelapseReset}
         onOpenChange={setShowRelapseReset}
       />
-
-      {/* Milestone Celebration Modal */}
       <MilestoneCelebrationModal
         open={!!currentMilestone}
         onOpenChange={(open) => {
@@ -712,8 +739,6 @@ export default function Home() {
         }}
         milestone={currentMilestone}
       />
-
-      {/* Challenge Completion Modal */}
       <ChallengeCompletionModal
         open={showChallengeCompletion}
         onOpenChange={setShowChallengeCompletion}
