@@ -14,20 +14,18 @@ import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
 import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
 import DailyChallengeCard from '@/components/DailyChallengeCard';
 import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
-import Greeting from '@/components/Greeting';
-import { StreakCardSkeleton, ChallengeCardSkeleton, ProgressRingSkeleton, QuickActionsSkeleton } from '@/components/SkeletonLoader';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, Phone, Sparkles, ExternalLink, Users, PenLine, Calendar, UserCheck, Zap } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap, Trophy } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
 import { loadAllSteps } from '@/lib/contentLoader';
+import { cn } from '@/lib/utils';
 import { checkSobrietyMilestone, checkStreakMilestone } from '@/lib/milestones';
 import { checkAchievements } from '@/lib/achievements';
 import { getTodaysChallenge, getThemeData, isTodayChallengeCompleted, getWeeklyCompletionCount } from '@/lib/challenges';
-import { showSaveSuccess, showChallengeCompleted, triggerHaptic } from '@/lib/toastHelpers';
 import type { CelebratedMilestone, UnlockedAchievement, DailyChallenge, ChallengeTheme } from '@/types';
 
 export default function Home() {
@@ -46,8 +44,6 @@ export default function Home() {
   const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
-  const [isLoadingSteps, setIsLoadingSteps] = useState(true);
-  const [isLoadingChallenge, setIsLoadingChallenge] = useState(true);
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
@@ -61,46 +57,25 @@ export default function Home() {
 
   // Load all step contents to get question counts
   useEffect(() => {
-    setIsLoadingSteps(true);
-    loadAllSteps()
-      .then((allSteps) => {
-        const counts = new Map<number, number>();
-        allSteps.forEach((content, stepNum) => {
-          counts.set(stepNum, content.questions.length);
-        });
-        setStepQuestionCounts(counts);
-        setIsLoadingSteps(false);
-      })
-      .catch((error) => {
-        console.error('Failed to load step contents:', error);
-        setIsLoadingSteps(false);
+    loadAllSteps().then((allSteps) => {
+      const counts = new Map<number, number>();
+      allSteps.forEach((content, stepNum) => {
+        counts.set(stepNum, content.questions.length);
       });
+      setStepQuestionCounts(counts);
+    });
   }, []);
 
   // Load today's challenge
   useEffect(() => {
-    setIsLoadingChallenge(true);
-    getTodaysChallenge()
-      .then((challenge) => {
-        if (challenge) {
-          setTodaysChallenge(challenge);
-          getThemeData(challenge.theme)
-            .then((theme) => {
-              if (theme) setChallengeTheme(theme);
-              setIsLoadingChallenge(false);
-            })
-            .catch((error) => {
-              console.error('Failed to load challenge theme:', error);
-              setIsLoadingChallenge(false);
-            });
-        } else {
-          setIsLoadingChallenge(false);
-        }
-      })
-      .catch((error) => {
-        console.error('Failed to load today\'s challenge:', error);
-        setIsLoadingChallenge(false);
-      });
+    getTodaysChallenge().then((challenge) => {
+      if (challenge) {
+        setTodaysChallenge(challenge);
+        getThemeData(challenge.theme).then((theme) => {
+          if (theme) setChallengeTheme(theme);
+        });
+      }
+    });
   }, []);
 
   // Check and break stale streaks on mount
@@ -232,36 +207,22 @@ export default function Home() {
 
   const handleMorningChange = (value: string) => {
     updateDailyCard(todayDate, { morningIntent: value });
-    if (value.trim()) {
-      showSaveSuccess('Morning intent');
-      triggerHaptic('light');
-    }
   };
 
   const handleMorningComplete = () => {
     updateDailyCard(todayDate, { morningCompleted: !dailyCard?.morningCompleted });
-    triggerHaptic('light');
   };
 
   const handleEveningChange = (value: string) => {
     updateDailyCard(todayDate, { eveningReflection: value });
-    if (value.trim()) {
-      showSaveSuccess('Evening reflection');
-      triggerHaptic('light');
-    }
   };
 
   const handleEveningComplete = () => {
     updateDailyCard(todayDate, { eveningCompleted: !dailyCard?.eveningCompleted });
-    triggerHaptic('light');
   };
 
   const handleGratitudeChange = (items: string[]) => {
     updateDailyCard(todayDate, { gratitudeItems: items });
-    if (items.length > 0) {
-      showSaveSuccess('Gratitude list');
-      triggerHaptic('light');
-    }
   };
 
   const handleQuickNotesChange = (value: string) => {
@@ -279,8 +240,6 @@ export default function Home() {
   const handleChallengeCompletionSave = (notes?: string) => {
     if (todaysChallenge) {
       completeChallenge(todaysChallenge.id, notes);
-      showChallengeCompleted();
-      triggerHaptic('medium');
 
       // Track challenge completion
       trackAnalyticsEvent('daily_challenge_completed', {
@@ -288,21 +247,6 @@ export default function Home() {
       });
     }
   };
-
-  // Smart feed prioritization logic
-  const shouldShowSection = useMemo(() => {
-    const hasActiveStreaks = Object.values(streaks).some(s => s.current > 0);
-    const hasStepProgress = stepProgress.answeredQuestions > 0;
-    const isEmergencyCompletedToday = dailyCard?.emergencyCompleted === true;
-    
-    return {
-      challenge: !isChallengeCompleted && todaysChallenge && challengeTheme,
-      streaks: hasActiveStreaks,
-      progressRing: hasStepProgress && !isLoadingSteps,
-      emergency: !isEmergencyCompletedToday,
-      dailyQuote: true, // Always show but at bottom
-    };
-  }, [isChallengeCompleted, todaysChallenge, challengeTheme, streaks, stepProgress, isLoadingSteps, dailyCard]);
 
   return (
     <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
@@ -315,9 +259,8 @@ export default function Home() {
       </a>
 
       <main id="main-content" role="main" className="space-y-16">
-        {/* 1. Greeting + Sobriety Counter (always first) */}
-        <section aria-labelledby="greeting-heading">
-          <Greeting className="mb-6" />
+        {/* Sobriety Counter */}
+        <section aria-labelledby="sobriety-heading">
           <h1 id="sobriety-heading" className="sr-only">Your Clean Time</h1>
           {profile?.cleanDate ? (
             <SobrietyCounter cleanDate={profile.cleanDate} timezone={profile.timezone} />
@@ -328,94 +271,112 @@ export default function Home() {
           )}
         </section>
 
-        {/* 2. Emergency Support (always second, if not completed today) */}
-        {shouldShowSection.emergency && (
-          <section aria-labelledby="emergency-heading">
-            <h2 id="emergency-heading" className="sr-only">Emergency Support</h2>
-            <Link href="/emergency">
-              <Card className="cursor-pointer bg-card border-2 border-destructive/30 hover:border-destructive hover:shadow-md transition-all duration-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive shrink-0">
-                      <Phone className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base text-foreground">
-                        Need Support Right Now?
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Crisis tools, breathing exercises, and emergency contacts
-                      </p>
-                    </div>
-                    <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+        {/* Emergency Support - Always Accessible */}
+        <section aria-labelledby="emergency-heading">
+          <h2 id="emergency-heading" className="sr-only">Emergency Support</h2>
+          <Link href="/emergency">
+            <Card className="cursor-pointer bg-card border-2 border-destructive/30 hover:border-destructive hover:shadow-md transition-all duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive shrink-0">
+                    <Phone className="h-6 w-6" />
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </section>
-        )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base text-foreground">
+                      Need Support Right Now?
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Crisis tools, breathing exercises, and emergency contacts
+                    </p>
+                  </div>
+                  <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </section>
 
-        {/* 3. Today's Challenge (if incomplete) */}
-        {shouldShowSection.challenge && (
+        {/* Daily Challenge - V2 Feature */}
+        {todaysChallenge && challengeTheme && (
           <section aria-labelledby="challenge-heading">
             <h2 id="challenge-heading" className="sr-only">Today's Challenge</h2>
-            {isLoadingChallenge ? (
-              <ChallengeCardSkeleton />
-            ) : (
-              todaysChallenge && challengeTheme && (
-                <DailyChallengeCard
-                  challenge={todaysChallenge}
-                  theme={challengeTheme}
-                  isCompleted={isChallengeCompleted}
-                  weeklyCount={weeklyCount}
-                  onComplete={handleChallengeComplete}
-                />
-              )
-            )}
+            <DailyChallengeCard
+              challenge={todaysChallenge}
+              theme={challengeTheme}
+              isCompleted={isChallengeCompleted}
+              weeklyCount={weeklyCount}
+              onComplete={handleChallengeComplete}
+            />
           </section>
         )}
 
-        {/* 4. Active Streaks (compact 2x2 grid, only if any active) */}
-        {shouldShowSection.streaks && (
-          <section className="space-y-6" aria-labelledby="streaks-heading">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1">
-                <h2 id="streaks-heading" className="text-2xl font-semibold">Your Streaks</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Build daily habits and track your consistency
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <StreakCard
-                title="Journaling"
-                icon={PenLine}
-                streak={streaks.journaling}
-                color="blue"
-              />
-              <StreakCard
-                title="Daily Cards"
-                icon={Calendar}
-                streak={streaks.dailyCards}
-                color="green"
-              />
-              <StreakCard
-                title="Step Work"
-                icon={BookOpen}
-                streak={streaks.stepWork}
-                color="purple"
-              />
-              <StreakCard
-                title="Meetings"
-                icon={UserCheck}
-                streak={streaks.meetings}
-                color="orange"
-              />
-            </div>
-          </section>
-        )}
+        {/* Daily Affirmation */}
+        <section aria-labelledby="affirmation-heading">
+          <h2 id="affirmation-heading" className="sr-only">Daily Affirmation</h2>
+          <DailyAffirmation date={new Date()} />
+        </section>
 
-        {/* 5. Quick Actions (single instance, 4-button grid) */}
+        {/* Daily Recovery Quote */}
+        <section aria-labelledby="quote-heading">
+          <h2 id="quote-heading" className="sr-only">Daily Recovery Quote</h2>
+          <DailyQuote />
+        </section>
+
+        <Separator className="my-8" />
+
+        {/* Progress Ring */}
+        <section className="flex justify-center py-8" aria-labelledby="progress-heading">
+          <h2 id="progress-heading" className="sr-only">Current Step Progress</h2>
+          <ProgressRing 
+            current={stepProgress.answeredQuestions} 
+            total={stepProgress.totalQuestions} 
+            stepNumber={stepProgress.currentStep} 
+          />
+        </section>
+
+        <Separator className="my-8" />
+
+        {/* Streaks - V2 Feature */}
+        <section className="space-y-6" aria-labelledby="streaks-heading">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1">
+              <h2 id="streaks-heading" className="text-3xl font-bold">Your Streaks</h2>
+              <p className="text-base text-muted-foreground mt-2">
+                Build daily habits and track your consistency
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <StreakCard
+              title="Journaling"
+              icon={PenLine}
+              streak={streaks.journaling}
+              color="blue"
+            />
+            <StreakCard
+              title="Daily Cards"
+              icon={Calendar}
+              streak={streaks.dailyCards}
+              color="green"
+            />
+            <StreakCard
+              title="Step Work"
+              icon={BookOpen}
+              streak={streaks.stepWork}
+              color="purple"
+            />
+            <StreakCard
+              title="Meetings"
+              icon={UserCheck}
+              streak={streaks.meetings}
+              color="orange"
+            />
+          </div>
+        </section>
+
+        <Separator className="my-8" />
+
+        {/* Quick Actions - V2 Feature */}
         <section className="space-y-6" aria-labelledby="quick-actions-heading">
           <div className="flex items-center gap-3 mb-6">
             <Zap className="h-6 w-6 text-primary" />
@@ -472,7 +433,7 @@ export default function Home() {
 
         <Separator className="my-8" />
 
-        {/* 6. Daily Cards (collapsible sections) */}
+        {/* Daily Cards */}
         <section className="space-y-6" aria-labelledby="daily-heading">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1">
@@ -538,35 +499,61 @@ export default function Home() {
           </a>
         </section>
 
-        {/* 7. Progress Ring (only if step work in progress) */}
-        {shouldShowSection.progressRing && (
-          <>
-            <Separator className="my-8" />
-            <section className="flex justify-center py-8" aria-labelledby="progress-heading">
-              <h2 id="progress-heading" className="sr-only">Current Step Progress</h2>
-              {isLoadingSteps ? (
-                <ProgressRingSkeleton />
-              ) : (
-                <ProgressRing 
-                  current={stepProgress.answeredQuestions} 
-                  total={stepProgress.totalQuestions} 
-                  stepNumber={stepProgress.currentStep} 
-                />
-              )}
-            </section>
-          </>
-        )}
+        <Separator className="my-8" />
 
-        {/* 8. Daily Quote (bottom, subtle) */}
-        {shouldShowSection.dailyQuote && (
-          <>
-            <Separator className="my-8" />
-            <section aria-labelledby="quote-heading">
-              <h2 id="quote-heading" className="sr-only">Daily Recovery Quote</h2>
-              <DailyQuote />
-            </section>
-          </>
-        )}
+        {/* Quick Actions */}
+        <section className="space-y-6" aria-labelledby="actions-heading">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex-1">
+              <h2 id="actions-heading" className="text-3xl font-bold">Quick Actions</h2>
+              <p className="text-base text-muted-foreground mt-2">
+                Continue your recovery journey
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <Link 
+              href="/steps"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-step-work"
+            >
+              <BookOpen className="h-5 w-5" />
+              Continue Step Work
+            </Link>
+            <Link 
+              href="/journal"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-journal"
+            >
+              <BookMarked className="h-5 w-5" />
+              New Journal Entry
+            </Link>
+            <Link
+              href="/analytics"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-analytics"
+            >
+              <TrendingUp className="h-5 w-5" />
+              Mood Analytics
+            </Link>
+            <Link
+              href="/achievements"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-achievements"
+            >
+              <Trophy className="h-5 w-5" />
+              View Achievements
+            </Link>
+            <Link
+              href="/contacts"
+              className={cn(buttonVariants({ variant: "outline" }), "w-full h-16 justify-start gap-4 text-base")}
+              data-testid="button-contacts"
+            >
+              <Users className="h-5 w-5" />
+              Fellowship Contacts
+            </Link>
+          </div>
+        </section>
       </main>
 
       {/* Quick Action Modals */}

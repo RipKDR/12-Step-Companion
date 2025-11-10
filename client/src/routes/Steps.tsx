@@ -5,11 +5,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
 import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
-import { showStepAnswerSaved, showDataExported } from '@/lib/toastHelpers';
 import type { StepContent } from '@/types';
 
 export default function Steps() {
@@ -87,9 +86,6 @@ export default function Steps() {
         answer: value,
         updatedAtISO: new Date().toISOString(),
       });
-      if (value.trim()) {
-        showStepAnswerSaved();
-      }
     }
   };
 
@@ -97,7 +93,6 @@ export default function Steps() {
     if (selectedStep) {
       const answers = getStepAnswers(selectedStep);
       exportStepAnswers(selectedStep, answers);
-      showDataExported();
     }
   };
 

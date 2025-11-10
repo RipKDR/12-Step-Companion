@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -7,11 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { EmptyState } from '@/components/EmptyState';
 import { Calendar, Plus, MapPin, Clock, Users, Trash2, MessageCircle, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
-import { showMeetingLogged, trackEmptyStateView } from '@/lib/userJourney';
 import { format } from 'date-fns';
 
 interface Meeting {
@@ -80,7 +78,10 @@ export default function Meetings() {
 
     saveMeeting(formData);
     
-    showMeetingLogged();
+    toast({
+      title: 'Meeting logged',
+      description: 'Your meeting attendance has been recorded',
+    });
 
     setIsDialogOpen(false);
     setFormData({
@@ -119,13 +120,6 @@ export default function Meetings() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return meetingDate >= thirtyDaysAgo;
   }).length;
-
-  // Track empty state view
-  useEffect(() => {
-    if (meetings.length === 0) {
-      trackEmptyStateView('meetings', 'no_meetings');
-    }
-  }, [meetings.length]);
 
   return (
     <>
@@ -234,57 +228,58 @@ export default function Meetings() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Meeting History</h2>
           
-          {meetings.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No meetings logged yet"
-              description="Start tracking your meeting attendance to build consistency and see your progress over time."
-              actionLabel="Log your first meeting"
-              onAction={() => setIsDialogOpen(true)}
-              helpText="Regular meeting attendance is a key part of recovery. Track your progress and celebrate milestones."
-            />
-          ) : (
-            meetings.map((meeting: Meeting) => (
-              <Card key={meeting.id} className="hover-elevate" data-testid={`meeting-${meeting.id}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className={getMeetingTypeColor(meeting.type)}>
-                          {meeting.type}
-                        </Badge>
-                        <CardTitle className="text-lg">{meeting.name}</CardTitle>
+          {meetings.length === 0 && (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No meetings logged yet</p>
+                <Button onClick={() => setIsDialogOpen(true)} data-testid="button-first-meeting">
+                  Log Your First Meeting
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {meetings.map((meeting: Meeting) => (
+            <Card key={meeting.id} className="hover-elevate" data-testid={`meeting-${meeting.id}`}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={getMeetingTypeColor(meeting.type)}>
+                        {meeting.type}
+                      </Badge>
+                      <CardTitle className="text-lg">{meeting.name}</CardTitle>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-3 w-3" />
+                        {meeting.location}
                       </div>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3 w-3" />
-                          {meeting.location}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(meeting.date), 'EEEE, MMMM d, yyyy')}
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(meeting.date), 'EEEE, MMMM d, yyyy')}
                       </div>
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => handleDelete(meeting.id, meeting.name)}
-                      data-testid={`button-delete-${meeting.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
-                </CardHeader>
-                {meeting.notes && (
-                  <CardContent>
-                    <p className="text-sm">{meeting.notes}</p>
-                  </CardContent>
-                )}
-              </Card>
-            ))
-          )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => handleDelete(meeting.id, meeting.name)}
+                    data-testid={`button-delete-${meeting.id}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              {meeting.notes && (
+                <CardContent>
+                  <p className="text-sm">{meeting.notes}</p>
+                </CardContent>
+              )}
+            </Card>
+          ))}
         </div>
       </div>
 

@@ -9,8 +9,6 @@ import BottomNav from "@/components/BottomNav";
 import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { initPerformanceMonitoring } from "@/lib/performance";
 
 // Routes
 import Home from "@/routes/Home";
@@ -67,17 +65,6 @@ function Router() {
 
 function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const featureFlags = useAppStore((state) => state.settings.featureFlags);
-
-  // Initialize keyboard shortcuts if enabled
-  useKeyboardShortcuts({ enabled: featureFlags?.keyboardShortcuts ?? true });
-
-  // Initialize performance monitoring if enabled
-  useEffect(() => {
-    if (featureFlags?.performanceMonitoring ?? true) {
-      initPerformanceMonitoring();
-    }
-  }, [featureFlags?.performanceMonitoring]);
 
   useEffect(() => {
     if (import.meta.env.PROD) {
