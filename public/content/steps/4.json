@@ -1,12 +1,348 @@
 {
   "step": 4,
-  "title": "Step 4",
-  "overviewLabels": ["step4"],
+  "title": "Step Four",
+  "subtitle": "We made a searching and fearless moral inventory of ourselves.",
+  "overviewLabels": ["courage", "self-awareness", "honesty", "thoroughness"],
   "questions": [
     {
       "id": "q1",
-      "prompt": "Paste your permitted question text here for Step 4",
-      "help": "Optional hint"
+      "section": "Introduction",
+      "prompt": "Why am I working a Fourth Step?"
+    },
+    {
+      "id": "q2",
+      "section": "Introduction",
+      "prompt": "Do I have fears about doing a Fourth Step? What are they?"
+    },
+    {
+      "id": "q3",
+      "section": "Introduction",
+      "prompt": "What might I find if I look beneath the anger or fear or pain that's been covering everything up? What defects might be revealed?"
+    },
+    {
+      "id": "q4",
+      "section": "Introduction",
+      "prompt": "How have the defects in my character affected my life? How have they affected the lives of those around me?"
+    },
+    {
+      "id": "q5",
+      "section": "Introduction",
+      "prompt": "Do I think I'll be able to find some patterns in my behavior by doing a Fourth Step? What do I think those patterns might be?"
+    },
+    {
+      "id": "q6",
+      "section": "Resentments",
+      "prompt": "List the people, institutions, and principles with which I am angry. What, exactly, about each, do I resent?"
+    },
+    {
+      "id": "q7",
+      "section": "Resentments",
+      "prompt": "Looking at each resentment, where was I selfish, self-seeking, dishonest, or frightened?"
+    },
+    {
+      "id": "q8",
+      "section": "Resentments",
+      "prompt": "Referring to each resentment, how has holding on to it affected me? Has it affected my self-esteem, my pocketbook, my personal relationships, my ambitions, my emotional security, or my sex conduct?"
+    },
+    {
+      "id": "q9",
+      "section": "Resentments",
+      "prompt": "What part have I played in each of my resentments? Have I been selfish and dishonest? How so?"
+    },
+    {
+      "id": "q10",
+      "section": "Resentments",
+      "prompt": "Have I been inconsiderate? Unkind? What have I done?"
+    },
+    {
+      "id": "q11",
+      "section": "Resentments",
+      "prompt": "Have I been intolerant and quick to find fault with others? What have I found fault with?"
+    },
+    {
+      "id": "q12",
+      "section": "Resentments",
+      "prompt": "Have I been too demanding? Of whom have I demanded too much? In what ways?"
+    },
+    {
+      "id": "q13",
+      "section": "Resentments",
+      "prompt": "How often have I insisted that things be my way?"
+    },
+    {
+      "id": "q14",
+      "section": "Resentments",
+      "prompt": "Have I held unrealistic expectations of other people? What have they been?"
+    },
+    {
+      "id": "q15",
+      "section": "Fears",
+      "prompt": "What do I fear? Make a list."
+    },
+    {
+      "id": "q16",
+      "section": "Fears",
+      "prompt": "Why do I have these fears?"
+    },
+    {
+      "id": "q17",
+      "section": "Fears",
+      "prompt": "Where have I been selfish and dishonest in relation to my fears?"
+    },
+    {
+      "id": "q18",
+      "section": "Fears",
+      "prompt": "Do I rely on myself rather than a Power greater than myself?"
+    },
+    {
+      "id": "q19",
+      "section": "Fears",
+      "prompt": "How have my fears affected my self-esteem, my pocketbook, my personal relationships, my ambitions, my emotional security, or my sex conduct?"
+    },
+    {
+      "id": "q20",
+      "section": "Fears",
+      "prompt": "Am I afraid of responsibility, commitment, being alone, being found out, being rejected, being homeless, not having my needs met, the unknown, going to prison, or being free? How have these fears affected me?"
+    },
+    {
+      "id": "q21",
+      "section": "Fears",
+      "prompt": "Am I afraid of growing up and living a responsible, productive life? Am I afraid of failing? Success? Intimacy? Am I afraid of being hurt? How have these fears affected me?"
+    },
+    {
+      "id": "q22",
+      "section": "Our relationships",
+      "prompt": "Do I accept other people as they are? Have I ever thought that life would be better if only other people were different? Explain."
+    },
+    {
+      "id": "q23",
+      "section": "Our relationships",
+      "prompt": "Have I been intolerant and refused to allow others the right to their own opinions, thoughts, and beliefs? Explain."
+    },
+    {
+      "id": "q24",
+      "section": "Our relationships",
+      "prompt": "Have I always needed to be right? How did this affect my relationships?"
+    },
+    {
+      "id": "q25",
+      "section": "Our relationships",
+      "prompt": "Have I used self-pity to get attention? Describe."
+    },
+    {
+      "id": "q26",
+      "section": "Our relationships",
+      "prompt": "Did I ever lie or stretch the truth to make myself look more pathetic? Explain."
+    },
+    {
+      "id": "q27",
+      "section": "Our relationships",
+      "prompt": "Did I make others feel guilty by feeling sorry for myself? Describe."
+    },
+    {
+      "id": "q28",
+      "section": "Our relationships",
+      "prompt": "Have I been trustworthy? Where was I not?"
+    },
+    {
+      "id": "q29",
+      "section": "Our relationships",
+      "prompt": "Do I usually think of myself as better than everyone around me? How has this affected my relationships?"
+    },
+    {
+      "id": "q30",
+      "section": "Our relationships",
+      "prompt": "Do I usually think of myself as less than everyone around me? How has this affected my relationships?"
+    },
+    {
+      "id": "q31",
+      "section": "Our relationships",
+      "prompt": "Have I tended to idealize other people? How did they turn out to be different from my idealized image of them? What happened to those relationships?"
+    },
+    {
+      "id": "q32",
+      "section": "Our relationships",
+      "prompt": "Have I tended to seek approval from others? What happened to my relationships with those from whom I sought approval?"
+    },
+    {
+      "id": "q33",
+      "section": "Sex conduct",
+      "prompt": "Where have I been selfish in my sexual relationships? Describe."
+    },
+    {
+      "id": "q34",
+      "section": "Sex conduct",
+      "prompt": "Have I been dishonest? How?"
+    },
+    {
+      "id": "q35",
+      "section": "Sex conduct",
+      "prompt": "Have I been inconsiderate? Explain."
+    },
+    {
+      "id": "q36",
+      "section": "Sex conduct",
+      "prompt": "In what ways have I used others? Have I traded sex for other things I wanted?"
+    },
+    {
+      "id": "q37",
+      "section": "Sex conduct",
+      "prompt": "Have I manipulated and lied to meet my own sexual needs? Describe."
+    },
+    {
+      "id": "q38",
+      "section": "Sex conduct",
+      "prompt": "Did I really care about the other person? In what ways did I demonstrate my caring?"
+    },
+    {
+      "id": "q39",
+      "section": "Sex conduct",
+      "prompt": "Did I feel either better than or less than my sexual partners? Explain."
+    },
+    {
+      "id": "q40",
+      "section": "Sex conduct",
+      "prompt": "Did I sell myself short, settling for much less than I deserved?"
+    },
+    {
+      "id": "q41",
+      "section": "Sex conduct",
+      "prompt": "Did I end up feeling worthless, used, and abused?"
+    },
+    {
+      "id": "q42",
+      "section": "Sex conduct",
+      "prompt": "Have my relationships ended in pain and unhappiness?"
+    },
+    {
+      "id": "q43",
+      "section": "Sex conduct",
+      "prompt": "What part have I played in my unhealthy relationships? What character defects have I had in common in these relationships? How did they affect me?"
+    },
+    {
+      "id": "q44",
+      "section": "Our part",
+      "prompt": "In what ways have I tried to keep things secret? Why did I do this?"
+    },
+    {
+      "id": "q45",
+      "section": "Our part",
+      "prompt": "Have I blamed others for the things I did? In what situations?"
+    },
+    {
+      "id": "q46",
+      "section": "Our part",
+      "prompt": "Have I lied to myself and others? About what?"
+    },
+    {
+      "id": "q47",
+      "section": "Our part",
+      "prompt": "Have I been a phony? Have I put on an act when I've been around certain people? What act was it?"
+    },
+    {
+      "id": "q48",
+      "section": "Our part",
+      "prompt": "Have I felt inadequate and insecure? How have these feelings affected my life?"
+    },
+    {
+      "id": "q49",
+      "section": "Our part",
+      "prompt": "Have I tried to compensate for my feelings of inadequacy by bragging, lying, stealing, using drugs, or showing off in some other way? Explain."
+    },
+    {
+      "id": "q50",
+      "section": "Our part",
+      "prompt": "Have I been selfish and self-centered, always wanting things my way? In what ways?"
+    },
+    {
+      "id": "q51",
+      "section": "Our part",
+      "prompt": "Have I tried to control others? How did I do that?"
+    },
+    {
+      "id": "q52",
+      "section": "Our part",
+      "prompt": "Have I often felt justified in doing things that would ordinarily make me feel ashamed? When?"
+    },
+    {
+      "id": "q53",
+      "section": "Our part",
+      "prompt": "Have I hidden behind a wall of anger, self-righteousness, or sarcasm? Explain."
+    },
+    {
+      "id": "q54",
+      "section": "Character defects",
+      "prompt": "Have any character defects contributed to a pattern in my life? What are they? What is the pattern?"
+    },
+    {
+      "id": "q55",
+      "section": "Character defects",
+      "prompt": "Do I have any destructive habits? What are they? How have they harmed me?"
+    },
+    {
+      "id": "q56",
+      "section": "Character defects",
+      "prompt": "What positive character traits do I have? (For example: Am I generous? Caring? Loyal? Open-minded? Honest? Trustworthy?)"
+    },
+    {
+      "id": "q57",
+      "section": "Character defects",
+      "prompt": "Have I identified any patterns of selfishness, dishonesty, or fear? What are they?"
+    },
+    {
+      "id": "q58",
+      "section": "Character defects",
+      "prompt": "What defects have shown up again and again in each part of my life?"
+    },
+    {
+      "id": "q59",
+      "section": "Spiritual principles",
+      "prompt": "What does it mean to be searching?"
+    },
+    {
+      "id": "q60",
+      "section": "Spiritual principles",
+      "prompt": "What does it mean to be fearless?"
+    },
+    {
+      "id": "q61",
+      "section": "Spiritual principles",
+      "prompt": "How is honesty an important part of a Fourth Step?"
+    },
+    {
+      "id": "q62",
+      "section": "Spiritual principles",
+      "prompt": "How can a Fourth Step help me develop self-awareness?"
+    },
+    {
+      "id": "q63",
+      "section": "Spiritual principles",
+      "prompt": "Why is thoroughness important in doing a Fourth Step?"
+    },
+    {
+      "id": "q64",
+      "section": "Spiritual principles",
+      "prompt": "How have I demonstrated courage by doing this Fourth Step?"
+    },
+    {
+      "id": "q65",
+      "section": "Moving on",
+      "prompt": "What feelings have come up while doing this inventory? Am I afraid of sharing with another person? Why?"
+    },
+    {
+      "id": "q66",
+      "section": "Moving on",
+      "prompt": "Am I willing to go on to the Fifth Step?"
+    },
+    {
+      "id": "q67",
+      "section": "Moving on",
+      "prompt": "What is my understanding of Step Four?"
+    },
+    {
+      "id": "q68",
+      "section": "Moving on",
+      "prompt": "How has my prior knowledge and experience affected my work on this step?"
     }
   ]
 }
