@@ -1,7 +1,8 @@
 import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
+import { createDefaultResetPlan } from './resetPlanDefaults';
 
-export const CURRENT_VERSION = 8;
+export const CURRENT_VERSION = 9;
 
 type Migration = (state: any) => any;
 
@@ -89,6 +90,18 @@ const migrations: Record<number, Migration> = {
         retentionDays: 90,
       };
     }
+    return state;
+  },
+  9: (state: any) => {
+    // V9: Add recovery reset data structures
+    if (!state.useEpisodes) {
+      state.useEpisodes = {};
+    }
+
+    if (!state.resetPlan) {
+      state.resetPlan = createDefaultResetPlan();
+    }
+
     return state;
   },
 };

@@ -25,7 +25,10 @@ export function isSpeechRecognitionSupported(): boolean {
  * Check if media recording is supported
  */
 export function isMediaRecordingSupported(): boolean {
-  return 'MediaRecorder' in window && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+  return (
+    'MediaRecorder' in window &&
+    !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+  );
 }
 
 /**

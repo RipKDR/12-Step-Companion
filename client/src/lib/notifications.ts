@@ -70,7 +70,10 @@ export class NotificationManager {
     }
 
     const registration = await navigator.serviceWorker.ready;
-    registration.showNotification(`🎉 ${milestone}!`, {
+    const options: NotificationOptions & {
+      vibrate?: number[];
+      actions?: Array<{ action: string; title: string }>;
+    } = {
       body: message,
       icon: '/favicon.png',
       badge: '/favicon.png',
@@ -81,7 +84,8 @@ export class NotificationManager {
         { action: 'celebrate', title: 'Celebrate!' },
         { action: 'later', title: 'Later' }
       ]
-    });
+    };
+    registration.showNotification(`🎉 ${milestone}!`, options);
   }
 
   /**
@@ -107,7 +111,9 @@ export class NotificationManager {
     }
 
     const registration = await navigator.serviceWorker.ready;
-    registration.showNotification('Keep your streak going! 🔥', {
+    const options: NotificationOptions & {
+      actions?: Array<{ action: string; title: string }>;
+    } = {
       body: `Don't forget to ${streakType} today to maintain your streak`,
       icon: '/favicon.png',
       badge: '/favicon.png',
@@ -117,7 +123,8 @@ export class NotificationManager {
         { action: 'open', title: 'Open App' },
         { action: 'dismiss', title: 'Dismiss' }
       ]
-    });
+    };
+    registration.showNotification('Keep your streak going! 🔥', options);
   }
 
   /**

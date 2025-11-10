@@ -1,25 +1,24 @@
 import type { Achievement, UnlockedAchievement, AppState } from '@/types';
 import { calculateCleanDays } from './milestones';
 
-let cachedAchievements: Achievement[] | null = null;
+let cachedAchievements: Achievement[] | undefined;
 
 /**
  * Load achievements from JSON file
  */
 export async function loadAchievements(): Promise<Achievement[]> {
-  if (cachedAchievements) {
-    return cachedAchievements;
+  if (!cachedAchievements) {
+    try {
+      const response = await fetch('/content/achievements.json');
+      const data = await response.json();
+      cachedAchievements = data.achievements || [];
+    } catch (error) {
+      console.error('Failed to load achievements:', error);
+      cachedAchievements = [];
+    }
   }
 
-  try {
-    const response = await fetch('/content/achievements.json');
-    const data = await response.json();
-    cachedAchievements = data.achievements;
-    return cachedAchievements;
-  } catch (error) {
-    console.error('Failed to load achievements:', error);
-    return [];
-  }
+  return cachedAchievements ?? [];
 }
 
 /**

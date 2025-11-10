@@ -145,7 +145,10 @@ function scheduleDailyNotification(
   const timerId = self.setTimeout(() => {
     // Check if within quiet hours
     if (!isQuietHours(quietHours)) {
-      self.registration.showNotification(notification.title, {
+      const options: NotificationOptions & {
+        actions?: Array<{ action: string; title: string }>;
+        vibrate?: number[];
+      } = {
         body: notification.body,
         icon: '/favicon.png',
         badge: '/favicon.png',
@@ -154,7 +157,8 @@ function scheduleDailyNotification(
         actions: notification.actions,
         vibrate: [200, 100, 200],
         requireInteraction: false
-      });
+      };
+      self.registration.showNotification(notification.title, options);
     }
 
     // Reschedule for next day

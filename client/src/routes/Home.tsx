@@ -11,13 +11,14 @@ import StreakCard from '@/components/StreakCard';
 import QuickJournalModal from '@/components/QuickJournalModal';
 import QuickGratitudeModal from '@/components/QuickGratitudeModal';
 import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
+import RelapseResetModal from '@/components/RelapseResetModal';
 import MilestoneCelebrationModal, { type MilestoneData } from '@/components/MilestoneCelebrationModal';
 import DailyChallengeCard from '@/components/DailyChallengeCard';
 import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap, Trophy } from 'lucide-react';
+import { Sunrise, Moon, BookOpen, BookMarked, Phone, Sparkles, ExternalLink, TrendingUp, Users, PenLine, Calendar, UserCheck, Zap, Trophy, Undo2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { getTodayDate } from '@/lib/time';
@@ -47,6 +48,7 @@ export default function Home() {
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
+  const [showRelapseReset, setShowRelapseReset] = useState(false);
   const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
   const [todaysChallenge, setTodaysChallenge] = useState<DailyChallenge | null>(null);
   const [challengeTheme, setChallengeTheme] = useState<ChallengeTheme | null>(null);
@@ -387,7 +389,17 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-24 flex flex-col gap-2 hover:bg-rose-50 hover:border-rose-300 dark:hover:bg-rose-950"
+              onClick={() => setShowRelapseReset(true)}
+            >
+              <Undo2 className="h-6 w-6 text-rose-600" />
+              <span className="text-sm font-medium">Log a Slip</span>
+            </Button>
+
             <Button
               variant="outline"
               size="lg"
@@ -568,6 +580,10 @@ export default function Home() {
       <QuickMeetingLogModal
         open={showQuickMeeting}
         onOpenChange={setShowQuickMeeting}
+      />
+      <RelapseResetModal
+        open={showRelapseReset}
+        onOpenChange={setShowRelapseReset}
       />
 
       {/* Milestone Celebration Modal */}

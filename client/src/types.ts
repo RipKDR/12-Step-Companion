@@ -58,6 +58,35 @@ export interface JournalEntry {
   audioDuration?: number; // V2: Duration in seconds
 }
 
+export interface UseEpisode {
+  id: string;
+  occurredAtISO: string;
+  loggedAtISO: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+  triggers: string[];
+  whatHappened: string;
+  feelingsExperienced: string;
+  needItTriedToMeet: string;
+  supportAction: string;
+  implementationIntention: string;
+  selfCompassionStatement: string;
+  resetPlanCompletedAtISO?: string;
+}
+
+export interface ResetPlan {
+  id: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+  checkInActions: string[];
+  groundingActions: string[];
+  growthCommitments: string[];
+  implementationIntentionTemplate: string;
+  selfCompassionReminder: string;
+  completedAtISO?: string;
+  lastCompletedEpisodeId?: string;
+}
+
 export interface WorksheetField {
   id: string;
   label: string;
@@ -278,7 +307,9 @@ export type AnalyticsEventType =
   | 'achievement_unlocked'
   | 'milestone_celebrated'
   | 'daily_challenge_completed'
-  | 'streak_extended';
+  | 'streak_extended'
+  | 'slip_logged'
+  | 'reset_plan_completed';
 
 export interface AnalyticsEvent {
   id: string;
@@ -318,4 +349,6 @@ export interface AppState {
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
+  useEpisodes: Record<string, UseEpisode>; // V4: Relapse recovery journaling
+  resetPlan: ResetPlan; // V4: Recovery reset plan
 }
