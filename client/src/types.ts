@@ -58,35 +58,6 @@ export interface JournalEntry {
   audioDuration?: number; // V2: Duration in seconds
 }
 
-export interface UseEpisode {
-  id: string;
-  occurredAtISO: string;
-  loggedAtISO: string;
-  createdAtISO: string;
-  updatedAtISO: string;
-  triggers: string[];
-  whatHappened: string;
-  feelingsExperienced: string;
-  needItTriedToMeet: string;
-  supportAction: string;
-  implementationIntention: string;
-  selfCompassionStatement: string;
-  resetPlanCompletedAtISO?: string;
-}
-
-export interface ResetPlan {
-  id: string;
-  createdAtISO: string;
-  updatedAtISO: string;
-  checkInActions: string[];
-  groundingActions: string[];
-  growthCommitments: string[];
-  implementationIntentionTemplate: string;
-  selfCompassionReminder: string;
-  completedAtISO?: string;
-  lastCompletedEpisodeId?: string;
-}
-
 export interface WorksheetField {
   id: string;
   label: string;
@@ -111,40 +82,28 @@ export interface WorksheetResponse {
   updatedAtISO: string;
 }
 
+export interface MindfulnessReflection {
+  sensation?: string;
+  compassionateAction?: string;
+  [key: string]: string | undefined;
+}
+
+export interface MindfulnessSessionLog {
+  id: string;
+  title: string;
+  audioUrl?: string;
+  durationSeconds: number;
+  completedAtISO: string;
+  hapticsEnabled: boolean;
+  reflections?: MindfulnessReflection;
+}
+
 export interface EmergencyAction {
   id: string;
   label: string;
   type: 'call' | 'timer' | 'exercise' | 'notes';
   data: string; // tel: number, timer duration, exercise name, or notes text
   icon: string;
-  isHarmReductionPreferred?: boolean;
-}
-
-export type ContactStatus = 'available' | 'on-call' | 'resting' | 'offline';
-
-export type WarmlineRole = 'listener' | 'supporter' | 'coordinator' | 'backup';
-
-export type Weekday =
-  | 'monday'
-  | 'tuesday'
-  | 'wednesday'
-  | 'thursday'
-  | 'friday'
-  | 'saturday'
-  | 'sunday';
-
-export interface AvailabilityWindow {
-  id: string;
-  day: Weekday;
-  startTime: string; // HH:MM format
-  endTime: string; // HH:MM format
-  note?: string;
-}
-
-export interface SosPreferences {
-  channel: 'sms' | 'encrypted-chat';
-  target?: string; // Phone number for SMS or URL/handle for encrypted chat
-  message?: string;
 }
 
 export interface FellowshipContact {
@@ -153,25 +112,9 @@ export interface FellowshipContact {
   phone?: string;
   email?: string;
   relationshipType: 'sponsor' | 'sponsee' | 'friend' | 'home-group' | 'other';
-  timezone: string;
-  warmlineRole?: WarmlineRole;
-  availability?: AvailabilityWindow[];
-  status: ContactStatus;
-  onCall: boolean;
-  lastCheckInISO?: string;
-  nextCheckInISO?: string;
-  sosPreferences?: SosPreferences;
   isEmergencyContact: boolean;
-  isHarmReductionContact?: boolean;
   notes?: string;
   createdAtISO: string;
-  updatedAtISO: string;
-}
-
-export interface HarmReductionStatus {
-  naloxoneAvailable: boolean;
-  fentanylTestStripsAvailable: boolean;
-  sharpsContainerAvailable: boolean;
   updatedAtISO: string;
 }
 
@@ -197,20 +140,9 @@ export interface NotificationSettings {
     time: string; // HH:MM format
   };
 
-  availabilityCheckIn: {
-    enabled: boolean;
-    time: string; // HH:MM format
-    message?: string;
-  };
-
   milestoneAlerts: boolean;
   streakReminders: boolean;
   challengeReminders: boolean;
-  harmReduction: {
-    enabled: boolean;
-    time: string; // HH:MM format
-    message: string;
-  };
 
   quietHours: {
     enabled: boolean;
@@ -275,7 +207,7 @@ export interface StreakHistoryEntry {
 }
 
 export interface StreakData {
-  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork';
+  type: 'journaling' | 'dailyCards' | 'meetings' | 'stepWork' | 'mindfulness';
   current: number;
   longest: number;
   lastActivityDate: string; // ISO 8601
@@ -288,6 +220,7 @@ export interface Streaks {
   dailyCards: StreakData;
   meetings: StreakData;
   stepWork: StreakData;
+  mindfulness: StreakData;
 }
 
 export interface CelebratedMilestone {
@@ -363,8 +296,7 @@ export type AnalyticsEventType =
   | 'milestone_celebrated'
   | 'daily_challenge_completed'
   | 'streak_extended'
-  | 'slip_logged'
-  | 'reset_plan_completed';
+  | 'mindfulness_session_completed';
 
 export interface AnalyticsEvent {
   id: string;
@@ -396,7 +328,6 @@ export interface AppState {
   goals?: Record<string, Goal>; // id -> goal
   emergencyActions: EmergencyAction[];
   fellowshipContacts: Record<string, FellowshipContact>; // id -> contact
-  harmReductionStatus: HarmReductionStatus;
   favoriteQuotes: string[]; // quote IDs
   settings: AppSettings;
   onboardingComplete: boolean;
@@ -405,6 +336,5 @@ export interface AppState {
   unlockedAchievements?: Record<string, UnlockedAchievement>; // V2: Achievement system
   completedChallenges?: Record<string, ChallengeCompletion>; // V2: Daily challenges
   analyticsEvents?: Record<string, AnalyticsEvent>; // V3: Privacy-first analytics
-  useEpisodes: Record<string, UseEpisode>; // V4: Relapse recovery journaling
-  resetPlan: ResetPlan; // V4: Recovery reset plan
+  mindfulnessSessions?: Record<string, MindfulnessSessionLog>;
 }
