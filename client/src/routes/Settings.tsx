@@ -2,8 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -176,32 +176,20 @@ export default function Settings() {
     });
   };
 
-  const handleHarmReductionMessageChange = async (message: string) => {
-    updateNotificationSettings({
-      harmReduction: { ...settings.notifications.harmReduction, message }
-    });
-
-    if (settings.notifications.enabled) {
-      await notificationManager.scheduleNotifications({
-        ...settings.notifications,
-        harmReduction: { ...settings.notifications.harmReduction, message }
-      });
-    }
-  };
-
   const handleNotificationTimeChange = async (
-    key: 'morningCheckIn' | 'eveningReflection' | 'harmReduction',
+    key: 'morningCheckIn' | 'eveningReflection' | 'availabilityCheckIn',
     time: string
   ) => {
+    const existing = (settings.notifications as any)[key];
     updateNotificationSettings({
-      [key]: { ...settings.notifications[key], time }
+      [key]: { ...existing, time }
     });
 
     // Reschedule if enabled
     if (settings.notifications.enabled) {
       await notificationManager.scheduleNotifications({
         ...settings.notifications,
-        [key]: { ...settings.notifications[key], time }
+        [key]: { ...existing, time }
       });
     }
   };
@@ -501,6 +489,58 @@ export default function Settings() {
                 )}
               </div>
 
+              {/* Warmline Availability Reminder */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="availability-checkin">Warmline Availability</Label>
+                    <p className="text-sm text-muted-foreground">Prompt buddies to confirm daily availability</p>
+                  </div>
+                  <Switch
+                    id="availability-checkin"
+                    checked={settings.notifications.availabilityCheckIn.enabled}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        availabilityCheckIn: {
+                          ...settings.notifications.availabilityCheckIn,
+                          enabled: checked
+                        }
+                      })
+                    }
+                  />
+                </div>
+                {settings.notifications.availabilityCheckIn.enabled && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="availability-time" className="text-sm text-muted-foreground">
+                        Time:
+                      </Label>
+                      <Input
+                        id="availability-time"
+                        type="time"
+                        value={settings.notifications.availabilityCheckIn.time}
+                        onChange={(e) => handleNotificationTimeChange('availabilityCheckIn', e.target.value)}
+                        className="w-32"
+                      />
+                    </div>
+                    <Textarea
+                      id="availability-message"
+                      value={settings.notifications.availabilityCheckIn.message ?? ''}
+                      onChange={(e) =>
+                        updateNotificationSettings({
+                          availabilityCheckIn: {
+                            ...settings.notifications.availabilityCheckIn,
+                            message: e.target.value
+                          }
+                        })
+                      }
+                      rows={2}
+                      placeholder="Gentle nudge to confirm warmline status"
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Other Alerts */}
               <div className="space-y-3 pt-2 border-t">
                 <div className="flex items-center justify-between">
@@ -529,60 +569,6 @@ export default function Settings() {
                       updateNotificationSettings({ streakReminders: checked })
                     }
                   />
-                </div>
-
-                <div className="space-y-3 rounded-md border bg-muted/40 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="harm-reduction-reminder">Harm Reduction Reminder</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Gentle nudge to check naloxone kits and safer-use supplies
-                      </p>
-                    </div>
-                    <Switch
-                      id="harm-reduction-reminder"
-                      checked={settings.notifications.harmReduction.enabled}
-                      onCheckedChange={(checked) =>
-                        updateNotificationSettings({
-                          harmReduction: {
-                            ...settings.notifications.harmReduction,
-                            enabled: checked
-                          }
-                        })
-                      }
-                      data-testid="switch-harm-reduction-reminder"
-                    />
-                  </div>
-
-                  {settings.notifications.harmReduction.enabled && (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <Label htmlFor="harm-reduction-time" className="text-sm text-muted-foreground">
-                          Reminder time
-                        </Label>
-                        <Input
-                          id="harm-reduction-time"
-                          type="time"
-                          value={settings.notifications.harmReduction.time}
-                          onChange={(e) => handleNotificationTimeChange('harmReduction', e.target.value)}
-                          className="w-32"
-                          data-testid="input-harm-reduction-time"
-                        />
-                      </div>
-                      <div className="space-y-1 sm:col-span-2">
-                        <Label htmlFor="harm-reduction-message" className="text-sm text-muted-foreground">
-                          Reminder message
-                        </Label>
-                        <Input
-                          id="harm-reduction-message"
-                          value={settings.notifications.harmReduction.message}
-                          onChange={(e) => handleHarmReductionMessageChange(e.target.value)}
-                          placeholder="Kit expires soon—swap it out"
-                          data-testid="input-harm-reduction-message"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 

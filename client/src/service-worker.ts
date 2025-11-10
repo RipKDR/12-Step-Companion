@@ -53,8 +53,8 @@ self.addEventListener('notificationclick', (event) => {
       url = '/?modal=quick-journal';
       break;
 
-    case 'harm-reduction':
-      url = action === 'open-emergency' ? '/emergency' : '/';
+    case 'availability-checkin':
+      url = action === 'open-contacts' ? '/contacts?focus=warmline' : '/contacts';
       break;
 
     default:
@@ -123,16 +123,16 @@ function scheduleAllNotifications(settings: any) {
     );
   }
 
-  // Harm reduction reminder
-  if (settings.harmReduction?.enabled) {
+  // Warmline availability check-ins
+  if (settings.availabilityCheckIn && settings.availabilityCheckIn.enabled) {
     scheduleDailyNotification(
-      'harm-reduction',
-      settings.harmReduction.time,
+      'availability-checkin',
+      settings.availabilityCheckIn.time,
       {
-        title: 'Harm reduction check-in ❤️',
-        body: settings.harmReduction.message || 'Check your naloxone kit and safer-use supplies.',
+        title: 'Warmline availability check',
+        body: settings.availabilityCheckIn.message || 'Take a moment to confirm your warmline status for today.',
         actions: [
-          { action: 'open-emergency', title: 'Open emergency plan' },
+          { action: 'open-contacts', title: 'Update Status' },
           { action: 'dismiss', title: 'Dismiss' }
         ]
       },
@@ -166,10 +166,7 @@ function scheduleDailyNotification(
   const timerId = self.setTimeout(() => {
     // Check if within quiet hours
     if (!isQuietHours(quietHours)) {
-      const options: NotificationOptions & {
-        actions?: Array<{ action: string; title: string }>;
-        vibrate?: number[];
-      } = {
+      self.registration.showNotification(notification.title, {
         body: notification.body,
         icon: '/favicon.png',
         badge: '/favicon.png',
@@ -178,8 +175,7 @@ function scheduleDailyNotification(
         actions: notification.actions,
         vibrate: [200, 100, 200],
         requireInteraction: false
-      };
-      self.registration.showNotification(notification.title, options);
+      });
     }
 
     // Reschedule for next day

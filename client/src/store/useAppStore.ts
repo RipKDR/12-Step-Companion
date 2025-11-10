@@ -10,14 +10,15 @@ import type {
   EmergencyAction,
   AppSettings,
   FellowshipContact,
+  AvailabilityWindow,
+  ContactStatus,
   Streaks,
   StreakData,
   CelebratedMilestone,
   UnlockedAchievement,
   ChallengeCompletion,
   AnalyticsEvent,
-  AnalyticsEventType,
-  HarmReductionStatus
+  AnalyticsEventType
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -29,6 +30,22 @@ import {
   initializeStreak
 } from '@/lib/streaks';
 
+const fallbackTimezone = 'UTC';
+
+const getDefaultTimezone = () => {
+  try {
+    if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
+    }
+  } catch (error) {
+    console.warn('Unable to determine timezone', error);
+  }
+
+  return fallbackTimezone;
+};
+
+const defaultTimezone = getDefaultTimezone();
+
 const defaultEmergencyActions: EmergencyAction[] = [
   {
     id: 'call-sponsor',
@@ -36,7 +53,6 @@ const defaultEmergencyActions: EmergencyAction[] = [
     type: 'call',
     data: 'tel:+61400000000',
     icon: 'phone',
-    isHarmReductionPreferred: false,
   },
   {
     id: 'breathing',
@@ -61,13 +77,6 @@ const defaultEmergencyActions: EmergencyAction[] = [
   },
 ];
 
-const defaultHarmReductionStatus: HarmReductionStatus = {
-  naloxoneAvailable: false,
-  fentanylTestStripsAvailable: false,
-  sharpsContainerAvailable: false,
-  updatedAtISO: new Date().toISOString(),
-};
-
 const initialStreaks: Streaks = {
   journaling: initializeStreak('journaling'),
   dailyCards: initializeStreak('dailyCards'),
@@ -85,7 +94,6 @@ const initialState: AppState = {
   meetings: [],
   emergencyActions: defaultEmergencyActions,
   fellowshipContacts: {},
-  harmReductionStatus: defaultHarmReductionStatus,
   favoriteQuotes: [],
   settings: {
     theme: 'system',
@@ -103,14 +111,14 @@ const initialState: AppState = {
         enabled: true,
         time: '20:00'
       },
+      availabilityCheckIn: {
+        enabled: false,
+        time: '09:00',
+        message: 'Check in with your buddies to confirm warmline availability.'
+      },
       milestoneAlerts: true,
       streakReminders: true,
       challengeReminders: true,
-      harmReduction: {
-        enabled: false,
-        time: '10:00',
-        message: 'Check your naloxone kit and safer-use supplies.',
-      },
       quietHours: {
         enabled: true,
         start: '22:00',
@@ -169,11 +177,11 @@ interface AppStore extends AppState {
   deleteContact: (id: string) => void;
   getContacts: () => FellowshipContact[];
   getEmergencyContacts: () => FellowshipContact[];
-  getHarmReductionContacts: () => FellowshipContact[];
-
-  // Harm Reduction Kit Status
-  updateHarmReductionStatus: (updates: Partial<HarmReductionStatus>) => void;
-
+  setContactStatus: (id: string, status: ContactStatus) => void;
+  toggleContactOnCall: (id: string, onCall: boolean) => void;
+  recordContactCheckIn: (id: string, timestamp?: string) => void;
+  scheduleContactCheckIn: (id: string, nextCheckInISO: string) => void;
+  
   // Favorite Quotes
   toggleFavoriteQuote: (quoteId: string) => void;
   isFavoriteQuote: (quoteId: string) => boolean;
@@ -408,10 +416,13 @@ export const useAppStore = create<AppStore>()(
         const now = new Date().toISOString();
         const newContact: FellowshipContact = {
           ...contact,
+          timezone: contact.timezone ?? defaultTimezone,
+          availability: contact.availability ?? [],
+          status: contact.status ?? 'available',
+          onCall: contact.onCall ?? false,
           id,
           createdAtISO: now,
           updatedAtISO: now,
-          isHarmReductionContact: contact.isHarmReductionContact ?? false,
         };
 
         return {
@@ -432,6 +443,10 @@ export const useAppStore = create<AppStore>()(
             [id]: {
               ...existing,
               ...updates,
+              timezone: updates.timezone ?? existing.timezone,
+              availability: updates.availability ?? existing.availability,
+              status: updates.status ?? existing.status,
+              onCall: updates.onCall ?? existing.onCall,
               updatedAtISO: new Date().toISOString(),
             },
           },
@@ -457,21 +472,73 @@ export const useAppStore = create<AppStore>()(
           .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
       },
 
-      getHarmReductionContacts: () => {
-        const state = get();
-        return Object.values(state.fellowshipContacts)
-          .filter((contact) => contact.isHarmReductionContact)
-          .sort((a, b) => new Date(b.createdAtISO).getTime() - new Date(a.createdAtISO).getTime());
-      },
+      setContactStatus: (id, status) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
 
-      // Harm Reduction Kit Status
-      updateHarmReductionStatus: (updates) => set((state) => ({
-        harmReductionStatus: {
-          ...state.harmReductionStatus,
-          ...updates,
-          updatedAtISO: new Date().toISOString(),
-        },
-      })),
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              status,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
+
+      toggleContactOnCall: (id, onCall) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              onCall,
+              status: onCall ? 'on-call' : existing.status === 'on-call' ? 'available' : existing.status,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
+
+      recordContactCheckIn: (id, timestamp) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        const now = timestamp ?? new Date().toISOString();
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              lastCheckInISO: now,
+              nextCheckInISO: undefined,
+              updatedAtISO: now,
+            },
+          },
+        };
+      }),
+
+      scheduleContactCheckIn: (id, nextCheckInISO) => set((state) => {
+        const existing = state.fellowshipContacts[id];
+        if (!existing) return state;
+
+        return {
+          fellowshipContacts: {
+            ...state.fellowshipContacts,
+            [id]: {
+              ...existing,
+              nextCheckInISO,
+              updatedAtISO: new Date().toISOString(),
+            },
+          },
+        };
+      }),
       
       // Favorite Quotes
       toggleFavoriteQuote: (quoteId) => set((state) => {
@@ -564,22 +631,12 @@ export const useAppStore = create<AppStore>()(
           journalEntries: data.journalEntries ? mergeByTimestamp(state.journalEntries, data.journalEntries) : state.journalEntries,
           worksheetResponses: data.worksheetResponses ? mergeByTimestamp(state.worksheetResponses, data.worksheetResponses) : state.worksheetResponses,
           fellowshipContacts: data.fellowshipContacts ? mergeByTimestamp(state.fellowshipContacts, data.fellowshipContacts) : state.fellowshipContacts,
-          harmReductionStatus: data.harmReductionStatus
-            ? {
-                ...state.harmReductionStatus,
-                ...data.harmReductionStatus,
-              }
-            : state.harmReductionStatus,
           favoriteQuotes: data.favoriteQuotes || state.favoriteQuotes,
           settings: data.settings || state.settings,
         };
       }),
       
-      clearAllData: () =>
-        set({
-          ...initialState,
-          harmReductionStatus: { ...initialState.harmReductionStatus },
-        }),
+      clearAllData: () => set(initialState),
 
       // Streak Management (V2)
       updateStreakForJournal: () => set((state) => {

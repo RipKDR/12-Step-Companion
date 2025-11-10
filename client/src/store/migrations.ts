@@ -92,22 +92,26 @@ const migrations: Record<number, Migration> = {
     return state;
   },
   9: (state: any) => {
-    // V9: Add harm reduction status and reminders
-    if (!state.harmReductionStatus) {
-      state.harmReductionStatus = {
-        naloxoneAvailable: false,
-        fentanylTestStripsAvailable: false,
-        sharpsContainerAvailable: false,
-        updatedAtISO: new Date().toISOString(),
-      };
+    // V9: Warmline availability reminders and contact metadata
+    if (state.settings && state.settings.notifications) {
+      if (!state.settings.notifications.availabilityCheckIn) {
+        state.settings.notifications.availabilityCheckIn = {
+          enabled: false,
+          time: '09:00',
+          message: 'Check in with your buddies to confirm warmline availability.'
+        };
+      }
     }
 
-    if (state.settings && state.settings.notifications && !state.settings.notifications.harmReduction) {
-      state.settings.notifications.harmReduction = {
-        enabled: false,
-        time: '10:00',
-        message: 'Check your naloxone kit and safer-use supplies.',
-      };
+    if (state.fellowshipContacts) {
+      Object.keys(state.fellowshipContacts).forEach((contactId) => {
+        const contact = state.fellowshipContacts[contactId];
+        if (!contact) return;
+        contact.timezone = contact.timezone || 'UTC';
+        contact.availability = contact.availability || [];
+        contact.status = contact.status || 'available';
+        contact.onCall = contact.onCall ?? false;
+      });
     }
 
     return state;
