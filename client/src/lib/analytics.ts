@@ -59,6 +59,19 @@ export class AnalyticsManager {
       'streakLength',
       'milestoneDays',
       'achievementCategory',
+      'metric',
+      'value',
+      'rating',
+      'delta',
+      'shortcut',
+      'target',
+      'page',
+      'previousPage',
+      'feature',
+      'component',
+      'stateType',
+      'title',
+      'timestamp',
     ];
 
     for (const key of allowedKeys) {
@@ -114,6 +127,13 @@ export class AnalyticsManager {
       milestone_celebrated: 0,
       daily_challenge_completed: 0,
       streak_extended: 0,
+      toast_shown: 0,
+      skeleton_loader_shown: 0,
+      empty_state_viewed: 0,
+      keyboard_shortcut_used: 0,
+      performance_metric: 0,
+      page_view: 0,
+      feature_discovered: 0,
     };
 
     // Count events by type

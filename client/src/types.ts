@@ -1,3 +1,5 @@
+import type { FeatureFlags } from '@/store/featureFlags';
+
 export interface Profile {
   id: string;
   name: string;
@@ -150,6 +152,7 @@ export interface AppSettings {
   notifications: NotificationSettings;
   enableVoiceRecording: boolean; // V2: Enable audio recording in journal
   analytics: AnalyticsSettings; // V3: Privacy-first analytics
+  featureFlags?: FeatureFlags; // Feature flags for gradual rollout
 }
 
 export interface Meeting {
@@ -278,7 +281,14 @@ export type AnalyticsEventType =
   | 'achievement_unlocked'
   | 'milestone_celebrated'
   | 'daily_challenge_completed'
-  | 'streak_extended';
+  | 'streak_extended'
+  | 'toast_shown'
+  | 'skeleton_loader_shown'
+  | 'empty_state_viewed'
+  | 'keyboard_shortcut_used'
+  | 'performance_metric'
+  | 'page_view'
+  | 'feature_discovered';
 
 export interface AnalyticsEvent {
   id: string;
