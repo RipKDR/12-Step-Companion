@@ -139,7 +139,7 @@ export default function RelapseResetModal({ open, onOpenChange }: RelapseResetMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px]">
+      <DialogContent className="sm:max-w-[720px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Log a Slip &amp; Reset Compassionately</DialogTitle>
           <DialogDescription>
@@ -147,7 +147,7 @@ export default function RelapseResetModal({ open, onOpenChange }: RelapseResetMo
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1">
           <div className="grid gap-2">
             <Label htmlFor="slip-occurred">When did the slip happen?</Label>
             <Input
