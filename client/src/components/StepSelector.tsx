@@ -15,21 +15,21 @@ interface StepSelectorProps {
 
 export default function StepSelector({ steps, onSelect, currentStep }: StepSelectorProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="step-selector">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="step-selector">
       {steps.map((step) => {
         const isCurrent = currentStep === step.number;
         
         return (
           <Card
             key={step.number}
-            className={`cursor-pointer transition-all hover:shadow-md ${
+            className={`cursor-pointer hover-elevate transition-all duration-200 ${
               isCurrent ? 'border-primary' : step.completed ? 'border-primary/30' : 'border-border'
             }`}
             onClick={() => onSelect(step.number)}
             data-testid={`step-card-${step.number}`}
           >
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${
                   step.completed ? 'bg-primary text-primary-foreground' :
                   isCurrent ? 'bg-primary/10 text-primary border border-primary/30' :

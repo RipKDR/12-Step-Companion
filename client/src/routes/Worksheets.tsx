@@ -179,21 +179,25 @@ export default function Worksheets() {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold mb-2" data-testid="text-worksheets-title">Worksheets</h1>
-          <p className="text-muted-foreground">
+      <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-semibold text-foreground mb-2" data-testid="text-worksheets-title">
+            Worksheets
+          </h1>
+          <p className="text-base text-muted-foreground">
             Structured exercises to support your recovery
           </p>
         </header>
 
-        {worksheetTemplates.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Loading worksheets...</p>
-          </div>
-        )}
+        <div className="space-y-6">
 
-        <div className="grid grid-cols-1 gap-4">
+          {worksheetTemplates.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Loading worksheets...</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {worksheetTemplates.map((worksheet) => {
             if (!worksheet.template) {
               return (
@@ -248,6 +252,7 @@ export default function Worksheets() {
               </Card>
             );
           })}
+          </div>
         </div>
       </div>
 

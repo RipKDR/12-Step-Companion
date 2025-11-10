@@ -110,6 +110,140 @@ interface QuickActionModalProps {
 
 ---
 
+---
+
+## 🎯 Design Tokens & Standards
+
+### Spacing Scale
+Consistent spacing throughout the application using Tailwind's spacing scale:
+
+```typescript
+// Gap/Margin/Padding values
+const SPACING = {
+  xs: 'gap-2 / p-2',    // 0.5rem (8px)  - Micro spacing within components
+  sm: 'gap-3 / p-3',    // 0.75rem (12px) - Compact spacing
+  md: 'gap-4 / p-4',    // 1rem (16px)   - Standard spacing (DEFAULT)
+  lg: 'gap-6 / p-6',    // 1.5rem (24px) - Section spacing
+  xl: 'gap-8 / p-8',    // 2rem (32px)   - Large section spacing
+  '2xl': 'gap-12 / p-12', // 3rem (48px) - Major section dividers
+}
+```
+
+**Usage Guidelines**:
+- **gap-2**: Between tightly related elements (icon + text in button)
+- **gap-3**: Between form fields, list items
+- **gap-4**: Between cards, standard component spacing (MOST COMMON)
+- **gap-6**: Between major sections on a page
+- **gap-8**: Between distinct page sections
+- **gap-12+**: Hero sections, page padding
+
+### Icon Sizes
+Standardized icon dimensions for consistency:
+
+```typescript
+const ICON_SIZES = {
+  xs: 'h-3 w-3',    // 12px - Badges, inline indicators
+  sm: 'h-4 w-4',    // 16px - Compact buttons, inline text icons
+  md: 'h-5 w-5',    // 20px - Standard buttons, navigation (DEFAULT)
+  lg: 'h-6 w-6',    // 24px - Page headers, prominent features
+  xl: 'h-8 w-8',    // 32px - Large buttons, hero sections
+  '2xl': 'h-10 w-10', // 40px - Feature highlights
+}
+```
+
+**Usage Guidelines**:
+- **h-3 w-3**: Badge icons, completion indicators
+- **h-4 w-4**: Small buttons, inline decorative icons
+- **h-5 w-5**: Standard navigation, buttons, cards (MOST COMMON)
+- **h-6 w-6**: Page headers, Emergency actions, important features
+- **h-8 w-8**: SobrietyCounter icons, large action buttons
+- **h-10 w-10**: Hero section icons, celebration modals
+
+### Typography Hierarchy
+Consistent text sizing and color hierarchy:
+
+```typescript
+// Size Scale
+const TEXT_SIZES = {
+  xs: 'text-xs',     // 0.75rem (12px) - Timestamps, minor labels
+  sm: 'text-sm',     // 0.875rem (14px) - Helper text, descriptions
+  base: 'text-base', // 1rem (16px) - Body text (DEFAULT)
+  lg: 'text-lg',     // 1.125rem (18px) - Emphasized body text
+  xl: 'text-xl',     // 1.25rem (20px) - H3 headings
+  '2xl': 'text-2xl', // 1.5rem (24px) - H2 headings
+  '3xl': 'text-3xl', // 1.875rem (30px) - H1 page titles
+  '4xl': 'text-4xl', // 2.25rem (36px) - Hero elements
+}
+
+// Color Hierarchy
+const TEXT_COLORS = {
+  primary: 'text-foreground',          // Main content, headings
+  secondary: 'text-muted-foreground',  // Supporting text, descriptions
+  tertiary: 'text-muted-foreground/70', // Timestamps, least important
+  accent: 'text-primary',               // Links, call-to-actions
+  danger: 'text-destructive',           // Errors, warnings
+}
+```
+
+**Page Title Pattern**:
+```tsx
+<h1 className="text-3xl font-semibold text-foreground mb-2">
+  Page Title
+</h1>
+<p className="text-base text-muted-foreground">
+  Page description
+</p>
+```
+
+### Container Widths
+Responsive container sizes for optimal readability:
+
+```typescript
+const CONTAINERS = {
+  sm: 'max-w-2xl',  // 672px - Settings, Forms
+  md: 'max-w-3xl',  // 768px - Most pages (DEFAULT)
+  lg: 'max-w-4xl',  // 896px - Wide content
+  xl: 'max-w-6xl',  // 1152px - Dashboard layouts
+}
+```
+
+### Responsive Grid Patterns
+
+**2-Column Tablet Layout** (More page, Resources):
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  {items.map((item) => <Card />)}
+</div>
+```
+
+**3-Column Desktop Layout** (Step selector):
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {steps.map((step) => <Card />)}
+</div>
+```
+
+**Auto-fit Responsive Grid** (Emergency actions):
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {actions.map((action) => <Button />)}
+</div>
+```
+
+### Touch Targets
+Minimum interactive element sizes for accessibility:
+
+```typescript
+const TOUCH_TARGETS = {
+  minimum: 'min-h-11 min-w-11',  // 44x44px - WCAG minimum
+  button: 'h-12',                 // 48px - Standard button height
+  input: 'h-12',                  // 48px - Form input height
+  navItem: 'h-16',                // 64px - Bottom navigation height
+}
+```
+
+---
+
 ### 3. Notification Permission Flow
 
 **Purpose**: Maximize opt-in rate with contextual value proposition

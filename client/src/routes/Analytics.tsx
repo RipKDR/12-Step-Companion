@@ -101,10 +101,12 @@ export default function Analytics() {
 
   if (entries.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto px-4 pb-24 pt-6">
+      <div className="max-w-6xl mx-auto px-6 pb-32 pt-8">
         <header className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">Mood Analytics</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-semibold text-foreground mb-2">
+            Mood Analytics
+          </h1>
+          <p className="text-base text-muted-foreground">
             Track your mood patterns and journal activity
           </p>
         </header>
@@ -123,10 +125,12 @@ export default function Analytics() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pb-24 pt-6">
+    <div className="max-w-6xl mx-auto px-6 pb-32 pt-8">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">Mood Analytics</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-semibold text-foreground mb-2">
+          Mood Analytics
+        </h1>
+        <p className="text-base text-muted-foreground">
           Track your mood patterns and journal activity over time
         </p>
       </header>

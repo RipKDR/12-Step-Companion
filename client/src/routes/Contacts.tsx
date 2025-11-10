@@ -445,21 +445,26 @@ export default function Contacts() {
   const regularContacts = contacts.filter((c) => !c.isEmergencyContact);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pb-24 pt-6 space-y-6">
-      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Fellowship Contacts</h1>
-          <p className="text-muted-foreground">
-            Stay connected with your recovery community and warmline buddies.
-          </p>
+    <div className="max-w-5xl mx-auto px-6 pb-32 pt-8">
+      <header className="mb-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-semibold text-foreground mb-2">
+              Fellowship Contacts
+            </h1>
+            <p className="text-base text-muted-foreground">
+              Stay connected with your recovery community and warmline buddies.
+            </p>
+          </div>
+          <Button onClick={() => handleOpenDialog()} data-testid="button-add-contact" className="shrink-0">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Contact
+          </Button>
         </div>
-        <Button onClick={() => handleOpenDialog()} data-testid="button-add-contact">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Contact
-        </Button>
       </header>
 
-      <WarmlineQueue
+      <div className="space-y-6">
+        <WarmlineQueue
         contacts={warmlineContacts}
         onConfirmContact={(contact) => {
           recordContactCheckIn(contact.id);
@@ -1155,6 +1160,7 @@ export default function Contacts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }

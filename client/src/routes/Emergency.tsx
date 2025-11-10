@@ -206,16 +206,20 @@ export default function Emergency() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pb-24 pt-6 space-y-6">
-      <header className="text-center mb-6">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+      <header className="text-center mb-8">
         <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
-        <h1 className="text-2xl font-bold mb-2" data-testid="text-emergency-title">Emergency Help</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-semibold text-foreground mb-2" data-testid="text-emergency-title">
+          Emergency Help
+        </h1>
+        <p className="text-base text-muted-foreground">
           You're not alone. Help is available right now.
         </p>
       </header>
+
+      <div className="space-y-6">
 
       <Card className="bg-destructive/5 border-destructive/20">
         <CardHeader>
@@ -537,6 +541,7 @@ export default function Emergency() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

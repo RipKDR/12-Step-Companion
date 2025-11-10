@@ -112,10 +112,12 @@ export default function Resources() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pb-24 pt-6 space-y-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold mb-2" data-testid="text-resources-title">NA Resources</h1>
-        <p className="text-muted-foreground">
+    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-semibold text-foreground mb-2" data-testid="text-resources-title">
+          NA Resources
+        </h1>
+        <p className="text-base text-muted-foreground">
           Helpful links and information from Narcotics Anonymous Australia
         </p>
       </header>

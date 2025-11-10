@@ -123,25 +123,30 @@ export default function Meetings() {
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-4 pb-24 pt-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2" data-testid="text-meetings-title">Meeting Tracker</h1>
-            <p className="text-muted-foreground">
-              Keep track of meetings you've attended
-            </p>
+      <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+        <header className="mb-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-semibold text-foreground mb-2" data-testid="text-meetings-title">
+                Meeting Tracker
+              </h1>
+              <p className="text-base text-muted-foreground">
+                Keep track of meetings you've attended
+              </p>
+            </div>
+            <Button 
+              onClick={() => setIsDialogOpen(true)}
+              className="gap-2 shrink-0"
+              data-testid="button-add-meeting"
+            >
+              <Plus className="h-4 w-4" />
+              Log Meeting
+            </Button>
           </div>
-          <Button 
-            onClick={() => setIsDialogOpen(true)}
-            className="gap-2"
-            data-testid="button-add-meeting"
-          >
-            <Plus className="h-4 w-4" />
-            Log Meeting
-          </Button>
         </header>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Total Meetings</CardDescription>
@@ -280,6 +285,7 @@ export default function Meetings() {
               )}
             </Card>
           ))}
+        </div>
         </div>
       </div>
 

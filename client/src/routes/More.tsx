@@ -73,7 +73,7 @@ const menuItems = [
 
 export default function More() {
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8">
       <header className="mb-8">
         <h1 className="text-3xl font-semibold text-foreground mb-2">
           More
@@ -83,26 +83,28 @@ export default function More() {
         </p>
       </header>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
             <Link key={item.path} href={item.path}>
-              <Card className="cursor-pointer hover:shadow-md transition-all duration-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
-                      <Icon className="h-5 w-5" />
+              <Card 
+                className="cursor-pointer hover-elevate transition-shadow duration-200 h-full" 
+                data-testid={item.testId}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
+                      <Icon className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-base text-foreground">
+                      <h3 className="font-semibold text-base text-foreground mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {item.description}
                       </p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
