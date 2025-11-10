@@ -110,17 +110,17 @@ export default function Steps() {
 
   if (selectedStep === null) {
     return (
-      <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
-        <header className="space-y-6 mb-10">
+      <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
+        <header className="space-y-4 mb-8">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground mb-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
               Step Work
             </h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1.5">
               Select a step to continue your recovery work
             </p>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-muted/50 border border-border w-fit">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/40 border border-border">
             <div className="text-sm font-medium text-foreground">
               Progress: {steps.filter(s => s.completed).length} of 12 steps completed
             </div>
@@ -143,24 +143,23 @@ export default function Steps() {
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
       <header className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
           size="icon"
-          className="h-12 w-12"
           onClick={() => setSelectedStep(null)}
           data-testid="button-back"
           aria-label="Back to step list"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-semibold tracking-tight">
             {stepContent?.title || `Step ${selectedStep}`}
           </h1>
           {stepContent?.subtitle && (
-            <p className="text-base text-muted-foreground mt-2">{stepContent.subtitle}</p>
+            <p className="text-sm text-muted-foreground mt-1.5">{stepContent.subtitle}</p>
           )}
         </div>
       </header>

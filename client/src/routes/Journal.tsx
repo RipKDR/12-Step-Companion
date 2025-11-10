@@ -140,36 +140,36 @@ export default function Journal() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
-      <header className="space-y-6 mb-10">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
+      <header className="space-y-4 mb-8">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground mb-2">
+          <h1 className="text-3xl font-semibold tracking-tight">
             Journal
           </h1>
-          <p className="text-base text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1.5">
             Track your thoughts, moods, and recovery journey
           </p>
         </div>
         
-        <div className="flex gap-4 flex-col sm:flex-row">
+        <div className="flex gap-3 flex-col sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search entries..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-base border-muted focus:border-primary/50 transition-colors"
+              className="pl-10"
               data-testid="input-search"
             />
           </div>
           <Button
-            className="gap-2 min-w-[180px] h-12 text-base"
+            className="gap-2"
             onClick={() => setIsDialogOpen(true)}
             data-testid="button-new-entry"
           >
-            <Plus className="h-5 w-5" />
-            New Entry
+            <Plus className="h-4 w-4" />
+            <span>New Entry</span>
           </Button>
         </div>
       </header>

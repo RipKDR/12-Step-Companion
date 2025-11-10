@@ -317,7 +317,7 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-32 pt-8">
+    <div className="max-w-3xl mx-auto px-6 pb-32 pt-6">
       {/* Skip to main content link */}
       <a
         href="#main-content"
@@ -326,7 +326,7 @@ export default function Home() {
         Skip to main content
       </a>
 
-      <main id="main-content" role="main" className="space-y-16">
+      <main id="main-content" role="main" className="space-y-12">
         {/* Sobriety Counter */}
         <section aria-labelledby="sobriety-heading">
           <h1 id="sobriety-heading" className="sr-only">
@@ -350,21 +350,21 @@ export default function Home() {
             Emergency Support
           </h2>
           <Link href="/emergency">
-            <Card className="cursor-pointer bg-card border-2 border-destructive/30 hover:border-destructive hover:shadow-md transition-all duration-200">
-              <CardContent className="p-4">
+            <Card className="cursor-pointer border-2 border-destructive/20 hover:border-destructive/40 hover-elevate active-elevate-2 transition-colors duration-200">
+              <CardContent className="p-5">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-lg bg-destructive/10 text-destructive shrink-0">
-                    <Phone className="h-6 w-6" />
+                    <Phone className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base text-foreground">
+                    <h3 className="font-semibold text-foreground">
                       Need Support Right Now?
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Crisis tools, breathing exercises, and emergency contacts
                     </p>
                   </div>
-                  <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
               </CardContent>
             </Card>
@@ -377,24 +377,25 @@ export default function Home() {
             AI Sponsor Chat
           </h2>
           <Link href="/ai-sponsor">
-            <Card className="cursor-pointer bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200">
-              <CardContent className="p-4">
+            <Card className="cursor-pointer relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 hover-elevate active-elevate-2 transition-colors duration-200">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/3 to-transparent pointer-events-none" />
+              <CardContent className="p-5 relative">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-primary/20 text-primary shrink-0">
-                    <Bot className="h-6 w-6" />
+                  <div className="p-3 rounded-lg bg-primary/15 text-primary shrink-0">
+                    <Bot className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
                       Talk to Your AI Sponsor
-                      <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
+                      <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">
                         24/7
                       </span>
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Get support, guidance, and validation anytime you need it
                     </p>
                   </div>
-                  <MessageCircle className="h-5 w-5 text-primary shrink-0" />
+                  <MessageCircle className="h-4 w-4 text-primary shrink-0" />
                 </div>
               </CardContent>
             </Card>
@@ -433,11 +434,9 @@ export default function Home() {
           <DailyQuote />
         </section>
 
-        <Separator className="my-8" />
-
         {/* Progress Ring */}
         <section
-          className="flex justify-center py-8"
+          className="flex justify-center py-4"
           aria-labelledby="progress-heading"
         >
           <h2 id="progress-heading" className="sr-only">
@@ -450,19 +449,15 @@ export default function Home() {
           />
         </section>
 
-        <Separator className="my-8" />
-
         {/* Streaks - V2 Feature */}
-        <section className="space-y-6" aria-labelledby="streaks-heading">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1">
-              <h2 id="streaks-heading" className="text-3xl font-bold">
-                Your Streaks
-              </h2>
-              <p className="text-base text-muted-foreground mt-2">
-                Build daily habits and track your consistency
-              </p>
-            </div>
+        <section className="space-y-4" aria-labelledby="streaks-heading">
+          <div>
+            <h2 id="streaks-heading" className="text-2xl font-semibold tracking-tight">
+              Your Streaks
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Build daily habits and track your consistency
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StreakCard
@@ -495,85 +490,83 @@ export default function Home() {
         <Separator className="my-8" />
 
         {/* Quick Actions - V2 Feature */}
-        <section className="space-y-6" aria-labelledby="quick-actions-heading">
-          <div className="flex items-center gap-3 mb-6">
-            <Zap className="h-6 w-6 text-primary" />
-            <div className="flex-1">
-              <h2 id="quick-actions-heading" className="text-2xl font-semibold">
-                Quick Actions
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Log your progress in under 30 seconds
-              </p>
-            </div>
+        <section className="space-y-4" aria-labelledby="quick-actions-heading">
+          <div>
+            <h2 id="quick-actions-heading" className="text-2xl font-semibold tracking-tight">
+              Quick Actions
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Log your progress in under 30 seconds
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <Button
               variant="outline"
               size="lg"
-              className="h-24 flex flex-col gap-2 hover:bg-rose-50 hover:border-rose-300 dark:hover:bg-rose-950"
-              onClick={() => setShowRelapseReset(true)}
-            >
-              <Undo2 className="h-6 w-6 text-rose-600" />
-              <span className="text-sm font-medium">Log a Slip</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-24 flex flex-col gap-2 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950"
+              className="h-24 flex flex-col gap-2"
               onClick={() => setShowQuickJournal(true)}
+              data-testid="quick-action-journal"
             >
-              <PenLine className="h-6 w-6 text-blue-600" />
+              <PenLine className="h-5 w-5" />
               <span className="text-sm font-medium">Journal</span>
             </Button>
 
             <Button
               variant="outline"
               size="lg"
-              className="h-24 flex flex-col gap-2 hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-950"
+              className="h-24 flex flex-col gap-2"
               onClick={() => setShowQuickGratitude(true)}
+              data-testid="quick-action-gratitude"
             >
-              <Sparkles className="h-6 w-6 text-green-600" />
+              <Sparkles className="h-5 w-5" />
               <span className="text-sm font-medium">Gratitude</span>
             </Button>
 
             <Button
               variant="outline"
               size="lg"
-              className="h-24 flex flex-col gap-2 hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950"
+              className="h-24 flex flex-col gap-2"
               onClick={() => setShowQuickMeeting(true)}
+              data-testid="quick-action-meeting"
             >
-              <Users className="h-6 w-6 text-orange-600" />
+              <Users className="h-5 w-5" />
               <span className="text-sm font-medium">Meeting</span>
             </Button>
 
-            <Link href="/steps">
+            <Link href="/steps" className="md:col-span-2">
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full h-24 flex flex-col gap-2 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950"
+                className="w-full h-24 flex flex-col gap-2"
+                data-testid="quick-action-steps"
               >
-                <BookOpen className="h-6 w-6 text-purple-600" />
+                <BookOpen className="h-5 w-5" />
                 <span className="text-sm font-medium">Step Work</span>
               </Button>
             </Link>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-24 flex flex-col gap-2 border-destructive/30 text-destructive hover:border-destructive/50"
+              onClick={() => setShowRelapseReset(true)}
+              data-testid="quick-action-relapse"
+            >
+              <Undo2 className="h-5 w-5" />
+              <span className="text-sm font-medium">Log a Slip</span>
+            </Button>
           </div>
         </section>
 
-        <Separator className="my-8" />
-
         {/* Daily Cards */}
-        <section className="space-y-6" aria-labelledby="daily-heading">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1">
-              <h2 id="daily-heading" className="text-2xl font-semibold">
-                Daily Practice
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Complete your daily reflections and gratitude
-              </p>
-            </div>
+        <section className="space-y-4" aria-labelledby="daily-heading">
+          <div>
+            <h2 id="daily-heading" className="text-2xl font-semibold tracking-tight">
+              Daily Practice
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Complete your daily reflections and gratitude
+            </p>
           </div>
           <DailyCard
             title="Morning Intent"
@@ -612,13 +605,13 @@ export default function Home() {
             className="block"
             data-testid="link-daily-inspiration"
           >
-            <Card className="cursor-pointer bg-card border border-border hover:shadow-md transition-all duration-200">
-              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
+            <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <Sparkles className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-base">
+                  <CardTitle className="text-base font-semibold">
                     Daily Fellowship Reading
                   </CardTitle>
                 </div>
@@ -634,75 +627,60 @@ export default function Home() {
           </a>
         </section>
 
-        <Separator className="my-8" />
-
-        {/* Quick Actions */}
-        <section className="space-y-6" aria-labelledby="actions-heading">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="flex-1">
-              <h2 id="actions-heading" className="text-3xl font-bold">
-                Quick Actions
-              </h2>
-              <p className="text-base text-muted-foreground mt-2">
-                Continue your recovery journey
-              </p>
-            </div>
+        {/* Continue Your Journey */}
+        <section className="space-y-4" aria-labelledby="actions-heading">
+          <div>
+            <h2 id="actions-heading" className="text-2xl font-semibold tracking-tight">
+              Continue Your Journey
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Explore tools and track your progress
+            </p>
           </div>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link
               href="/steps"
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-16 justify-start gap-4 text-base",
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "justify-start gap-3",
               )}
               data-testid="button-step-work"
             >
-              <BookOpen className="h-5 w-5" />
-              Continue Step Work
+              <BookOpen className="h-4 w-4" />
+              <span>Continue Step Work</span>
             </Link>
             <Link
               href="/journal"
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-16 justify-start gap-4 text-base",
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "justify-start gap-3",
               )}
               data-testid="button-journal"
             >
-              <BookMarked className="h-5 w-5" />
-              New Journal Entry
+              <BookMarked className="h-4 w-4" />
+              <span>New Journal Entry</span>
             </Link>
             <Link
               href="/analytics"
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-16 justify-start gap-4 text-base",
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "justify-start gap-3",
               )}
               data-testid="button-analytics"
             >
-              <TrendingUp className="h-5 w-5" />
-              Mood Analytics
+              <TrendingUp className="h-4 w-4" />
+              <span>Mood Analytics</span>
             </Link>
             <Link
               href="/achievements"
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-16 justify-start gap-4 text-base",
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "justify-start gap-3",
               )}
               data-testid="button-achievements"
             >
-              <Trophy className="h-5 w-5" />
-              View Achievements
-            </Link>
-            <Link
-              href="/contacts"
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-16 justify-start gap-4 text-base",
-              )}
-              data-testid="button-contacts"
-            >
-              <Users className="h-5 w-5" />
-              Fellowship Contacts
+              <Trophy className="h-4 w-4" />
+              <span>View Achievements</span>
             </Link>
           </div>
         </section>
