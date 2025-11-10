@@ -196,10 +196,12 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24 pt-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">
+    <div className="max-w-4xl mx-auto px-6 pb-32 pt-8 space-y-6">
+      <header className="mb-8">
+        <h1 className="text-3xl font-semibold text-foreground mb-2">
+          Settings
+        </h1>
+        <p className="text-base text-muted-foreground">
           Manage your preferences and data
         </p>
       </header>
