@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -50,6 +50,13 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
+// Constants
+const MAX_CONVERSATION_HISTORY = 10;
+const MAX_JOURNAL_PREVIEW = 200;
+const MAX_TEXTAREA_HEIGHT = 200;
+const MIN_TEXTAREA_HEIGHT = 60;
+const RATE_LIMIT_MS = 2000; // 2 seconds between messages
+
 export default function AISponsor() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +65,7 @@ export default function AISponsor() {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [feedbackGiven, setFeedbackGiven] = useState<Record<string, 'up' | 'down'>>({});
   const [showContext, setShowContext] = useState(false);
+  const [lastSentTime, setLastSentTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -75,14 +83,17 @@ export default function AISponsor() {
   const journals = useAppStore((state) => state.journals);
   const stepAnswers = useAppStore((state) => state.stepAnswers);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Track when chat is opened
   useEffect(() => {
     trackEvent('ai_sponsor_chat_opened');
   }, [trackEvent]);
 
+  // Show welcome message if no messages
   useEffect(() => {
     if (messages.length === 0) {
       addMessage({
@@ -90,21 +101,22 @@ export default function AISponsor() {
         content: "Hi! I'm your AI Sponsor. I'm here to listen and support you through difficult moments. I have access to your triggers, journal entries, and step progress to provide personalized guidance. How can I help you today?",
       });
     }
-  }, []);
+  }, [messages.length, addMessage]);
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
     }
   }, [input]);
 
-  // Build user context from app data
-  const buildUserContext = () => {
+  // Memoize user context to avoid recalculation on every render
+  const userContext = useMemo(() => {
     const triggersList = Object.values(triggers || {});
-    const journalsList = Object.values(journals || {}).sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    ).slice(0, 3);
+    const journalsList = Object.values(journals || {})
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
 
     return {
       name: profile?.name,
@@ -116,17 +128,53 @@ export default function AISponsor() {
       })),
       recentJournals: journalsList.map(j => ({
         date: j.date,
-        content: j.content,
+        // Truncate content on client side for privacy/performance
+        content: j.content?.substring(0, MAX_JOURNAL_PREVIEW) || '',
         mood: j.mood,
       })),
       stepProgress: stepAnswers,
-      conversationSummary: (useAppStore.getState().aiSponsorChat as any)?.summary,
     };
-  };
+  }, [profile?.name, profile?.cleanDate, triggers, journals, stepAnswers]);
 
-  const handleSend = async () => {
+  // Extract shared API call logic
+  const sendToAI = useCallback(async (message: string) => {
+    const response = await fetch('/api/ai-sponsor/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message,
+        conversationHistory: messages.slice(-MAX_CONVERSATION_HISTORY),
+        userContext,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.response || 'Failed to get response from AI Sponsor');
+    }
+
+    const data = await response.json();
+    return data.response;
+  }, [messages, userContext]);
+
+  const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || isLoading) return;
+
+    // Client-side rate limiting
+    const now = Date.now();
+    if (now - lastSentTime < RATE_LIMIT_MS) {
+      toast({
+        title: 'Please wait',
+        description: 'Slow down a bit. Take a breath.',
+        variant: 'default',
+      });
+      return;
+    }
+
+    setLastSentTime(now);
 
     addMessage({
       role: 'user',
@@ -142,35 +190,19 @@ export default function AISponsor() {
     }
 
     try {
-      const userContext = buildUserContext();
-
-      const response = await fetch('/api/ai-sponsor/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: trimmedInput,
-          conversationHistory: messages.slice(-10),
-          userContext,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from AI Sponsor');
-      }
-
-      const data = await response.json();
+      const responseText = await sendToAI(trimmedInput);
 
       addMessage({
         role: 'assistant',
-        content: data.response,
+        content: responseText,
       });
     } catch (error) {
       console.error('Error sending message:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unable to reach AI Sponsor. Please try again.';
+
       toast({
         title: 'Connection Error',
-        description: 'Unable to reach AI Sponsor. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
 
@@ -183,16 +215,16 @@ export default function AISponsor() {
       setTyping(false);
       textareaRef.current?.focus();
     }
-  };
+  }, [input, isLoading, lastSentTime, sendToAI, addMessage, setTyping, toast]);
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
 
-  const handleClearChat = () => {
+  const handleClearChat = useCallback(() => {
     clearChat();
     setShowClearDialog(false);
     setFeedbackGiven({});
@@ -200,9 +232,11 @@ export default function AISponsor() {
       title: 'Chat cleared',
       description: 'Your conversation has been cleared.',
     });
-  };
+    // Focus textarea after clearing
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  }, [clearChat, toast]);
 
-  const copyToClipboard = async (text: string, messageId: string) => {
+  const copyToClipboard = useCallback(async (text: string, messageId: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedMessageId(messageId);
@@ -214,15 +248,15 @@ export default function AISponsor() {
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
 
-  const handleFeedback = (messageId: string, type: 'up' | 'down') => {
+  const handleFeedback = useCallback((messageId: string, type: 'up' | 'down') => {
     setFeedbackGiven((prev) => ({ ...prev, [messageId]: type }));
     trackEvent(type === 'up' ? 'ai_sponsor_feedback_positive' : 'ai_sponsor_feedback_negative');
-  };
+  }, [trackEvent]);
 
-  const handleRegenerate = async () => {
-    if (messages.length < 2) return;
+  const handleRegenerate = useCallback(async () => {
+    if (messages.length < 2 || isLoading) return;
 
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
     if (!lastUserMessage) return;
@@ -231,29 +265,16 @@ export default function AISponsor() {
     setTyping(true);
 
     try {
-      const userContext = buildUserContext();
-
-      const response = await fetch('/api/ai-sponsor/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: lastUserMessage.content,
-          conversationHistory: messages.slice(-10),
-          userContext,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to regenerate response');
-      }
-
-      const data = await response.json();
+      const responseText = await sendToAI(lastUserMessage.content);
 
       addMessage({
         role: 'assistant',
-        content: data.response,
+        content: responseText,
+      });
+
+      toast({
+        title: 'Response regenerated',
+        description: 'A new response has been generated.',
       });
     } catch (error) {
       toast({
@@ -265,12 +286,11 @@ export default function AISponsor() {
       setIsLoading(false);
       setTyping(false);
     }
-  };
+  }, [messages, isLoading, sendToAI, addMessage, setTyping, toast]);
 
   const ContextPanel = () => {
-    const userContext = buildUserContext();
     const daysClean = userContext.sobrietyDate
-      ? Math.floor((Date.now() - new Date(userContext.sobrietyDate).getTime()) / (1000 * 60 * 60 * 24))
+      ? Math.max(0, Math.floor((Date.now() - new Date(userContext.sobrietyDate).getTime()) / (1000 * 60 * 60 * 24)))
       : null;
 
     return (
@@ -335,7 +355,7 @@ export default function AISponsor() {
                 <div>
                   <div className="font-medium">Step Progress</div>
                   <div className="text-muted-foreground">
-                    {Object.keys(userContext.stepProgress).filter(s => userContext.stepProgress[s].completed).length} steps completed
+                    {Object.keys(userContext.stepProgress).filter(s => userContext.stepProgress[s]?.completed).length} steps completed
                   </div>
                 </div>
               </div>
