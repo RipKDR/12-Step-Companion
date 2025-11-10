@@ -921,7 +921,6 @@ export const useAppStore = create<AppStore>()(
 
         set((state) => ({
           aiSponsorChat: {
-            ...state.aiSponsorChat,
             messages: {
               ...state.aiSponsorChat?.messages,
               [id]: {
@@ -930,6 +929,7 @@ export const useAppStore = create<AppStore>()(
                 ...message,
               },
             },
+            isTyping: state.aiSponsorChat?.isTyping || false,
             lastMessageTimestamp: timestamp,
           },
         }));

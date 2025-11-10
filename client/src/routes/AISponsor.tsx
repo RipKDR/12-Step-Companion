@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import type { AISponsorMessage } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -70,17 +71,22 @@ export default function AISponsor() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
-  const messages = useAppStore((state) => state.getAISponsorMessages());
+  const messagesRecord = useAppStore((state) => state.aiSponsorChat?.messages || {});
   const addMessage = useAppStore((state) => state.addAISponsorMessage);
   const clearChat = useAppStore((state) => state.clearAISponsorChat);
   const isTyping = useAppStore((state) => state.aiSponsorChat?.isTyping || false);
   const setTyping = useAppStore((state) => state.setAISponsorTyping);
   const trackEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
+  const messages = useMemo<AISponsorMessage[]>(() => {
+    return Object.values(messagesRecord).sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }, [messagesRecord]);
+
   // Get user data for context
   const profile = useAppStore((state) => state.profile);
-  const triggers = useAppStore((state) => state.triggers);
-  const journals = useAppStore((state) => state.journals);
+  const journalEntries = useAppStore((state) => state.journalEntries);
   const stepAnswers = useAppStore((state) => state.stepAnswers);
 
   // Auto-scroll to bottom when new messages arrive
@@ -113,20 +119,20 @@ export default function AISponsor() {
 
   // Memoize user context to avoid recalculation on every render
   const userContext = useMemo(() => {
-    const triggersList = Object.values(triggers || {});
-    const journalsList = Object.values(journals || {})
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
+    const journalsList = Object.values(journalEntries || {})
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    const triggersList = journalsList.filter(entry => entry.isTrigger);
 
     return {
       name: profile?.name,
       sobrietyDate: profile?.cleanDate,
-      triggers: triggersList.map(t => ({
-        name: t.name,
-        description: t.description,
-        severity: t.severity,
+      triggers: triggersList.slice(0, 5).map(t => ({
+        name: t.triggerType || 'Unknown',
+        description: t.content?.substring(0, 100) || '',
+        severity: t.triggerIntensity || 5,
       })),
-      recentJournals: journalsList.map(j => ({
+      recentJournals: journalsList.slice(0, 3).map(j => ({
         date: j.date,
         // Truncate content on client side for privacy/performance
         content: j.content?.substring(0, MAX_JOURNAL_PREVIEW) || '',
@@ -134,7 +140,7 @@ export default function AISponsor() {
       })),
       stepProgress: stepAnswers,
     };
-  }, [profile?.name, profile?.cleanDate, triggers, journals, stepAnswers]);
+  }, [profile?.name, profile?.cleanDate, journalEntries, stepAnswers]);
 
   // Extract shared API call logic
   const sendToAI = useCallback(async (message: string) => {
@@ -355,7 +361,10 @@ export default function AISponsor() {
                 <div>
                   <div className="font-medium">Step Progress</div>
                   <div className="text-muted-foreground">
-                    {Object.keys(userContext.stepProgress).filter(s => userContext.stepProgress[s]?.completed).length} steps completed
+                    {Object.values(userContext.stepProgress).reduce((steps, answer) => {
+                      if (!steps.includes(answer.stepNumber)) steps.push(answer.stepNumber);
+                      return steps;
+                    }, [] as number[]).length} steps in progress
                   </div>
                 </div>
               </div>

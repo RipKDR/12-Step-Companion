@@ -401,7 +401,9 @@ export type AnalyticsEventType =
   | "recovery_points_summary_exported"
   | "ai_sponsor_chat_opened"
   | "ai_sponsor_message_sent"
-  | "ai_sponsor_message_received";
+  | "ai_sponsor_message_received"
+  | "ai_sponsor_feedback_positive"
+  | "ai_sponsor_feedback_negative";
 
 export interface AnalyticsEvent {
   id: string;
