@@ -1,93 +1,158 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { cn } from '@/lib/utils';
-import { 
-  Carousel, 
-  CarouselContent, 
+import { useMemo, useState, useEffect, useCallback } from "react";
+import TodayPanel from "@/components/home-panels/TodayPanel";
+import PracticePanel from "@/components/home-panels/PracticePanel";
+import RoutinePanel from "@/components/home-panels/RoutinePanel";
+import ExplorePanel from "@/components/home-panels/ExplorePanel";
+import QuickJournalModal from "@/components/QuickJournalModal";
+import QuickGratitudeModal from "@/components/QuickGratitudeModal";
+import QuickMeetingLogModal from "@/components/QuickMeetingLogModal";
+import RelapseResetModal from "@/components/RelapseResetModal";
+import MilestoneCelebrationModal, {
+  type MilestoneData,
+} from "@/components/MilestoneCelebrationModal";
+import ChallengeCompletionModal from "@/components/ChallengeCompletionModal";
+import {
+  Carousel,
+  CarouselContent,
   CarouselItem,
-  type CarouselApi
-} from '@/components/ui/carousel';
-import { useAppStore } from '@/store/useAppStore';
-import { checkStreakMilestone, checkSobrietyMilestone } from '@/lib/milestones';
-import { checkAchievements } from '@/lib/achievements';
-import type { CelebratedMilestone, UnlockedAchievement } from '@/types';
-import type { MilestoneData } from '@/components/MilestoneCelebrationModal';
-import TodayPanel from '@/components/home-panels/TodayPanel';
-import PracticePanel from '@/components/home-panels/PracticePanel';
-import RoutinePanel from '@/components/home-panels/RoutinePanel';
-import ExplorePanel from '@/components/home-panels/ExplorePanel';
-import QuickJournalModal from '@/components/QuickJournalModal';
-import QuickGratitudeModal from '@/components/QuickGratitudeModal';
-import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
-import RelapseResetModal from '@/components/RelapseResetModal';
-import MilestoneCelebrationModal from '@/components/MilestoneCelebrationModal';
-import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store/useAppStore";
+import { getTodayDate } from "@/lib/time";
+import { loadAllSteps } from "@/lib/contentLoader";
+import { checkSobrietyMilestone, checkStreakMilestone } from "@/lib/milestones";
+import { checkAchievements } from "@/lib/achievements";
+import {
+  getTodaysChallenge,
+  getThemeData,
+  isTodayChallengeCompleted,
+  getWeeklyCompletionCount,
+} from "@/lib/challenges";
+import type {
+  CelebratedMilestone,
+  UnlockedAchievement,
+  DailyChallenge,
+  ChallengeTheme,
+} from "@/types";
 
-const PANEL_NAMES = ['Today', 'Practice', 'Routine', 'Explore'];
+const PANEL_NAMES = ["Today", "Practice", "Routine", "Explore"];
 
 export default function Home() {
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const [currentPanel, setCurrentPanel] = useState(0);
-  const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
+  const profile = useAppStore((state) => state.profile);
+  const getDailyCard = useAppStore((state) => state.getDailyCard);
+  const updateDailyCard = useAppStore((state) => state.updateDailyCard);
+  const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  const stepAnswersState = useAppStore((state) => state.stepAnswers);
+  const streaks = useAppStore((state) => state.streaks);
+  const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
+  const celebratedMilestones = useAppStore(
+    (state) => state.celebratedMilestones || {},
+  );
+  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
+  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
+  const completedChallenges = useAppStore(
+    (state) => state.completedChallenges || {},
+  );
+  const completeChallenge = useAppStore((state) => state.completeChallenge);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
+  const awardPoints = useAppStore((state) => state.awardPoints);
+
+  const [stepQuestionCounts, setStepQuestionCounts] = useState<
+    Map<number, number>
+  >(new Map());
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
   const [showRelapseReset, setShowRelapseReset] = useState(false);
+  const [currentMilestone, setCurrentMilestone] =
+    useState<MilestoneData | null>(null);
+  const [todaysChallenge, setTodaysChallenge] = useState<DailyChallenge | null>(
+    null,
+  );
+  const [challengeTheme, setChallengeTheme] = useState<ChallengeTheme | null>(
+    null,
+  );
   const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentPanel, setCurrentPanel] = useState(0);
 
-  const profile = useAppStore((state) => state.profile);
-  const streaks = useAppStore((state) => state.streaks);
-  const celebratedMilestones = useAppStore((state) => state.celebratedMilestones);
-  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
-  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
-  const awardPoints = useAppStore((state) => state.awardPoints);
-  const getStepAnswers = useAppStore((state) => state.getStepAnswers);
-  const stepQuestionCounts = useAppStore((state) => state.stepQuestionCounts);
-  const stepAnswersState = useAppStore((state) => state.stepAnswers);
-  const dailyCard = useAppStore((state) => state.getDailyCard(new Date().toISOString().split('T')[0]));
-  const updateDailyCard = useAppStore((state) => state.updateDailyCard);
-  const todaysChallenge = useAppStore((state) => state.todaysChallenge);
-  const challengeTheme = useAppStore((state) => state.challengeTheme);
-  const isTodayChallengeCompleted = useAppStore((state) => state.isTodayChallengeCompleted);
-  const completedChallenges = useAppStore((state) => state.completedChallenges);
-  const completeChallenge = useAppStore((state) => state.completeChallenge);
-  const getWeeklyCompletionCount = useAppStore((state) => state.getWeeklyCompletionCount);
-  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
+  const todayDate = useMemo(
+    () => getTodayDate(profile?.timezone || "Australia/Melbourne"),
+    [profile?.timezone],
+  );
+  const dailyCard = getDailyCard(todayDate);
 
-  const todayDate = new Date().toISOString().split('T')[0];
-
+  // Carousel API event listeners
   useEffect(() => {
     if (!carouselApi) return;
 
-    carouselApi.on('select', () => {
+    const handleSelect = () => {
       setCurrentPanel(carouselApi.selectedScrollSnap());
-    });
+    };
+
+    carouselApi.on("select", handleSelect);
+    return () => {
+      carouselApi.off("select", handleSelect);
+    };
   }, [carouselApi]);
 
-  // Check for sobriety milestones
+  // Load all step contents to get question counts
   useEffect(() => {
-    if (profile?.cleanDate && !currentMilestone) {
-      const sobrietyMilestone = checkSobrietyMilestone(
-        profile.cleanDate,
-        celebratedMilestones
-      );
-      if (sobrietyMilestone) {
-        setCurrentMilestone(sobrietyMilestone);
-        return;
+    loadAllSteps().then((allSteps) => {
+      const counts = new Map<number, number>();
+      allSteps.forEach((content, stepNum) => {
+        counts.set(stepNum, content.questions.length);
+      });
+      setStepQuestionCounts(counts);
+    });
+  }, []);
+
+  // Load today's challenge
+  useEffect(() => {
+    getTodaysChallenge().then((challenge) => {
+      if (challenge) {
+        setTodaysChallenge(challenge);
+        getThemeData(challenge.theme).then((theme) => {
+          if (theme) setChallengeTheme(theme);
+        });
       }
+    });
+  }, []);
+
+  // Check and break stale streaks on mount
+  useEffect(() => {
+    checkAllStreaks();
+    trackAnalyticsEvent("app_opened");
+  }, [checkAllStreaks, trackAnalyticsEvent]);
+
+  // Check for milestone celebrations
+  useEffect(() => {
+    if (!profile?.cleanDate) return;
+
+    const sobrietyMilestone = checkSobrietyMilestone(
+      profile.cleanDate,
+      celebratedMilestones,
+    );
+    if (sobrietyMilestone) {
+      setCurrentMilestone(sobrietyMilestone);
+      return;
     }
 
-    // Check for streak milestones
-    if (!currentMilestone) {
-      for (const [streakType, streak] of Object.entries(streaks) as [keyof typeof streaks, typeof streaks[keyof typeof streaks]][]) {
-        const streakMilestone = checkStreakMilestone(
-          streak.current,
-          streakType,
-          celebratedMilestones,
-        );
-        if (streakMilestone) {
-          setCurrentMilestone(streakMilestone);
-          return;
-        }
+    const streakTypes: Array<
+      "journaling" | "dailyCards" | "meetings" | "stepWork"
+    > = ["journaling", "dailyCards", "meetings", "stepWork"];
+
+    for (const streakType of streakTypes) {
+      const streak = streaks[streakType];
+      const streakMilestone = checkStreakMilestone(
+        streak.current,
+        streakType,
+        celebratedMilestones,
+      );
+      if (streakMilestone) {
+        setCurrentMilestone(streakMilestone);
+        return;
       }
     }
   }, [profile?.cleanDate, celebratedMilestones, streaks]);
