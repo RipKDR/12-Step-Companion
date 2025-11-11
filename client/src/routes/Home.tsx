@@ -1,10 +1,93 @@
-      streak.current,
-        streakType,
-        celebratedMilestones,
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { cn } from '@/lib/utils';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem,
+  type CarouselApi
+} from '@/components/ui/carousel';
+import { useAppStore } from '@/store/useAppStore';
+import { checkStreakMilestone, checkSobrietyMilestone } from '@/lib/milestones';
+import { checkAchievements } from '@/lib/achievements';
+import type { CelebratedMilestone, UnlockedAchievement } from '@/types';
+import type { MilestoneData } from '@/components/MilestoneCelebrationModal';
+import TodayPanel from '@/components/home-panels/TodayPanel';
+import PracticePanel from '@/components/home-panels/PracticePanel';
+import RoutinePanel from '@/components/home-panels/RoutinePanel';
+import ExplorePanel from '@/components/home-panels/ExplorePanel';
+import QuickJournalModal from '@/components/QuickJournalModal';
+import QuickGratitudeModal from '@/components/QuickGratitudeModal';
+import QuickMeetingLogModal from '@/components/QuickMeetingLogModal';
+import RelapseResetModal from '@/components/RelapseResetModal';
+import MilestoneCelebrationModal from '@/components/MilestoneCelebrationModal';
+import ChallengeCompletionModal from '@/components/ChallengeCompletionModal';
+
+const PANEL_NAMES = ['Today', 'Practice', 'Routine', 'Explore'];
+
+export default function Home() {
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentPanel, setCurrentPanel] = useState(0);
+  const [currentMilestone, setCurrentMilestone] = useState<MilestoneData | null>(null);
+  const [showQuickJournal, setShowQuickJournal] = useState(false);
+  const [showQuickGratitude, setShowQuickGratitude] = useState(false);
+  const [showQuickMeeting, setShowQuickMeeting] = useState(false);
+  const [showRelapseReset, setShowRelapseReset] = useState(false);
+  const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
+
+  const profile = useAppStore((state) => state.profile);
+  const streaks = useAppStore((state) => state.streaks);
+  const celebratedMilestones = useAppStore((state) => state.celebratedMilestones);
+  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
+  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
+  const awardPoints = useAppStore((state) => state.awardPoints);
+  const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  const stepQuestionCounts = useAppStore((state) => state.stepQuestionCounts);
+  const stepAnswersState = useAppStore((state) => state.stepAnswers);
+  const dailyCard = useAppStore((state) => state.getDailyCard(new Date().toISOString().split('T')[0]));
+  const updateDailyCard = useAppStore((state) => state.updateDailyCard);
+  const todaysChallenge = useAppStore((state) => state.todaysChallenge);
+  const challengeTheme = useAppStore((state) => state.challengeTheme);
+  const isTodayChallengeCompleted = useAppStore((state) => state.isTodayChallengeCompleted);
+  const completedChallenges = useAppStore((state) => state.completedChallenges);
+  const completeChallenge = useAppStore((state) => state.completeChallenge);
+  const getWeeklyCompletionCount = useAppStore((state) => state.getWeeklyCompletionCount);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
+
+  const todayDate = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    carouselApi.on('select', () => {
+      setCurrentPanel(carouselApi.selectedScrollSnap());
+    });
+  }, [carouselApi]);
+
+  // Check for sobriety milestones
+  useEffect(() => {
+    if (profile?.cleanDate && !currentMilestone) {
+      const sobrietyMilestone = checkSobrietyMilestone(
+        profile.cleanDate,
+        celebratedMilestones
       );
-      if (streakMilestone) {
-        setCurrentMilestone(streakMilestone);
+      if (sobrietyMilestone) {
+        setCurrentMilestone(sobrietyMilestone);
         return;
+      }
+    }
+
+    // Check for streak milestones
+    if (!currentMilestone) {
+      for (const [streakType, streak] of Object.entries(streaks) as [keyof typeof streaks, typeof streaks[keyof typeof streaks]][]) {
+        const streakMilestone = checkStreakMilestone(
+          streak.current,
+          streakType,
+          celebratedMilestones,
+        );
+        if (streakMilestone) {
+          setCurrentMilestone(streakMilestone);
+          return;
+        }
       }
     }
   }, [profile?.cleanDate, celebratedMilestones, streaks]);
