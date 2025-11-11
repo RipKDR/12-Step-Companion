@@ -217,75 +217,69 @@ export default function Journal() {
     }
   };
 
+  const writingPrompts = [
+    "What am I most grateful for today?",
+    "What triggered me today and how did I respond?",
+    "What's one thing I learned about myself this week?",
+    "How have I grown in my recovery journey?",
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-8 sm:pb-12 pt-6">
-      <header className="space-y-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Journal
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            Track your thoughts, moods, and recovery journey
-          </p>
+    <div className="max-w-3xl mx-auto px-6 pb-24 pt-6 space-y-8">
+      {/* Header with New Entry Button */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search entries..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+            data-testid="input-search"
+          />
         </div>
+        <Button
+          size="lg"
+          className="gap-2"
+          onClick={() => setIsDialogOpen(true)}
+          data-testid="button-new-entry"
+        >
+          <Plus className="h-4 w-4" />
+          <span>New Entry</span>
+        </Button>
+      </div>
 
-        {statistics && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Calendar className="h-4 w-4" />
-                <p className="text-xs font-medium">Total Entries</p>
-              </div>
-              <p className="text-2xl font-semibold">{statistics.total}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Smile className="h-4 w-4" />
-                <p className="text-xs font-medium">Avg Mood</p>
-              </div>
-              <p className={cn("text-2xl font-semibold", getMoodColor(parseFloat(statistics.avgMood)))}>
-                {statistics.avgMood} {getMoodEmoji(parseFloat(statistics.avgMood))}
-              </p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <p className="text-xs font-medium">This Week</p>
-              </div>
-              <p className="text-2xl font-semibold">{statistics.last7DaysCount}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <AlertTriangle className="h-4 w-4" />
-                <p className="text-xs font-medium">Triggers</p>
-              </div>
-              <p className="text-2xl font-semibold">{statistics.triggerCount}</p>
-            </Card>
+      {/* Writing Prompts */}
+      {!searchQuery && entries.length > 0 && (
+        <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Writing prompts</h2>
+              <span className="text-xs text-muted-foreground">Need inspiration?</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {writingPrompts.map((prompt, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  className="h-auto p-4 text-left justify-start hover-elevate active-elevate-2 whitespace-normal"
+                  onClick={() => {
+                    setContent(prompt + '\n\n');
+                    setIsDialogOpen(true);
+                  }}
+                  data-testid={`prompt-${idx}`}
+                >
+                  <p className="text-sm leading-relaxed">{prompt}</p>
+                </Button>
+              ))}
+            </div>
           </div>
-        )}
-        
-        <div className="flex gap-3 flex-col sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search entries..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-              data-testid="input-search"
-            />
-          </div>
-          <Button
-            className="gap-2"
-            onClick={() => setIsDialogOpen(true)}
-            data-testid="button-new-entry"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Entry</span>
-          </Button>
-        </div>
+        </Card>
+      )}
 
+      {/* Filters and Sort */}
+      {entries.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -331,7 +325,7 @@ export default function Journal() {
               data-testid="badge-filter-triggers"
             >
               <AlertTriangle className="h-3 w-3" />
-              Triggers Only
+              Triggers
               {filterTrigger === true && <X className="ml-1 h-3 w-3" />}
             </Badge>
           </div>
@@ -348,13 +342,17 @@ export default function Journal() {
               data-testid="button-clear-filters"
             >
               <X className="h-3 w-3" />
-              Clear filters
+              Clear
             </Button>
           )}
         </div>
-      </header>
+      )}
 
+      {/* Recent Entries */}
       <section className="space-y-4" aria-label="Journal entries">
+        {entries.length > 0 && (
+          <h2 className="text-lg font-semibold mb-4">Recent entries</h2>
+        )}
         {filteredEntries.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">

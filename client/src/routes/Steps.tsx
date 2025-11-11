@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight } from 'luci
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
 import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
+import { cn } from '@/lib/utils';
 import type { StepContent } from '@/types';
 
 export default function Steps() {
@@ -109,28 +110,123 @@ export default function Steps() {
   };
 
   if (selectedStep === null) {
+    const currentStep = steps.find(s => !s.completed)?.number || 12;
+    const completedStepsCount = steps.filter(s => s.completed).length;
+    const currentStepData = steps.find(s => s.number === currentStep);
+    
     return (
-      <div className="max-w-3xl mx-auto px-6 pb-8 sm:pb-12 pt-6">
-        <header className="space-y-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Step Work
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Select a step to continue your recovery work
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/40 border border-border">
-            <div className="text-sm font-medium text-foreground">
-              Progress: {steps.filter(s => s.completed).length} of 12 steps completed
+      <div className="max-w-3xl mx-auto px-6 pb-24 pt-6 space-y-8">
+        {/* Currently Working On Card */}
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                Currently working on
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {completedStepsCount}/12 completed
+              </span>
             </div>
+            <CardTitle className="text-2xl">
+              Step {currentStep}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              {currentStepData?.progress || 0}% complete • Continue your journey
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => setSelectedStep(currentStep)}
+              data-testid="button-continue-step"
+            >
+              Continue Step {currentStep}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* All Steps List */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">All steps</h2>
+          <div className="space-y-3">
+            {steps.map((step) => {
+              const isCurrent = step.number === currentStep;
+              const isLocked = step.number > currentStep && completedStepsCount < 12;
+              const isComplete = step.completed;
+              
+              return (
+                <Card
+                  key={step.number}
+                  className={cn(
+                    'cursor-pointer hover-elevate active-elevate-2 transition-all',
+                    isCurrent && 'border-primary/30 bg-primary/5',
+                    isLocked && 'opacity-60 cursor-not-allowed'
+                  )}
+                  onClick={() => !isLocked && setSelectedStep(step.number)}
+                  data-testid={`step-card-${step.number}`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Step Icon/Status */}
+                      <div className={cn(
+                        'flex items-center justify-center w-12 h-12 rounded-full font-semibold',
+                        isComplete && 'bg-green-500/10 text-green-500',
+                        isCurrent && !isComplete && 'bg-primary/10 text-primary',
+                        isLocked && 'bg-muted/50 text-muted-foreground'
+                      )}>
+                        {isComplete ? (
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : isLocked ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        ) : (
+                          step.number
+                        )}
+                      </div>
+                      
+                      {/* Step Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold">Step {step.number}</span>
+                          {isCurrent && !isComplete && (
+                            <span className="px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        {!isLocked && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-muted/50 rounded-full h-2 overflow-hidden">
+                              <div 
+                                className={cn(
+                                  'h-full transition-all duration-500',
+                                  isComplete ? 'bg-green-500' : 'bg-primary'
+                                )}
+                                style={{ width: `${step.progress}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground w-12 text-right">
+                              {step.progress}%
+                            </span>
+                          </div>
+                        )}
+                        {isLocked && (
+                          <p className="text-xs text-muted-foreground">
+                            Complete previous steps to unlock
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-        </header>
-        <StepSelector
-          steps={steps}
-          onSelect={setSelectedStep}
-          currentStep={steps.find(s => !s.completed)?.number || 1}
-        />
+        </div>
       </div>
     );
   }
