@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Home from "@/routes/Home";
 import Steps from "@/routes/Steps";
 import Journal from "@/routes/Journal";
+import Insights from "@/routes/Insights";
 import More from "@/routes/More";
 import Worksheets from "@/routes/Worksheets";
 import Meetings from "@/routes/Meetings";
@@ -58,10 +59,11 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/steps" component={Steps} />
         <Route path="/journal" component={Journal} />
+        <Route path="/insights" component={Insights} />
+        <Route path="/emergency" component={Emergency} />
         <Route path="/more" component={More} />
         <Route path="/worksheets" component={Worksheets} />
         <Route path="/meetings" component={Meetings} />
-        <Route path="/emergency" component={Emergency} />
         <Route path="/resources" component={Resources} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/usage-insights" component={UsageInsights} />

@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, BookOpen, BookMarked, MoreHorizontal, ChevronUp } from 'lucide-react';
+import { Home, FileText, BookMarked, BarChart3, AlertCircle, ChevronUp } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home', testId: 'nav-home' },
-  { path: '/steps', icon: BookOpen, label: 'Steps', testId: 'nav-steps' },
+  { path: '/steps', icon: FileText, label: 'Step work', testId: 'nav-steps' },
   { path: '/journal', icon: BookMarked, label: 'Journal', testId: 'nav-journal' },
-  { path: '/more', icon: MoreHorizontal, label: 'More', testId: 'nav-more' },
+  { path: '/insights', icon: BarChart3, label: 'Insights', testId: 'nav-insights' },
+  { path: '/emergency', icon: AlertCircle, label: 'Emergency', testId: 'nav-emergency' },
 ];
 
 export default function BottomNav() {
