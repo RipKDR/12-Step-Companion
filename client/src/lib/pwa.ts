@@ -1,4 +1,9 @@
 import { Workbox } from 'workbox-window';
+import type {
+  BeforeInstallPromptEvent,
+  WindowWithInstallPrompt,
+  NavigatorWithStandalone,
+} from './pwa-types';
 
 let wb: Workbox | null = null;
 
@@ -16,7 +21,7 @@ export function registerServiceWorker(
       if (onUpdate && wb) {
         wb.getSW().then((sw) => {
           if (sw) {
-            onUpdate(sw as any);
+            onUpdate(sw);
           }
         });
       }
@@ -49,9 +54,10 @@ export function skipWaiting(): void {
  * Check if app is running in standalone mode (installed as PWA)
  */
 export function isStandalone(): boolean {
+  const nav = window.navigator as NavigatorWithStandalone;
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone === true
+    nav.standalone === true
   );
 }
 
@@ -60,7 +66,8 @@ export function isStandalone(): boolean {
  */
 export function promptInstall(): Promise<boolean> {
   return new Promise((resolve) => {
-    const deferredPrompt = (window as any).deferredPrompt;
+    const win = window as WindowWithInstallPrompt;
+    const deferredPrompt = win.deferredPrompt;
     
     if (!deferredPrompt) {
       console.log('Install prompt not available');
@@ -70,7 +77,7 @@ export function promptInstall(): Promise<boolean> {
 
     deferredPrompt.prompt();
     
-    deferredPrompt.userChoice.then((choiceResult: any) => {
+    deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted install prompt');
         resolve(true);
@@ -79,7 +86,7 @@ export function promptInstall(): Promise<boolean> {
         resolve(false);
       }
       
-      (window as any).deferredPrompt = null;
+      win.deferredPrompt = undefined;
     });
   });
 }
@@ -87,6 +94,7 @@ export function promptInstall(): Promise<boolean> {
 // Store the install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
-  (window as any).deferredPrompt = e;
+  const win = window as WindowWithInstallPrompt;
+  win.deferredPrompt = e as BeforeInstallPromptEvent;
   console.log('Install prompt captured');
 });

@@ -43,7 +43,9 @@ export async function exportEncrypted(data: AppState, passphrase: string): Promi
 /**
  * Download step answers as JSON
  */
-export function exportStepAnswers(stepNumber: number, answers: any[]): void {
+import type { StepAnswer } from '@/types';
+
+export function exportStepAnswers(stepNumber: number, answers: StepAnswer[]): void {
   const data = {
     step: stepNumber,
     exportedAt: new Date().toISOString(),

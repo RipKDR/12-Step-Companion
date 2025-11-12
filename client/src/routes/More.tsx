@@ -89,7 +89,7 @@ export default function More() {
           return (
             <Link key={item.path} href={item.path}>
               <Card 
-                className="cursor-pointer hover-elevate transition-shadow duration-200 h-full" 
+                className="cursor-pointer hover-elevate transition-smooth card-hover button-press h-full" 
                 data-testid={item.testId}
               >
                 <CardContent className="p-6">

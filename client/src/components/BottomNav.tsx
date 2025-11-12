@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, BookOpen, BookMarked, MoreHorizontal, ChevronUp } from 'lucide-react';
+import { Home, BookOpen, BookMarked, BarChart3, AlertCircle, MoreHorizontal, ChevronUp } from 'lucide-react';
+import { haptics } from '@/lib/haptics';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home', testId: 'nav-home' },
   { path: '/steps', icon: BookOpen, label: 'Steps', testId: 'nav-steps' },
   { path: '/journal', icon: BookMarked, label: 'Journal', testId: 'nav-journal' },
+  { path: '/analytics', icon: BarChart3, label: 'Insights', testId: 'nav-insights' },
+  { path: '/emergency', icon: AlertCircle, label: 'Emergency', testId: 'nav-emergency' },
   { path: '/more', icon: MoreHorizontal, label: 'More', testId: 'nav-more' },
 ];
 
@@ -79,6 +82,8 @@ export default function BottomNav() {
     };
   }, [isVisible, isTouchDevice]);
 
+  const shouldHideNav = isTouchDevice && !isVisible;
+
   return (
     <>
       {/* Swipe indicator when nav is hidden on touch devices */}
@@ -102,35 +107,48 @@ export default function BottomNav() {
         className="fixed bottom-0 left-0 right-0 z-40 pb-3 sm:pb-4 px-3 sm:px-4 transition-transform duration-300 ease-out"
         role="navigation"
         aria-label="Main navigation"
-        aria-hidden={isTouchDevice && !isVisible ? true : undefined}
+        aria-hidden={shouldHideNav}
         style={{
           paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
           transform: isTouchDevice && !isVisible ? 'translateY(calc(100% + 1rem))' : 'translateY(0)',
         }}
       >
-        <div className="bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-lg max-w-md mx-auto">
-          <div className="flex justify-around items-center gap-1 p-1.5 sm:p-2">
+        <div className="bg-card-gradient border border-card-border rounded-2xl shadow-lg max-w-2xl mx-auto">
+          <div className="flex justify-around items-center gap-0.5 p-1.5 sm:p-2">
             {navItems.map((item) => {
-              const isActive = location === item.path;
+              const isActive = location === item.path || (item.path === '/' && location === '/');
               const Icon = item.icon;
 
               return (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`relative flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 min-w-[72px] rounded-xl transition-all duration-200 ${
+                  className={`relative flex flex-col items-center justify-center gap-1 px-2 py-2.5 flex-1 rounded-xl transition-all duration-200 ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground active-elevate-2'
+                      : 'text-muted-foreground hover:text-foreground active-elevate-2'
                   }`}
                   data-testid={item.testId}
+                  aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
-                  onClick={() => isTouchDevice && setIsVisible(false)}
-                  tabIndex={isTouchDevice && !isVisible ? -1 : undefined}
+                  role="link"
+                  onClick={() => {
+                    haptics.light();
+                    if (isTouchDevice) setIsVisible(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      haptics.light();
+                      if (isTouchDevice) setIsVisible(false);
+                    }
+                  }}
+                  tabIndex={isTouchDevice && !isVisible ? -1 : 0}
                 >
                   <Icon
-                    className="h-5 w-5"
-                    strokeWidth={2}
+                    className={`h-5 w-5 transition-colors ${isActive ? 'text-primary-foreground' : ''}`}
+                    strokeWidth={isActive ? 2.5 : 2}
+                    aria-hidden="true"
                   />
                   <span className={`text-xs transition-all duration-200 ${isActive ? 'font-semibold' : 'font-medium'}`}>
                     {item.label}

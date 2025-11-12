@@ -10,6 +10,11 @@ import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
 import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
 import type { StepContent } from '@/types';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { EmptyStepsState } from '@/components/EmptyState';
+import { StepCardSkeletonList } from '@/components/StepCardSkeleton';
+import { InlineEditor } from '@/components/InlineEditor';
+import { haptics } from '@/lib/haptics';
 
 export default function Steps() {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
@@ -80,12 +85,14 @@ export default function Steps() {
 
   const handleAnswerChange = (questionId: string, value: string) => {
     if (selectedStep) {
+      // Optimistic update - save immediately
       saveStepAnswer({
         questionId,
         stepNumber: selectedStep,
         answer: value,
         updatedAtISO: new Date().toISOString(),
       });
+      haptics.light();
     }
   };
 
@@ -239,33 +246,44 @@ export default function Steps() {
               const existingAnswer = currentAnswers.find(a => a.questionId === question.id);
               
               return (
-                <Card key={question.id} data-testid={`question-${question.id}`}>
+                <Card key={question.id} data-testid={`question-${question.id}`} role="article" aria-labelledby={`question-title-${question.id}`}>
                   <CardHeader>
                     {question.section && (
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2" aria-label="Section">
                         {question.section}
                       </p>
                     )}
-                    <CardTitle className="text-lg leading-relaxed">
+                    <CardTitle className="text-lg leading-relaxed" id={`question-title-${question.id}`}>
                       {question.prompt}
                     </CardTitle>
                     {question.help && (
-                      <p className="text-sm text-muted-foreground mt-2">
+                      <p className="text-sm text-muted-foreground mt-2" id={`question-help-${question.id}`}>
                         {question.help}
                       </p>
                     )}
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <Textarea
-                      placeholder="Write your answer..."
-                      value={existingAnswer?.answer || ''}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      className="min-h-56 text-base"
-                      data-testid={`answer-${question.id}`}
-                      autoFocus
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Auto-saves as you type
+                    <div>
+                      <label htmlFor={`answer-${question.id}`} className="sr-only">
+                        Your answer to: {question.prompt}
+                      </label>
+                      <Textarea
+                        id={`answer-${question.id}`}
+                        placeholder="Write your answer..."
+                        value={existingAnswer?.answer || ''}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        className="min-h-56 text-base"
+                        data-testid={`answer-${question.id}`}
+                        aria-describedby={question.help ? `question-help-${question.id}` : undefined}
+                        aria-label={`Answer for question ${currentQuestionIndex + 1} of ${stepContent.questions.length}`}
+                        autoFocus
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <span>Auto-saves as you type</span>
+                      {existingAnswer?.answer && (
+                        <span className="text-green-600">✓ Saved</span>
+                      )}
                     </p>
 
                     <div className="flex items-center justify-between gap-3 pt-4">

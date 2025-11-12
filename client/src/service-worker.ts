@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
+import type { NotificationSettings } from '@/types';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -83,7 +84,7 @@ self.addEventListener('notificationclick', (event) => {
 /**
  * Schedule all notifications based on settings
  */
-function scheduleAllNotifications(settings: any) {
+function scheduleAllNotifications(settings: NotificationSettings) {
   // Clear existing timers
   clearAllScheduledNotifications();
 
@@ -144,11 +145,17 @@ function scheduleAllNotifications(settings: any) {
 /**
  * Schedule a daily recurring notification
  */
+interface NotificationOptions {
+  title: string;
+  body: string;
+  actions?: Array<{ action: string; title: string }>;
+}
+
 function scheduleDailyNotification(
   type: string,
   time: string,
-  notification: any,
-  quietHours: any
+  notification: NotificationOptions,
+  quietHours: NotificationSettings['quietHours']
 ) {
   const now = new Date();
   const [hours, minutes] = time.split(':').map(Number);
@@ -199,7 +206,7 @@ function clearAllScheduledNotifications() {
 /**
  * Check if current time is within quiet hours
  */
-function isQuietHours(quietHours: any): boolean {
+function isQuietHours(quietHours: NotificationSettings['quietHours']): boolean {
   if (!quietHours.enabled) return false;
 
   const now = new Date();

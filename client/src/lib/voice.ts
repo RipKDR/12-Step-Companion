@@ -2,6 +2,13 @@
  * Voice input and audio recording utilities
  */
 
+import type {
+  SpeechRecognition,
+  SpeechRecognitionEvent,
+  SpeechRecognitionErrorEvent,
+  WindowWithSpeechRecognition,
+} from './speech-recognition-types';
+
 export interface VoiceRecognitionResult {
   transcript: string;
   isFinal: boolean;
@@ -49,25 +56,32 @@ export function startSpeechRecognition(
     return () => {};
   }
 
-  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  const win = window as WindowWithSpeechRecognition;
+  const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    onError('Speech recognition not available');
+    return () => {};
+  }
+  
   const recognition = new SpeechRecognition();
 
   recognition.continuous = options?.continuous ?? true;
   recognition.interimResults = options?.interimResults ?? true;
   recognition.lang = options?.lang ?? 'en-US';
 
-  recognition.onresult = (event: any) => {
+  recognition.onresult = (event: SpeechRecognitionEvent) => {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
+      const alternative = result[0];
       onResult({
-        transcript: result[0].transcript,
+        transcript: alternative.transcript,
         isFinal: result.isFinal,
-        confidence: result[0].confidence,
+        confidence: alternative.confidence,
       });
     }
   };
 
-  recognition.onerror = (event: any) => {
+  recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
     onError(event.error || 'Speech recognition error');
   };
 

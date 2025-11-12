@@ -11,24 +11,40 @@ import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
 import { useAuth } from "@/hooks/useAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PageTransition } from "@/components/PageTransition";
+import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
+import { lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
 
-// Routes
-import Home from "@/routes/Home";
-import Steps from "@/routes/Steps";
-import Journal from "@/routes/Journal";
-import More from "@/routes/More";
-import Worksheets from "@/routes/Worksheets";
-import Meetings from "@/routes/Meetings";
-import Emergency from "@/routes/Emergency";
-import Resources from "@/routes/Resources";
-import Settings from "@/routes/Settings";
-import Onboarding from "@/routes/Onboarding";
-import Analytics from "@/routes/Analytics";
-import Contacts from "@/routes/Contacts";
-import Achievements from "@/routes/Achievements";
-import UsageInsights from "@/routes/UsageInsights";
-import Landing from "@/routes/Landing";
-import AISponsor from "@/routes/AISponsor";
+// Route fallback component
+const RouteFallback = () => (
+  <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+    <Card className="p-6">
+      <Skeleton className="h-8 w-48 mb-4" />
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-3/4" />
+    </Card>
+  </div>
+);
+
+// Routes - Lazy loaded for code splitting
+const Home = lazy(() => import("@/routes/Home"));
+const Steps = lazy(() => import("@/routes/Steps"));
+const Journal = lazy(() => import("@/routes/Journal"));
+const More = lazy(() => import("@/routes/More"));
+const Worksheets = lazy(() => import("@/routes/Worksheets"));
+const Meetings = lazy(() => import("@/routes/Meetings"));
+const Emergency = lazy(() => import("@/routes/Emergency"));
+const Resources = lazy(() => import("@/routes/Resources"));
+const Settings = lazy(() => import("@/routes/Settings"));
+const Onboarding = lazy(() => import("@/routes/Onboarding"));
+const Analytics = lazy(() => import("@/routes/Analytics"));
+const Contacts = lazy(() => import("@/routes/Contacts"));
+const Achievements = lazy(() => import("@/routes/Achievements"));
+const UsageInsights = lazy(() => import("@/routes/UsageInsights"));
+const Landing = lazy(() => import("@/routes/Landing"));
+const AISponsor = lazy(() => import("@/routes/AISponsor"));
 
 function Router() {
   const { isLoading } = useAuth();
@@ -38,44 +54,52 @@ function Router() {
   // In standalone mode, this will be very brief since auth always succeeds
   if (isLoading) {
     return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route component={Landing} />
-      </Switch>
+      <Suspense fallback={<RouteFallback />}>
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route component={Landing} />
+        </Switch>
+      </Suspense>
     );
   }
 
   // Show onboarding if not completed
   if (!onboardingComplete) {
     return (
-      <Switch>
-        <Route path="/onboarding" component={Onboarding} />
-        <Route path="/" component={Onboarding} />
-        <Route component={Onboarding} />
-      </Switch>
+      <Suspense fallback={<RouteFallback />}>
+        <Switch>
+          <Route path="/onboarding" component={Onboarding} />
+          <Route path="/" component={Onboarding} />
+          <Route component={Onboarding} />
+        </Switch>
+      </Suspense>
     );
   }
 
   return (
     <>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/steps" component={Steps} />
-        <Route path="/journal" component={Journal} />
-        <Route path="/more" component={More} />
-        <Route path="/worksheets" component={Worksheets} />
-        <Route path="/meetings" component={Meetings} />
-        <Route path="/emergency" component={Emergency} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/usage-insights" component={UsageInsights} />
-        <Route path="/contacts" component={Contacts} />
-        <Route path="/achievements" component={Achievements} />
-        <Route path="/ai-sponsor" component={AISponsor} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/onboarding" component={Onboarding} />
-        <Route component={NotFound} />
-      </Switch>
+      <PageTransition>
+        <Suspense fallback={<RouteFallback />}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/steps" component={Steps} />
+            <Route path="/journal" component={Journal} />
+            <Route path="/more" component={More} />
+            <Route path="/worksheets" component={Worksheets} />
+            <Route path="/meetings" component={Meetings} />
+            <Route path="/emergency" component={Emergency} />
+            <Route path="/resources" component={Resources} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/usage-insights" component={UsageInsights} />
+            <Route path="/contacts" component={Contacts} />
+            <Route path="/achievements" component={Achievements} />
+            <Route path="/ai-sponsor" component={AISponsor} />
+            <Route path="/settings" component={Settings} />
+            <Route path="/onboarding" component={Onboarding} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </PageTransition>
       <BottomNav />
     </>
   );
@@ -83,6 +107,7 @@ function Router() {
 
 function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette();
 
   useEffect(() => {
     if (import.meta.env.PROD) {
@@ -107,6 +132,7 @@ function App() {
         <ErrorBoundary>
           <Toaster />
           <Router />
+          <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
           {updateAvailable && (
             <UpdateNotification
               onUpdate={handleUpdate}

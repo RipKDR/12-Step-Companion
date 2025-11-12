@@ -4,14 +4,14 @@ import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
 export const CURRENT_VERSION = 9;
 
-type Migration = (state: any) => any;
+type Migration = (state: Partial<AppState>) => Partial<AppState>;
 
 const migrations: Record<number, Migration> = {
-  1: (state: any) => {
+  1: (state: Partial<AppState>) => {
     // Initial version - no migration needed
     return state;
   },
-  2: (state: any) => {
+  2: (state: Partial<AppState>) => {
     // V2: Add streaks tracking
     if (!state.streaks) {
       state.streaks = {
@@ -23,7 +23,7 @@ const migrations: Record<number, Migration> = {
     }
     return state;
   },
-  3: (state: any) => {
+  3: (state: Partial<AppState>) => {
     // V3: Add notification settings
     if (!state.settings.notifications) {
       state.settings.notifications = {
@@ -49,35 +49,35 @@ const migrations: Record<number, Migration> = {
     }
     return state;
   },
-  4: (state: any) => {
+  4: (state: Partial<AppState>) => {
     // V4: Add milestone celebrations
     if (!state.celebratedMilestones) {
       state.celebratedMilestones = {};
     }
     return state;
   },
-  5: (state: any) => {
+  5: (state: Partial<AppState>) => {
     // V5: Add achievement system
     if (!state.unlockedAchievements) {
       state.unlockedAchievements = {};
     }
     return state;
   },
-  6: (state: any) => {
+  6: (state: Partial<AppState>) => {
     // V6: Add daily challenges
     if (!state.completedChallenges) {
       state.completedChallenges = {};
     }
     return state;
   },
-  7: (state: any) => {
+  7: (state: Partial<AppState>) => {
     // V7: Add voice recording settings
     if (state.settings && state.settings.enableVoiceRecording === undefined) {
       state.settings.enableVoiceRecording = false;
     }
     return state;
   },
-  8: (state: any) => {
+  8: (state: Partial<AppState>) => {
     // V8: Add analytics system
     if (!state.analyticsEvents) {
       state.analyticsEvents = {};
@@ -92,7 +92,7 @@ const migrations: Record<number, Migration> = {
     }
     return state;
   },
-  9: (state: any) => {
+  9: (state: Partial<AppState>) => {
     // V9: Introduce recovery points ledger
     if (!state.recoveryPoints) {
       state.recoveryPoints = createInitialRecoveryPoints();
@@ -116,7 +116,7 @@ const migrations: Record<number, Migration> = {
   },
 };
 
-export function migrateState(state: any): AppState {
+export function migrateState(state: Partial<AppState> & { version?: number }): AppState {
   const version = state.version || 0;
 
   if (version === CURRENT_VERSION) {

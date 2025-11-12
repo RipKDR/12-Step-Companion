@@ -969,7 +969,7 @@ export const useAppStore = create<AppStore>()(
     {
       name: 'recovery-companion-storage',
       version: CURRENT_VERSION,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: Partial<AppState> & { version?: number }, version: number) => {
         return migrateState(persistedState);
       },
       storage: {

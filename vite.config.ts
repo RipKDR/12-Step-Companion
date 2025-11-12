@@ -46,6 +46,26 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'wouter'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-context-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-hover-card',
+          ],
+          'vendor-animations': ['framer-motion'],
+          'vendor-charts': ['recharts'],
+          'vendor-utils': ['date-fns', 'zod', 'clsx', 'tailwind-merge'],
+          'confetti': ['canvas-confetti'],
+        },
+      },
+    },
   },
   server: {
     fs: {

@@ -11,10 +11,10 @@ import {
   Target,
 } from "lucide-react";
 import { Link } from "wouter";
-import type { DailyChallenge, ChallengeTheme } from "@/types";
+import type { DailyChallenge, ChallengeTheme, Profile } from "@/types";
 
 interface TodayPanelProps {
-  profile: any;
+  profile: Profile | undefined;
   totalActiveStreaks: number;
   highestStreak: number;
   currentStep: number;

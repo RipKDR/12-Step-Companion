@@ -132,10 +132,11 @@ export default function Settings() {
       setImportFile(null);
       setPassphrase('');
       setIsEncryptedImport(false);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to import data.';
       toast({
         title: 'Import failed',
-        description: error.message || 'Failed to import data.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -182,7 +183,7 @@ export default function Settings() {
     key: 'morningCheckIn' | 'eveningReflection',
     time: string
   ) => {
-    const existing = (settings.notifications as any)[key];
+    const existing = settings.notifications[key];
     updateNotificationSettings({
       [key]: { ...existing, time }
     });

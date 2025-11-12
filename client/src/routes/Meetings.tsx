@@ -37,8 +37,8 @@ export default function Meetings() {
   const { toast } = useToast();
   
   const meetings = useAppStore((state) => {
-    const data = (state as any).meetings || [];
-    return data.sort((a: Meeting, b: Meeting) => 
+    const data = state.meetings || [];
+    return data.sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   });
@@ -54,7 +54,7 @@ export default function Meetings() {
     
     useAppStore.setState({
       ...store,
-      meetings: [...((store as any).meetings || []), newMeeting],
+      meetings: [...(store.meetings || []), newMeeting],
     });
   };
 
@@ -62,7 +62,7 @@ export default function Meetings() {
     const store = useAppStore.getState();
     useAppStore.setState({
       ...store,
-      meetings: ((store as any).meetings || []).filter((m: Meeting) => m.id !== id),
+      meetings: (store.meetings || []).filter((m) => m.id !== id),
     });
   };
 

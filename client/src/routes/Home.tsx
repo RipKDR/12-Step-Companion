@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import TodayPanel from "@/components/home-panels/TodayPanel";
-import PracticePanel from "@/components/home-panels/PracticePanel";
-import RoutinePanel from "@/components/home-panels/RoutinePanel";
-import ExplorePanel from "@/components/home-panels/ExplorePanel";
+import SobrietyCounter from "@/components/SobrietyCounter";
+import { EnhancedSobrietyCounter } from "@/components/EnhancedSobrietyCounter";
+import StepProgressCards from "@/components/StepProgressCards";
+import TodayShortcuts from "@/components/TodayShortcuts";
+import TodayCheckIn from "@/components/TodayCheckIn";
 import QuickJournalModal from "@/components/QuickJournalModal";
 import QuickGratitudeModal from "@/components/QuickGratitudeModal";
 import QuickMeetingLogModal from "@/components/QuickMeetingLogModal";
@@ -11,13 +12,9 @@ import MilestoneCelebrationModal, {
   type MilestoneData,
 } from "@/components/MilestoneCelebrationModal";
 import ChallengeCompletionModal from "@/components/ChallengeCompletionModal";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "@/components/ui/carousel";
-import { cn } from "@/lib/utils";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
+import { Sparkles, ChevronDown } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { getTodayDate } from "@/lib/time";
 import { loadAllSteps } from "@/lib/contentLoader";
@@ -35,8 +32,6 @@ import type {
   DailyChallenge,
   ChallengeTheme,
 } from "@/types";
-
-const PANEL_NAMES = ["Today", "Practice", "Routine", "Explore"];
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
@@ -74,8 +69,6 @@ export default function Home() {
     null,
   );
   const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const [currentPanel, setCurrentPanel] = useState(0);
 
   const todayDate = useMemo(
     () => getTodayDate(profile?.timezone || "Australia/Melbourne"),
@@ -83,19 +76,6 @@ export default function Home() {
   );
   const dailyCard = getDailyCard(todayDate);
 
-  // Carousel API event listeners
-  useEffect(() => {
-    if (!carouselApi) return;
-
-    const handleSelect = () => {
-      setCurrentPanel(carouselApi.selectedScrollSnap());
-    };
-
-    carouselApi.on("select", handleSelect);
-    return () => {
-      carouselApi.off("select", handleSelect);
-    };
-  }, [carouselApi]);
 
   // Load all step contents to get question counts
   useEffect(() => {
@@ -296,11 +276,32 @@ export default function Home() {
     }
   };
 
-  const totalActiveStreaks = Object.values(streaks).filter(s => s.current > 0).length;
-  const highestStreak = Math.max(...Object.values(streaks).map(s => s.current));
+  // Calculate steps done (completed steps)
+  const stepsDone = useMemo(() => {
+    let completed = 0;
+    for (let step = 1; step <= 12; step++) {
+      const answers = getStepAnswers(step);
+      const totalQuestions = stepQuestionCounts.get(step) || 0;
+      const completedAnswers = answers.filter((a) => a.answer.trim()).length;
+      if (totalQuestions > 0 && completedAnswers === totalQuestions) {
+        completed++;
+      }
+    }
+    return completed;
+  }, [getStepAnswers, stepQuestionCounts, stepAnswersState]);
+
+  const handleMorningClick = useCallback(() => {
+    // Navigate to routine or open morning modal
+    updateDailyCard(todayDate, { morningCompleted: !dailyCard?.morningCompleted });
+  }, [todayDate, dailyCard?.morningCompleted, updateDailyCard]);
+
+  const handleEveningClick = useCallback(() => {
+    // Navigate to routine or open evening modal
+    updateDailyCard(todayDate, { eveningCompleted: !dailyCard?.eveningCompleted });
+  }, [todayDate, dailyCard?.eveningCompleted, updateDailyCard]);
 
   return (
-    <div className="h-screen flex flex-col pb-8 sm:pb-12">
+    <div className="min-h-screen pb-24">
       {/* Skip to main content link */}
       <a
         href="#main-content"
@@ -309,105 +310,81 @@ export default function Home() {
         Skip to main content
       </a>
 
-      {/* Panel indicator */}
-      <div className="flex items-center justify-center gap-2 py-4 px-6">
-        <div className="flex items-center gap-1.5" role="tablist" aria-label="Home panels">
-          {PANEL_NAMES.map((name, index) => (
-            <button
-              key={index}
-              role="tab"
-              aria-selected={currentPanel === index}
-              aria-label={`${name} panel`}
-              onClick={() => carouselApi?.scrollTo(index)}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                currentPanel === index
-                  ? "w-6 bg-primary"
-                  : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              )}
-              data-testid={`panel-indicator-${index}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Panel name */}
-      <div className="text-center pb-4">
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {PANEL_NAMES[currentPanel]}
-        </h1>
-      </div>
-
-      {/* Carousel */}
-      <main 
-        id="main-content" 
-        role="main" 
-        className="flex-1 overflow-hidden"
-        aria-live="polite"
-        aria-atomic="true"
+      {/* Main Content - Single Scroll Layout */}
+      <PullToRefresh
+        onRefresh={async () => {
+          checkAllStreaks();
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }}
       >
-        <Carousel
-          setApi={setCarouselApi}
-          className="h-full"
-          opts={{
-            align: "start",
-            loop: false,
-            skipSnaps: false,
-            duration: 30,
-          }}
+        <main 
+          id="main-content" 
+          role="main" 
+          className="max-w-2xl mx-auto px-6 py-8 space-y-6"
+          aria-live="polite"
+          aria-atomic="true"
         >
-          <CarouselContent className="h-full">
-            <CarouselItem className="h-full">
-              <div className="h-full overflow-y-auto pb-8 pt-2">
-                <TodayPanel
-                  profile={profile}
-                  totalActiveStreaks={totalActiveStreaks}
-                  highestStreak={highestStreak}
-                  currentStep={stepProgress.currentStep}
-                  todaysChallenge={todaysChallenge}
-                  challengeTheme={challengeTheme}
-                  isChallengeCompleted={isChallengeCompleted}
-                  weeklyCount={weeklyCount}
-                  onChallengeComplete={handleChallengeComplete}
-                />
-              </div>
-            </CarouselItem>
+        {/* Welcome Section */}
+        <section className="flex items-center gap-3">
+          <Sparkles className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Welcome back</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              This space keeps the next right moves visible, not overwhelming.
+            </p>
+          </div>
+        </section>
 
-            <CarouselItem className="h-full">
-              <div className="h-full overflow-y-auto pb-8 pt-2">
-                <PracticePanel
-                  streaks={streaks}
-                  onQuickJournal={() => setShowQuickJournal(true)}
-                  onQuickGratitude={() => setShowQuickGratitude(true)}
-                  onQuickMeeting={() => setShowQuickMeeting(true)}
-                  onRelapseReset={() => setShowRelapseReset(true)}
-                />
-              </div>
-            </CarouselItem>
+        {/* Clean Time Summary */}
+        {profile?.cleanDate && (
+          <section aria-labelledby="sobriety-heading">
+            <h2 id="sobriety-heading" className="sr-only">
+              Your Clean Time
+            </h2>
+            <EnhancedSobrietyCounter
+              cleanDate={profile.cleanDate}
+              timezone={profile.timezone}
+              showProgress={true}
+              nextMilestone={30}
+            />
+          </section>
+        )}
 
-            <CarouselItem className="h-full">
-              <div className="h-full overflow-y-auto pb-8 pt-2">
-                <RoutinePanel
-                  dailyCard={dailyCard || null}
-                  stepProgress={stepProgress}
-                  onMorningChange={handleMorningChange}
-                  onMorningComplete={handleMorningComplete}
-                  onEveningChange={handleEveningChange}
-                  onEveningComplete={handleEveningComplete}
-                  onGratitudeChange={handleGratitudeChange}
-                  onQuickNotesChange={handleQuickNotesChange}
-                />
-              </div>
-            </CarouselItem>
+        {/* Step Progress */}
+        <section aria-labelledby="step-progress-heading">
+          <h2 id="step-progress-heading" className="sr-only">
+            Step Progress
+          </h2>
+          <StepProgressCards
+            currentStep={stepProgress.currentStep}
+            totalSteps={12}
+            stepsDone={stepsDone}
+          />
+        </section>
 
-            <CarouselItem className="h-full">
-              <div className="h-full overflow-y-auto pb-8 pt-2">
-                <ExplorePanel />
-              </div>
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-      </main>
+        {/* Today Shortcuts */}
+        <section aria-labelledby="shortcuts-heading">
+          <h2 id="shortcuts-heading" className="sr-only">
+            Today Shortcuts
+          </h2>
+          <TodayShortcuts currentStep={stepProgress.currentStep} />
+        </section>
+
+        {/* Today Check-in */}
+        <CollapsibleSection
+          title="Today's Check-in"
+          defaultOpen={true}
+          icon={<Sparkles className="h-4 w-4" />}
+        >
+          <TodayCheckIn
+            morningCompleted={dailyCard?.morningCompleted || false}
+            eveningCompleted={dailyCard?.eveningCompleted || false}
+            onMorningClick={handleMorningClick}
+            onEveningClick={handleEveningClick}
+          />
+        </CollapsibleSection>
+        </main>
+      </PullToRefresh>
 
       {/* Modals - Globally mounted */}
       <QuickJournalModal

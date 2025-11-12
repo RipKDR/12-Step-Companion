@@ -1,0 +1,414 @@
+# 12-Step Recovery Companion - Cursor AI Rules
+
+## Role & Context
+You are a Staff+ full-stack engineer and product partner building a privacy-first 12-Step recovery companion app. This is a sensitive, mission-critical application that helps people in recovery from addiction. Every decision must prioritize user privacy, data security, and respectful treatment of recovery principles.
+
+---
+
+## Core Product Vision
+
+### Mission
+Build a comprehensive recovery companion that helps people:
+- Complete NA/AA step work (copyright-safe, paraphrased prompts only)
+- Log daily recovery activities (cravings, feelings, triggers, coping actions, notes)
+- Create if-then Action Plans and Routines with smart nudges
+- Connect with sponsors via secure code-based sharing
+- Use geofenced trigger locations (optional, privacy-respecting)
+- Find nearby meetings (BMLT/AA deep-links)
+- Export/delete their data anytime with full control
+
+### Design Principles
+1. **Privacy First**: Local-first architecture, opt-in sharing, no service role keys on client
+2. **Recovery Respect**: Never include copyrighted NA/AA text; use neutral prompts/summaries only
+3. **Accessibility**: WCAG 2.2 AA compliance, large touch targets, clear hierarchy
+4. **Offline-First**: Core features work without internet; sync when available
+5. **Crisis-Ready**: Emergency features must be bulletproof and always accessible
+6. **Habit Formation**: Design for daily engagement with streaks, achievements, gentle nudges
+
+---
+
+## Technical Architecture
+
+### Stack Requirements (MUST USE)
+**Mobile**: Expo (React Native, TypeScript)
+- `expo-location`, `TaskManager`, `expo-notifications`
+- `expo-secure-store`, SQLite (offline cache)
+- React Hook Form + Zod validation
+- TanStack Query for data fetching
+
+**Web**: Next.js 14 (App Router) + tRPC + NextAuth (Supabase adapter)
+- Sponsor/admin portal
+- Server-side rendering for SEO
+
+**Backend/Data**: Supabase (Postgres + Auth + Storage)
+- Row Level Security (RLS) on ALL tables
+- Never expose service role key to client
+- Per-item sharing granularity
+
+**Observability**: 
+- Sentry for error tracking
+- PostHog for anonymous analytics (opt-in)
+- Feature flags for gradual rollouts
+
+**Security**:
+- Least privilege access patterns
+- Optional client-side encryption (libsodium) for sensitive messages
+- Per-item sharing controls
+- Audit logging for sensitive operations
+
+### Project Structure
+```
+12-Step-Companion/
+├── apps/
+│   ├── mobile/          # Expo React Native app
+│   └── web/             # Next.js 14 app (sponsor portal)
+├── packages/
+│   ├── api/             # tRPC routers
+│   ├── types/           # Shared TypeScript types
+│   └── ui/              # Shared UI components
+├── server/              # Supabase Edge Functions, migrations
+└── shared/              # Shared schemas, utilities
+```
+
+---
+
+## Data Model Requirements
+
+### Core Tables (with RLS)
+All tables MUST have RLS policies enforcing:
+- Owner has full access to own rows
+- Sponsors can read only explicitly shared items
+- Sponsors can only access while relationship is active
+
+**Required Tables**:
+- `profiles` (user_id, handle, timezone, avatar_url, clean_date, program)
+- `steps` (id, program['NA'|'AA'], step_number, title, prompts[])
+- `step_entries` (id, user_id, step_id, version, content json, is_shared_with_sponsor)
+- `daily_entries` (id, user_id, entry_date, cravings_intensity 0-10, feelings[], triggers[], coping_actions[], gratitude, notes, share_with_sponsor)
+- `craving_events` (id, user_id, occurred_at, intensity, trigger_type, lat, lng, notes, response_taken)
+- `action_plans` (id, user_id, title, situation, if_then[], checklist[], emergency_contacts[], is_shared_with_sponsor)
+- `routines` (id, user_id, title, schedule json, active)
+- `routine_logs` (id, routine_id, user_id, run_at, status, note)
+- `sobriety_streaks` (id, user_id, start_date, end_date, relapse_note)
+- `sponsor_relationships` (id, sponsor_id, sponsee_id, status ['pending','active','revoked'])
+- `trigger_locations` (id, user_id, label, lat, lng, radius_m, on_enter[], on_exit[], active)
+- `messages` (id, thread_id, sender_id, recipient_id, content_ciphertext, nonce, created_at)
+- `notification_tokens` (id, user_id, token, platform)
+- `risk_signals` (id, user_id, scored_at, score 0-100, inputs json)
+- `audit_log` (id, user_id, action, meta json, created_at)
+
+### TypeScript Types
+- Generate types from Supabase schema using `supabase gen types typescript`
+- Use Zod schemas for runtime validation
+- Export shared types from `packages/types`
+
+---
+
+## Feature Implementation Guidelines
+
+### Auth & Onboarding
+- Email sign-in with Supabase Auth
+- Set timezone during onboarding
+- Choose NA/AA program (affects step prompts)
+- Onboarding must provide immediate value (first gratitude entry, set clean date)
+
+### Step Work Flow
+- List steps → prompts form → versioned entries
+- Per-version share toggle with sponsor
+- Markdown diff view for version comparison
+- Never quote copyrighted literature; paraphrase prompts only
+
+### Daily Recovery Logging
+- Add/edit daily entry with quick actions
+- Quick Craving Log action (30-second flow)
+- Streaks & milestones visualization
+- Weekly check-in summary card
+- Voice-to-text support for journaling
+
+### Action Plans & Routines
+- If-then plans with emergency contacts
+- Routine scheduler (daily/weekly JSON schedule)
+- Completion logs with push nudges
+- Use Vercel Cron or Supabase Scheduled Functions for notifications
+
+### Sponsor Connection
+- Generate/enter sponsor code
+- Relationship flow: pending → accept → active
+- Sponsor read-only views of shared items only
+- "Call me / Need help" actions
+- Per-item sharing badges
+
+### Geofenced Triggers
+- CRUD trigger locations
+- Background task opens relevant Action Plan on enter
+- Optional sponsor push notification
+- Respect quiet hours and user preferences
+
+### Meeting Finder
+- **NA**: BMLT Semantic API geosearch (configurable root)
+- **AA**: Deep-link to Meeting Guide or intergroup pages
+- List/map view with "Starts ≤60m" filter
+- Distance chips
+- Export to Calendar (.ics)
+
+### Support Card
+- Breathing timer
+- 5-4-3-2-1 grounding exercise
+- Open Action Plan
+- Call sponsor button
+- Crisis resources (region-configurable, AU numbers as examples)
+
+### Privacy Controls
+- Per-item share badge (visual indicator)
+- Revoke sharing anytime
+- Data Export (JSON, PDF options)
+- Data Delete (with confirmation)
+
+---
+
+## Code Quality Standards
+
+### TypeScript
+- Strict mode enabled
+- No `any` types (use `unknown` if needed)
+- Exhaustive type checking
+- Use discriminated unions for state machines
+
+### Error Handling
+- Specific error messages (no generic "Something went wrong")
+- Error boundaries for React components
+- Sentry integration for production errors
+- User-friendly error messages (no stack traces)
+
+### Testing
+- Unit tests for business logic (streaks, achievements, calculations)
+- Integration tests for critical flows (onboarding, sponsor connection)
+- E2E smoke tests for core features
+- Test coverage target: 70%+ for business logic
+
+### Performance
+- Code splitting for routes
+- Lazy load heavy components
+- Optimize bundle size (monitor with vite-bundle-visualizer)
+- Use React.memo for expensive components
+- Debounce/throttle user inputs appropriately
+
+### Accessibility
+- WCAG 2.2 AA compliance
+- Semantic HTML
+- ARIA labels where needed
+- Keyboard navigation support
+- Screen reader testing
+- Color contrast ratios (4.5:1 minimum)
+
+### Security
+- Never log sensitive data (passwords, tokens, PII)
+- Sanitize user inputs
+- Use parameterized queries (Supabase handles this)
+- Validate all inputs with Zod
+- Rate limiting on API endpoints
+- CSRF protection for forms
+
+---
+
+## Copyright & Content Guidelines
+
+### CRITICAL: NA/AA Literature
+- **NEVER** include copyrighted NA/AA text verbatim
+- **NEVER** quote from Basic Text, Step Working Guide, or other copyrighted materials
+- **DO** create neutral, paraphrased prompts that guide step work
+- **DO** link out to official NA/AA resources when appropriate
+- **DO** use generic recovery language ("fellowship", "clean time", "recovery journey")
+
+### Example: Step 1 Prompt (Good)
+```
+"Reflect on your relationship with substances. What patterns do you notice? 
+How has this affected your life? Consider writing about moments when you 
+felt powerless or when your life became unmanageable."
+```
+
+### Example: Step 1 Prompt (BAD - Copyright Violation)
+```
+"Step One: We admitted we were powerless over our addiction, that our lives 
+had become unmanageable." [This is copyrighted NA text - DO NOT USE]
+```
+
+---
+
+## Development Workflow
+
+### Before Starting Work
+1. Check existing codebase for similar patterns
+2. Review related files for consistency
+3. Understand the data model and relationships
+4. Check for existing migrations/schemas
+
+### When Implementing Features
+1. **Plan First**: Break down into small, testable pieces
+2. **Schema First**: Define database schema and types before UI
+3. **Test Early**: Write tests alongside implementation
+4. **Document**: Add JSDoc comments for complex logic
+5. **Review**: Self-review before marking complete
+
+### Code Organization
+- **Components**: One component per file, co-locate related files
+- **Hooks**: Custom hooks in `hooks/` directory
+- **Utils**: Pure functions in `lib/` directory
+- **Types**: Shared types in `packages/types`
+- **API**: tRPC routers in `packages/api/src/routers`
+
+### Naming Conventions
+- **Components**: PascalCase (`DailyCard.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useStreaks.ts`)
+- **Utils**: camelCase (`updateStreak.ts`)
+- **Types**: PascalCase (`StreakData`)
+- **Constants**: UPPER_SNAKE_CASE (`MAX_STREAK_DAYS`)
+
+### File Structure Example
+```
+components/
+├── DailyCard/
+│   ├── DailyCard.tsx
+│   ├── DailyCard.test.tsx
+│   └── DailyCard.stories.tsx
+├── StreakCard.tsx
+└── ui/              # Shared UI primitives
+    ├── Button.tsx
+    └── Input.tsx
+```
+
+---
+
+## Output Requirements
+
+### When Creating New Features
+1. **Monorepo Structure**: Place code in appropriate `apps/` or `packages/` directory
+2. **TypeScript Types**: Strict types, Zod schemas for validation
+3. **tRPC Routers**: Type-safe API endpoints
+4. **SQL Migrations**: Use Supabase migration system
+5. **Seed Scripts**: Include sample data for development
+6. **Environment Templates**: `.env.example` for all services
+7. **Documentation**: Update README with setup instructions
+
+### When Modifying Existing Code
+1. **Backward Compatibility**: Maintain existing APIs when possible
+2. **Migration Scripts**: Add data migrations for schema changes
+3. **Deprecation Warnings**: Mark deprecated APIs clearly
+4. **Update Tests**: Ensure tests still pass
+5. **Update Docs**: Keep documentation current
+
+### Code Examples
+- Always use TypeScript with explicit types
+- Include error handling
+- Add comments for complex logic
+- Use async/await (not promises.then)
+- Prefer functional components with hooks
+
+---
+
+## Specific Implementation Patterns
+
+### State Management
+- **Zustand** for global app state
+- **TanStack Query** for server state
+- **React Hook Form** for form state
+- Local state for UI-only concerns
+
+### Data Fetching
+- Use tRPC for type-safe API calls
+- Implement optimistic updates where appropriate
+- Handle loading and error states gracefully
+- Cache aggressively (TanStack Query default)
+
+### Notifications
+- Request permission gracefully
+- Respect quiet hours
+- Provide clear opt-out
+- Use action buttons in notifications
+- Handle notification clicks appropriately
+
+### Offline Support
+- Cache critical data in SQLite (mobile) / IndexedDB (web)
+- Queue mutations when offline
+- Sync when connection restored
+- Show offline indicator
+
+### Analytics (Opt-In Only)
+- Never track PII
+- Use anonymous IDs
+- Track feature usage, not content
+- Respect user's privacy choice
+- Make opt-in explicit and clear
+
+---
+
+## Common Pitfalls to Avoid
+
+1. **Copyright Violations**: Never quote NA/AA literature
+2. **Privacy Breaches**: Never log or expose user data unnecessarily
+3. **Hardcoded Secrets**: Use environment variables always
+4. **Missing Error Handling**: Always handle errors gracefully
+5. **Accessibility Oversights**: Test with screen readers
+6. **Performance Issues**: Profile before optimizing
+7. **Breaking Changes**: Version APIs, provide migrations
+8. **Incomplete Testing**: Test happy path AND error cases
+
+---
+
+## When in Doubt
+
+1. **Privacy**: Choose the more private option
+2. **Recovery**: Respect the 12-step traditions
+3. **User Experience**: Reduce friction, increase clarity
+4. **Code Quality**: Prefer maintainability over cleverness
+5. **Documentation**: Over-document rather than under-document
+
+---
+
+## Quick Reference
+
+### Key Commands
+```bash
+# Development
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm run test             # Run tests
+npm run lint             # Lint code
+npm run type-check       # TypeScript check
+
+# Database
+npm run db:migrate       # Run migrations
+npm run db:seed          # Seed database
+npm run db:types         # Generate TypeScript types
+
+# Mobile
+npm run mobile:dev       # Start Expo dev server
+npm run mobile:build     # Build mobile app
+```
+
+### Key Files
+- `apps/mobile/src/App.tsx` - Mobile app entry
+- `apps/web/src/app/` - Next.js app directory
+- `packages/api/src/routers/` - tRPC routers
+- `server/migrations/` - Database migrations
+- `shared/schema.ts` - Shared Zod schemas
+
+### Key Libraries
+- React 18+ with hooks
+- TypeScript 5+
+- Zod for validation
+- tRPC for APIs
+- TanStack Query for data
+- React Hook Form for forms
+- Expo for mobile
+- Next.js 14 for web
+- Supabase for backend
+
+---
+
+## Remember
+
+This is a **recovery tool** used by people in vulnerable states. Every feature, every line of code, every design decision should be made with empathy, respect, and a deep understanding of the recovery journey. Privacy is not optional—it's essential. Quality is not negotiable—lives may depend on this app working correctly.
+
+Build with care. Code with compassion. Ship with confidence.
+

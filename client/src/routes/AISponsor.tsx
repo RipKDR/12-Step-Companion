@@ -420,7 +420,7 @@ export default function AISponsor() {
     </div>
   );
 
-  const Message = ({ message, index }: { message: any; index: number }) => {
+  const Message = ({ message, index }: { message: AISponsorMessage; index: number }) => {
     const isUser = message.role === 'user';
     const isCopied = copiedMessageId === message.id;
     const feedback = feedbackGiven[message.id];

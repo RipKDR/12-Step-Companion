@@ -18,7 +18,7 @@ export default function Worksheets() {
     template: WorksheetTemplate | null;
   }>>([]);
   const [selectedWorksheet, setSelectedWorksheet] = useState<WorksheetTemplate | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, string | number>>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const worksheetResponsesMap = useAppStore((state) => state.worksheetResponses);
@@ -70,7 +70,7 @@ export default function Worksheets() {
     setFormData({});
   };
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value

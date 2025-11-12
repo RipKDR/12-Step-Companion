@@ -291,25 +291,27 @@ Remember: You're their AI sponsor. You know their journey. Reference it. Build o
       const responseText = result.response.text();
 
       res.json({ response: responseText });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in AI sponsor chat:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStatus = 'status' in error && typeof error.status === 'number' ? error.status : undefined;
 
       // Handle specific error types
-      if (error.status === 429 || error.message?.includes('quota')) {
+      if (errorStatus === 429 || errorMessage.includes('quota')) {
         return res.status(429).json({
           message: 'Rate limit exceeded',
           response: "I'm receiving a lot of messages right now. Please wait a moment and try again. If you need immediate support, consider calling your sponsor or attending a meeting."
         });
       }
 
-      if (error.message?.includes('API key')) {
+      if (errorMessage.includes('API key')) {
         return res.status(503).json({
           message: 'Service unavailable',
           response: "I'm having trouble with my configuration. Please try again later or reach out to a human sponsor."
         });
       }
 
-      if (error.message?.includes('blocked') || error.message?.includes('safety')) {
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
         return res.status(400).json({
           message: 'Content filtered',
           response: "I couldn't process that message. Please rephrase and try again, or reach out to your sponsor for support."

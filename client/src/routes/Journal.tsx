@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import type { JournalEntry } from '@/types';
 import JournalEntryCard from '@/components/JournalEntryCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,12 @@ import { useAppStore } from '@/store/useAppStore';
 import { haptics } from '@/lib/haptics';
 import { startSpeechRecognition, startAudioRecording, isSpeechRecognitionSupported, isMediaRecordingSupported } from '@/lib/voice';
 import { cn } from '@/lib/utils';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { EmptyJournalState } from '@/components/EmptyState';
+import { JournalEntrySkeletonList } from '@/components/JournalEntrySkeleton';
+import { JournalEntryEditor } from '@/components/JournalEntryEditor';
+import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
+import { SortableList } from '@/components/SortableList';
 
 const getMoodColor = (mood: number) => {
   if (mood <= 3) return 'text-red-500';
@@ -56,9 +63,31 @@ export default function Journal() {
   const [filterTag, setFilterTag] = useState<string>('');
   const [filterTrigger, setFilterTrigger] = useState<boolean | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'mood-high' | 'mood-low'>('newest');
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+
+  const handleEditEntry = (entryId: string) => {
+    setEditingEntryId(entryId);
+    haptics.light();
+  };
+
+  const handleSaveEntry = (entryId: string, updates: Partial<JournalEntry>) => {
+    updateJournalEntry(entryId, updates);
+    setEditingEntryId(null);
+    haptics.success();
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    deleteJournalEntry(entryId);
+    if (editingEntryId === entryId) {
+      setEditingEntryId(null);
+    }
+    haptics.success();
+  };
 
   const getJournalEntries = useAppStore((state) => state.getJournalEntries);
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
+  const updateJournalEntry = useAppStore((state) => state.updateJournalEntry);
+  const deleteJournalEntry = useAppStore((state) => state.deleteJournalEntry);
   const settings = useAppStore((state) => state.settings);
   const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
@@ -291,7 +320,7 @@ export default function Journal() {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Sort:</span>
           </div>
-          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+          <Select value={sortBy} onValueChange={(value: "newest" | "oldest") => setSortBy(value)}>
             <SelectTrigger className="w-32" data-testid="select-sort">
               <SelectValue />
             </SelectTrigger>
@@ -354,40 +383,48 @@ export default function Journal() {
         </div>
       </header>
 
-      <section className="space-y-4" aria-label="Journal entries">
-        {filteredEntries.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              {searchQuery ? 'No entries found' : 'No journal entries yet'}
-            </p>
-            {!searchQuery && (
-              <Button 
-                variant="outline" 
-                onClick={() => setIsDialogOpen(true)}
-                data-testid="button-create-first"
-              >
-                Create your first entry
-              </Button>
-            )}
-          </div>
-        ) : (
-          filteredEntries.map((entry) => (
-            <JournalEntryCard
-              key={entry.id}
-              date={entry.date}
-              content={entry.content}
-              mood={entry.mood}
-              tags={entry.tags}
-              isTrigger={entry.isTrigger}
-              triggerType={entry.triggerType}
-              triggerIntensity={entry.triggerIntensity}
-              audioData={entry.audioData}
-              audioDuration={entry.audioDuration}
-              onClick={() => console.log('Edit entry:', entry.id)}
-            />
-          ))
-        )}
-      </section>
+      <PullToRefresh
+        onRefresh={async () => {
+          // Refresh journal entries
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }}
+      >
+        <section className="space-y-4" aria-label="Journal entries">
+          {filteredEntries.length === 0 ? (
+            <EmptyJournalState onCreate={() => setIsDialogOpen(true)} />
+          ) : (
+            filteredEntries.map((entry) => {
+              if (editingEntryId === entry.id) {
+                return (
+                  <JournalEntryEditor
+                    key={entry.id}
+                    entry={entry}
+                    onSave={(updates) => handleSaveEntry(entry.id, updates)}
+                    onCancel={() => setEditingEntryId(null)}
+                  />
+                );
+              }
+              return (
+                <JournalEntryCard
+                  key={entry.id}
+                  date={entry.date}
+                  content={entry.content}
+                  mood={entry.mood}
+                  tags={entry.tags}
+                  isTrigger={entry.isTrigger}
+                  triggerType={entry.triggerType}
+                  triggerIntensity={entry.triggerIntensity}
+                  audioData={entry.audioData}
+                  audioDuration={entry.audioDuration}
+                  onClick={() => handleEditEntry(entry.id)}
+                  onDelete={() => handleDeleteEntry(entry.id)}
+                  onEdit={() => handleEditEntry(entry.id)}
+                />
+              );
+            })
+          )}
+        </section>
+      </PullToRefresh>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">

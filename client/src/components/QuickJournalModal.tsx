@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mic, Keyboard } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { useIsMobile } from '@/hooks/use-mobile';
+import type {
+  SpeechRecognition,
+  SpeechRecognitionEvent,
+  SpeechRecognitionErrorEvent,
+  WindowWithSpeechRecognition,
+} from '@/lib/speech-recognition-types';
 
 const MOODS = [
   { emoji: '😊', label: 'Great', value: 8 },
@@ -31,8 +38,20 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
   const [mood, setMood] = useState<number | undefined>(undefined);
   const [inputMode, setInputMode] = useState<'type' | 'voice'>('type');
   const [isRecording, setIsRecording] = useState(false);
+  const isMobile = useIsMobile();
 
   const addJournalEntry = useAppStore((state) => state.addJournalEntry);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      setTimeout(() => {
+        setContent('');
+        setMood(undefined);
+        setInputMode('type');
+      }, 200);
+    }
+  }, [open]);
 
   const handleSave = () => {
     if (!content.trim()) return;
@@ -57,7 +76,13 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as WindowWithSpeechRecognition;
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Voice input not supported in this browser');
+      return;
+    }
+    
     const recognition = new SpeechRecognition();
 
     recognition.continuous = false;
@@ -68,15 +93,15 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
       setIsRecording(true);
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
       setContent((prev) => (prev ? `${prev} ${transcript}` : transcript));
       setIsRecording(false);
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setIsRecording(false);
-      alert('Speech recognition error. Please try again.');
+      alert(`Speech recognition error: ${event.error}. Please try again.`);
     };
 
     recognition.onend = () => {
@@ -86,17 +111,17 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
     recognition.start();
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Quick Journal Entry</DialogTitle>
-          <DialogDescription>
-            How are you feeling? Take a moment to check in.
-          </DialogDescription>
-        </DialogHeader>
+          return (
+            <Drawer open={open} onOpenChange={onOpenChange}>
+              <DrawerContent className="max-h-[90vh]" aria-labelledby="quick-journal-title" aria-describedby="quick-journal-description">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle id="quick-journal-title">Quick Journal Entry</DrawerTitle>
+                  <DrawerDescription id="quick-journal-description">
+                    How are you feeling? Take a moment to check in.
+                  </DrawerDescription>
+                </DrawerHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 px-4 overflow-y-auto flex-1">
           {/* Input Mode Toggle */}
           <div className="flex gap-2">
             <Button
@@ -134,7 +159,7 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="min-h-[120px] resize-none"
-              autoFocus
+              autoFocus={!isMobile}
             />
           </div>
 
@@ -162,7 +187,7 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
           </div>
         </div>
 
-        <DialogFooter>
+        <DrawerFooter className="gap-2">
           <Button
             type="button"
             variant="outline"
@@ -177,8 +202,8 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
           >
             Save ✓
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

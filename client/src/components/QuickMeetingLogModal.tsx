@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,18 @@ export default function QuickMeetingLogModal({ open, onOpenChange }: QuickMeetin
 
   const profile = useAppStore((state) => state.profile);
 
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      setTimeout(() => {
+        setName('');
+        setType('AA (Alcoholics Anonymous)');
+        setLocation('');
+        setNotes('');
+      }, 200);
+    }
+  }, [open]);
+
   const handleSave = () => {
     if (!name.trim() || !location.trim()) return;
 
@@ -50,27 +62,20 @@ export default function QuickMeetingLogModal({ open, onOpenChange }: QuickMeetin
     // For now, we're just closing the modal
     // In a full implementation, you'd call addMeeting() from the store
 
-    console.log('Meeting logged:', { name, type, location, notes });
-
-    // Reset form
-    setName('');
-    setType('AA (Alcoholics Anonymous)');
-    setLocation('');
-    setNotes('');
     onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Log a Meeting 📍</DialogTitle>
-          <DialogDescription>
-            Record your meeting attendance
-          </DialogDescription>
-        </DialogHeader>
+          return (
+            <Drawer open={open} onOpenChange={onOpenChange}>
+              <DrawerContent className="max-h-[90vh]" aria-labelledby="meeting-title" aria-describedby="meeting-description">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle id="meeting-title">Log a Meeting</DrawerTitle>
+                  <DrawerDescription id="meeting-description">
+                    Record your meeting attendance
+                  </DrawerDescription>
+                </DrawerHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 px-4 overflow-y-auto flex-1">
           {/* Meeting Name */}
           <div className="space-y-2">
             <Label htmlFor="meeting-name">Meeting Name</Label>
@@ -79,7 +84,7 @@ export default function QuickMeetingLogModal({ open, onOpenChange }: QuickMeetin
               placeholder="e.g., Morning Hope Group"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              autoFocus
+              autoFocus={open}
             />
           </div>
 
@@ -127,7 +132,7 @@ export default function QuickMeetingLogModal({ open, onOpenChange }: QuickMeetin
           </div>
         </div>
 
-        <DialogFooter>
+        <DrawerFooter className="gap-2">
           <Button
             type="button"
             variant="outline"
@@ -142,8 +147,8 @@ export default function QuickMeetingLogModal({ open, onOpenChange }: QuickMeetin
           >
             Save ✓
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

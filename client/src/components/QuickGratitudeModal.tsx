@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,15 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
   const [gratitudeItems, setGratitudeItems] = useState<string[]>(['', '', '']);
   const updateDailyCard = useAppStore((state) => state.updateDailyCard);
 
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      setTimeout(() => {
+        setGratitudeItems(['', '', '']);
+      }, 200);
+    }
+  }, [open]);
+
   const handleSave = () => {
     const validItems = gratitudeItems.filter((item) => item.trim());
 
@@ -33,8 +42,6 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
       gratitudeItems: validItems,
     });
 
-    // Reset form
-    setGratitudeItems(['', '', '']);
     onOpenChange(false);
   };
 
@@ -59,17 +66,17 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
 
   const hasValidItems = gratitudeItems.some((item) => item.trim());
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Gratitude Practice 🙏</DialogTitle>
-          <DialogDescription>
-            What are you grateful for today? List 1-3 things.
-          </DialogDescription>
-        </DialogHeader>
+          return (
+            <Drawer open={open} onOpenChange={onOpenChange}>
+              <DrawerContent className="max-h-[90vh]" aria-labelledby="gratitude-title" aria-describedby="gratitude-description">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle id="gratitude-title">Gratitude Practice</DrawerTitle>
+                  <DrawerDescription id="gratitude-description">
+                    What are you grateful for today? List 1-3 things.
+                  </DrawerDescription>
+                </DrawerHeader>
 
-        <div className="space-y-3 py-4 max-h-[400px] overflow-y-auto">
+        <div className="space-y-3 px-4 overflow-y-auto flex-1">
           {gratitudeItems.map((item, index) => (
             <div key={index} className="flex gap-2 items-start">
               <div className="flex-1 space-y-1">
@@ -87,7 +94,7 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
                   }
                   value={item}
                   onChange={(e) => handleItemChange(index, e.target.value)}
-                  autoFocus={index === 0}
+                  autoFocus={index === 0 && open}
                 />
               </div>
               {gratitudeItems.length > 1 && (
@@ -118,7 +125,7 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
           )}
         </div>
 
-        <DialogFooter>
+        <DrawerFooter className="gap-2">
           <Button
             type="button"
             variant="outline"
@@ -133,8 +140,8 @@ export default function QuickGratitudeModal({ open, onOpenChange }: QuickGratitu
           >
             Save ✓
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
