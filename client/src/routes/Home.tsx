@@ -1,40 +1,103 @@
-import { useMemo, useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useAppStore } from '@/store/useAppStore';
-import { getTodayDate, calculateSobriety } from '@/lib/time';
-import { loadAllSteps } from '@/lib/contentLoader';
-import { 
-  FileText, 
-  BookMarked, 
-  AlertCircle, 
-  BarChart3,
-  Calendar,
-  CheckCircle2,
-  ArrowRight,
-  Sun,
-  Moon
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useMemo, useState, useEffect, useCallback } from "react";
+import TodayPanel from "@/components/home-panels/TodayPanel";
+import PracticePanel from "@/components/home-panels/PracticePanel";
+import RoutinePanel from "@/components/home-panels/RoutinePanel";
+import ExplorePanel from "@/components/home-panels/ExplorePanel";
+import QuickJournalModal from "@/components/QuickJournalModal";
+import QuickGratitudeModal from "@/components/QuickGratitudeModal";
+import QuickMeetingLogModal from "@/components/QuickMeetingLogModal";
+import RelapseResetModal from "@/components/RelapseResetModal";
+import MilestoneCelebrationModal, {
+  type MilestoneData,
+} from "@/components/MilestoneCelebrationModal";
+import ChallengeCompletionModal from "@/components/ChallengeCompletionModal";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store/useAppStore";
+import { getTodayDate } from "@/lib/time";
+import { loadAllSteps } from "@/lib/contentLoader";
+import { checkSobrietyMilestone, checkStreakMilestone } from "@/lib/milestones";
+import { checkAchievements } from "@/lib/achievements";
+import {
+  getTodaysChallenge,
+  getThemeData,
+  isTodayChallengeCompleted,
+  getWeeklyCompletionCount,
+} from "@/lib/challenges";
+import type {
+  CelebratedMilestone,
+  UnlockedAchievement,
+  DailyChallenge,
+  ChallengeTheme,
+} from "@/types";
+
+const PANEL_NAMES = ["Today", "Practice", "Routine", "Explore"];
 
 export default function Home() {
-  const [, setLocation] = useLocation();
   const profile = useAppStore((state) => state.profile);
   const getDailyCard = useAppStore((state) => state.getDailyCard);
   const updateDailyCard = useAppStore((state) => state.updateDailyCard);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
+  const stepAnswersState = useAppStore((state) => state.stepAnswers);
+  const streaks = useAppStore((state) => state.streaks);
+  const checkAllStreaks = useAppStore((state) => state.checkAllStreaks);
+  const celebratedMilestones = useAppStore(
+    (state) => state.celebratedMilestones || {},
+  );
+  const celebrateMilestone = useAppStore((state) => state.celebrateMilestone);
+  const unlockAchievement = useAppStore((state) => state.unlockAchievement);
+  const completedChallenges = useAppStore(
+    (state) => state.completedChallenges || {},
+  );
+  const completeChallenge = useAppStore((state) => state.completeChallenge);
+  const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
+  const awardPoints = useAppStore((state) => state.awardPoints);
 
-  const [stepQuestionCounts, setStepQuestionCounts] = useState<Map<number, number>>(new Map());
+  const [stepQuestionCounts, setStepQuestionCounts] = useState<
+    Map<number, number>
+  >(new Map());
+  const [showQuickJournal, setShowQuickJournal] = useState(false);
+  const [showQuickGratitude, setShowQuickGratitude] = useState(false);
+  const [showQuickMeeting, setShowQuickMeeting] = useState(false);
+  const [showRelapseReset, setShowRelapseReset] = useState(false);
+  const [currentMilestone, setCurrentMilestone] =
+    useState<MilestoneData | null>(null);
+  const [todaysChallenge, setTodaysChallenge] = useState<DailyChallenge | null>(
+    null,
+  );
+  const [challengeTheme, setChallengeTheme] = useState<ChallengeTheme | null>(
+    null,
+  );
+  const [showChallengeCompletion, setShowChallengeCompletion] = useState(false);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentPanel, setCurrentPanel] = useState(0);
 
   const todayDate = useMemo(
-    () => getTodayDate(profile?.timezone || 'Australia/Melbourne'),
-    [profile?.timezone]
+    () => getTodayDate(profile?.timezone || "Australia/Melbourne"),
+    [profile?.timezone],
   );
   const dailyCard = getDailyCard(todayDate);
 
-  // Load step question counts
+  // Carousel API event listeners
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const handleSelect = () => {
+      setCurrentPanel(carouselApi.selectedScrollSnap());
+    };
+
+    carouselApi.on("select", handleSelect);
+    return () => {
+      carouselApi.off("select", handleSelect);
+    };
+  }, [carouselApi]);
+
+  // Load all step contents to get question counts
   useEffect(() => {
     loadAllSteps().then((allSteps) => {
       const counts = new Map<number, number>();
@@ -45,330 +108,336 @@ export default function Home() {
     });
   }, []);
 
-  // Calculate sobriety stats
-  const daysClean = useMemo(() => {
-    if (!profile?.cleanDate) return 0;
-    return calculateSobriety(profile.cleanDate).totalDays;
-  }, [profile?.cleanDate]);
+  // Load today's challenge
+  useEffect(() => {
+    getTodaysChallenge().then((challenge) => {
+      if (challenge) {
+        setTodaysChallenge(challenge);
+        getThemeData(challenge.theme).then((theme) => {
+          if (theme) setChallengeTheme(theme);
+        });
+      }
+    });
+  }, []);
 
-  const weeksClean = Math.floor(daysClean / 7);
-  const monthsClean = Math.floor(daysClean / 30);
-  const currentStreak = daysClean; // Streak is same as days clean for now
+  // Check and break stale streaks on mount
+  useEffect(() => {
+    checkAllStreaks();
+    trackAnalyticsEvent("app_opened");
+  }, [checkAllStreaks, trackAnalyticsEvent]);
 
-  // Calculate step progress (matching Steps.tsx logic)
-  const { completedSteps, currentStep } = useMemo(() => {
-    let completed = 0;
-    let firstIncomplete: number | null = null;
-    
-    for (let i = 1; i <= 12; i++) {
-      const answers = getStepAnswers(i);
-      const totalQuestions = stepQuestionCounts.get(i) || 0;
-      const answeredCount = answers.filter(a => a.answer.trim().length > 0).length;
-      const isComplete = totalQuestions > 0 && answeredCount === totalQuestions;
-      
-      if (isComplete) {
-        completed++;
-      } else if (firstIncomplete === null) {
-        firstIncomplete = i;
+  // Check for milestone celebrations
+  useEffect(() => {
+    if (!profile?.cleanDate) return;
+
+    const sobrietyMilestone = checkSobrietyMilestone(
+      profile.cleanDate,
+      celebratedMilestones,
+    );
+    if (sobrietyMilestone) {
+      setCurrentMilestone(sobrietyMilestone);
+      return;
+    }
+
+    const streakTypes: Array<
+      "journaling" | "dailyCards" | "meetings" | "stepWork"
+    > = ["journaling", "dailyCards", "meetings", "stepWork"];
+
+    for (const streakType of streakTypes) {
+      const streak = streaks[streakType];
+      const streakMilestone = checkStreakMilestone(
+        streak.current,
+        streakType,
+        celebratedMilestones,
+      );
+      if (streakMilestone) {
+        setCurrentMilestone(streakMilestone);
+        return;
       }
     }
-    
-    // Current step is the first incomplete one, or 12 if all complete
-    const current = firstIncomplete !== null ? firstIncomplete : 12;
-    
-    return { completedSteps: completed, currentStep: current };
-  }, [getStepAnswers, stepQuestionCounts]);
+  }, [profile?.cleanDate, celebratedMilestones, streaks]);
 
-  // Check-in completion
-  const morningComplete = dailyCard?.morningIntent && dailyCard.morningIntent.trim().length > 0;
-  const eveningComplete = dailyCard?.eveningReflection && dailyCard.eveningReflection.trim().length > 0;
-  const checkInCount = (morningComplete ? 1 : 0) + (eveningComplete ? 1 : 0);
+  const handleMilestoneCelebrated = () => {
+    if (currentMilestone) {
+      const celebratedMilestoneData: CelebratedMilestone = {
+        id: currentMilestone.id,
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+        celebratedAtISO: new Date().toISOString(),
+      };
+      celebrateMilestone(celebratedMilestoneData);
+      trackAnalyticsEvent("milestone_celebrated", {
+        type: currentMilestone.type,
+        milestone: currentMilestone.milestone,
+      });
+      setCurrentMilestone(null);
+    }
+  };
 
-  const shortcuts = [
-    {
-      title: 'Step Work',
-      description: `Continue Step ${currentStep}`,
-      icon: FileText,
-      path: '/steps',
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-    },
-    {
-      title: 'Journal',
-      description: 'Capture what actually happened today',
-      icon: BookMarked,
-      path: '/journal',
-      color: 'text-green-400',
-      bgColor: 'bg-green-400/10',
-    },
-    {
-      title: 'Emergency',
-      description: 'Open your support plan instantly',
-      icon: AlertCircle,
-      path: '/emergency',
-      color: 'text-red-400',
-      bgColor: 'bg-red-400/10',
-    },
-    {
-      title: 'Insights',
-      description: 'Patterns, triggers, and progress view',
-      icon: BarChart3,
-      path: '/insights',
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-400/10',
-    },
-  ];
+  // Check for newly unlocked achievements
+  useEffect(() => {
+    checkAchievements(useAppStore.getState()).then((newAchievements) => {
+      newAchievements.forEach((achievement) => {
+        const unlockedAchievement: UnlockedAchievement = {
+          id: `unlock_${achievement.id}_${Date.now()}`,
+          achievementId: achievement.id,
+          unlockedAtISO: new Date().toISOString(),
+        };
+        unlockAchievement(unlockedAchievement);
+        trackAnalyticsEvent("achievement_unlocked", {
+          achievementCategory: achievement.category,
+          rarity: achievement.rarity,
+        });
+
+        if (achievement.recoveryPoints) {
+          awardPoints({
+            amount: achievement.recoveryPoints.amount,
+            reason: `Achievement unlocked: ${achievement.title}`,
+            source: "achievement",
+            relatedId: achievement.id,
+            metadata: {
+              behavior: achievement.recoveryPoints.behavior,
+              trigger: achievement.recoveryPoints.trigger,
+            },
+          });
+        }
+
+        if (!currentMilestone) {
+          setCurrentMilestone({
+            id: achievement.id,
+            type: "achievement",
+            milestone: achievement.id,
+            title: achievement.title,
+            message: achievement.description,
+          });
+        }
+      });
+    });
+  }, [streaks, profile?.cleanDate, stepAnswersState]);
+
+  const stepProgress = useMemo(() => {
+    const totalSteps = 12;
+    let currentStep = 1;
+    let currentStepAnswers = 0;
+    let currentStepTotalQuestions = 0;
+
+    for (let step = 1; step <= totalSteps; step++) {
+      const answers = getStepAnswers(step);
+      const totalQuestions = stepQuestionCounts.get(step) || 0;
+      const completedAnswers = answers.filter((a) => a.answer.trim()).length;
+
+      if (completedAnswers < totalQuestions) {
+        currentStep = step;
+        currentStepAnswers = completedAnswers;
+        currentStepTotalQuestions = totalQuestions;
+        break;
+      }
+
+      currentStep = step + 1;
+      currentStepAnswers = 0;
+      currentStepTotalQuestions = stepQuestionCounts.get(step + 1) || 0;
+    }
+
+    if (currentStep > totalSteps) {
+      currentStep = totalSteps;
+      const lastStepTotal = stepQuestionCounts.get(totalSteps) || 0;
+      currentStepAnswers = lastStepTotal;
+      currentStepTotalQuestions = lastStepTotal;
+    }
+
+    return {
+      currentStep,
+      answeredQuestions: currentStepAnswers,
+      totalQuestions: currentStepTotalQuestions,
+    };
+  }, [getStepAnswers, stepQuestionCounts, stepAnswersState]);
+
+  const handleMorningChange = useCallback((value: string) => {
+    updateDailyCard(todayDate, { morningIntent: value });
+  }, [todayDate, updateDailyCard]);
+
+  const handleMorningComplete = useCallback(() => {
+    updateDailyCard(todayDate, {
+      morningCompleted: !dailyCard?.morningCompleted,
+    });
+  }, [todayDate, dailyCard?.morningCompleted, updateDailyCard]);
+
+  const handleEveningChange = useCallback((value: string) => {
+    updateDailyCard(todayDate, { eveningReflection: value });
+  }, [todayDate, updateDailyCard]);
+
+  const handleEveningComplete = useCallback(() => {
+    updateDailyCard(todayDate, {
+      eveningCompleted: !dailyCard?.eveningCompleted,
+    });
+  }, [todayDate, dailyCard?.eveningCompleted, updateDailyCard]);
+
+  const handleGratitudeChange = useCallback((items: string[]) => {
+    updateDailyCard(todayDate, { gratitudeItems: items });
+  }, [todayDate, updateDailyCard]);
+
+  const handleQuickNotesChange = useCallback((value: string) => {
+    updateDailyCard(todayDate, { quickNotes: value });
+  }, [todayDate, updateDailyCard]);
+
+  const isChallengeCompleted = isTodayChallengeCompleted(completedChallenges);
+  const weeklyCount = getWeeklyCompletionCount(completedChallenges);
+
+  const handleChallengeComplete = () => {
+    setShowChallengeCompletion(true);
+  };
+
+  const handleChallengeCompletionSave = (notes?: string) => {
+    if (todaysChallenge) {
+      completeChallenge(todaysChallenge.id, notes);
+      trackAnalyticsEvent("daily_challenge_completed", {
+        theme: todaysChallenge.theme,
+      });
+    }
+  };
+
+  const totalActiveStreaks = Object.values(streaks).filter(s => s.current > 0).length;
+  const highestStreak = Math.max(...Object.values(streaks).map(s => s.current));
 
   return (
-    <div className="pb-24 min-h-screen">
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* Hero Section - Welcome & Sobriety Counter */}
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-2xl font-semibold mb-1">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">
-              This space keeps the next right moves visible, not overwhelming.
-            </p>
-          </div>
+    <div className="h-screen flex flex-col pb-8 sm:pb-12">
+      {/* Skip to main content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"
+      >
+        Skip to main content
+      </a>
 
-          {/* Large Circular Sobriety Counter */}
-          <Card className="p-8">
-            <div className="flex flex-col items-center text-center space-y-6">
-              <div className="flex items-center justify-between w-full max-w-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Clean time
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-green-400">
-                    Streak intact
-                  </span>
-                </div>
-              </div>
-
-              {/* Large Circular Progress */}
-              <div className="relative" style={{ width: 200, height: 200 }}>
-                <svg
-                  width={200}
-                  height={200}
-                  className="transform -rotate-90 drop-shadow-lg"
-                >
-                  {/* Background circle */}
-                  <circle
-                    cx={100}
-                    cy={100}
-                    r={88}
-                    fill="none"
-                    stroke="hsl(var(--muted))"
-                    strokeWidth={12}
-                    opacity={0.2}
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx={100}
-                    cy={100}
-                    r={88}
-                    fill="none"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={12}
-                    strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 88}
-                    strokeDashoffset={2 * Math.PI * 88 * (1 - Math.min(1, daysClean / 365))}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-5xl font-bold tracking-tight">{daysClean}</div>
-                  <div className="text-sm uppercase tracking-wider text-muted-foreground mt-1">
-                    Days clean
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-xs text-muted-foreground max-w-sm">
-                Continuous, from your last reset.
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4 text-center">
-            <div className="text-3xl font-bold">{weeksClean}</div>
-            <div className="text-xs text-muted-foreground mt-1">Weeks</div>
-          </Card>
-          <Card className="p-4 text-center">
-            <div className="text-3xl font-bold">{monthsClean}</div>
-            <div className="text-xs text-muted-foreground mt-1">Months est.</div>
-          </Card>
-          <Card className="p-4 text-center">
-            <div className="text-3xl font-bold">{currentStreak}</div>
-            <div className="text-xs text-muted-foreground mt-1">Day streak</div>
-          </Card>
-        </div>
-
-        {/* Progress Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="p-4">
-            <div className="flex items-start gap-2 mb-1">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
-                <ArrowRight className="h-4 w-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  Current step
-                </div>
-                <div className="text-2xl font-bold">{currentStep}/12</div>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Tap from nav to pick up where you stopped.
-            </p>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-start gap-2 mb-1">
-              <div className="p-1.5 bg-green-400/10 rounded-lg">
-                <CheckCircle2 className="h-4 w-4" style={{ color: 'hsl(155 70% 50%)' }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  Steps done
-                </div>
-                <div className="text-2xl font-bold">{completedSteps}</div>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Marked complete with your sponsor.
-            </p>
-          </Card>
-        </div>
-
-        {/* Today Shortcuts */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Today shortcuts</h2>
-            <span className="text-xs text-muted-foreground">Curated from your routine</span>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {shortcuts.map((shortcut) => (
-              <Card
-                key={shortcut.path}
-                className="p-4 cursor-pointer hover-elevate active-elevate-2"
-                onClick={() => setLocation(shortcut.path)}
-                data-testid={`shortcut-${shortcut.title.toLowerCase().replace(' ', '-')}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={cn('p-2 rounded-lg', shortcut.bgColor)}>
-                    <shortcut.icon className={cn('h-5 w-5', shortcut.color)} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm mb-0.5">{shortcut.title}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-2">
-                      {shortcut.description}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Today Check-in */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Today check-in</h2>
-            <Badge variant={checkInCount === 2 ? 'default' : 'secondary'}>
-              {checkInCount}/2 done
-            </Badge>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Morning Intention */}
-            <Card
+      {/* Panel indicator */}
+      <div className="flex items-center justify-center gap-2 py-4 px-6">
+        <div className="flex items-center gap-1.5" role="tablist" aria-label="Home panels">
+          {PANEL_NAMES.map((name, index) => (
+            <button
+              key={index}
+              role="tab"
+              aria-selected={currentPanel === index}
+              aria-label={`${name} panel`}
+              onClick={() => carouselApi?.scrollTo(index)}
               className={cn(
-                'p-4 cursor-pointer hover-elevate active-elevate-2',
-                morningComplete && 'border-green-400/50'
+                "h-1.5 rounded-full transition-all duration-300",
+                currentPanel === index
+                  ? "w-6 bg-primary"
+                  : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
-              onClick={() => {
-                const intent = prompt('Choose one clear intention for today:');
-                if (intent) {
-                  updateDailyCard(todayDate, { morningIntent: intent });
-                }
-              }}
-              data-testid="card-morning-intention"
-            >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  'p-2 rounded-lg',
-                  morningComplete ? 'bg-green-400/10' : 'bg-yellow-400/10'
-                )}>
-                  <Sun className={cn(
-                    'h-5 w-5',
-                    morningComplete ? 'text-green-400' : 'text-yellow-400'
-                  )} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm mb-0.5 flex items-center justify-between">
-                    Morning intention
-                    {morningComplete && (
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {morningComplete
-                      ? dailyCard.morningIntent
-                      : 'Choose one clear intention for today.'}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Evening Reflection */}
-            <Card
-              className={cn(
-                'p-4 cursor-pointer hover-elevate active-elevate-2',
-                eveningComplete && 'border-purple-400/50'
-              )}
-              onClick={() => {
-                const reflection = prompt('Scan the day without judgement:');
-                if (reflection) {
-                  updateDailyCard(todayDate, { eveningReflection: reflection });
-                }
-              }}
-              data-testid="card-evening-reflection"
-            >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  'p-2 rounded-lg',
-                  eveningComplete ? 'bg-purple-400/10' : 'bg-blue-400/10'
-                )}>
-                  <Moon className={cn(
-                    'h-5 w-5',
-                    eveningComplete ? 'text-purple-400' : 'text-blue-400'
-                  )} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm mb-0.5 flex items-center justify-between">
-                    Evening reflection
-                    {eveningComplete && (
-                      <CheckCircle2 className="h-4 w-4 text-purple-400" />
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {eveningComplete
-                      ? dailyCard.eveningReflection
-                      : 'Scan the day without judgement.'}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
+              data-testid={`panel-indicator-${index}`}
+            />
+          ))}
         </div>
       </div>
+
+      {/* Panel name */}
+      <div className="text-center pb-4">
+        <h1 className="text-sm font-medium text-muted-foreground">
+          {PANEL_NAMES[currentPanel]}
+        </h1>
+      </div>
+
+      {/* Carousel */}
+      <main 
+        id="main-content" 
+        role="main" 
+        className="flex-1 overflow-hidden"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <Carousel
+          setApi={setCarouselApi}
+          className="h-full"
+          opts={{
+            align: "start",
+            loop: false,
+            skipSnaps: false,
+            duration: 30,
+          }}
+        >
+          <CarouselContent className="h-full">
+            <CarouselItem className="h-full">
+              <div className="h-full overflow-y-auto pb-8 pt-2">
+                <TodayPanel
+                  profile={profile}
+                  totalActiveStreaks={totalActiveStreaks}
+                  highestStreak={highestStreak}
+                  currentStep={stepProgress.currentStep}
+                  todaysChallenge={todaysChallenge}
+                  challengeTheme={challengeTheme}
+                  isChallengeCompleted={isChallengeCompleted}
+                  weeklyCount={weeklyCount}
+                  onChallengeComplete={handleChallengeComplete}
+                />
+              </div>
+            </CarouselItem>
+
+            <CarouselItem className="h-full">
+              <div className="h-full overflow-y-auto pb-8 pt-2">
+                <PracticePanel
+                  streaks={streaks}
+                  onQuickJournal={() => setShowQuickJournal(true)}
+                  onQuickGratitude={() => setShowQuickGratitude(true)}
+                  onQuickMeeting={() => setShowQuickMeeting(true)}
+                  onRelapseReset={() => setShowRelapseReset(true)}
+                />
+              </div>
+            </CarouselItem>
+
+            <CarouselItem className="h-full">
+              <div className="h-full overflow-y-auto pb-8 pt-2">
+                <RoutinePanel
+                  dailyCard={dailyCard || null}
+                  stepProgress={stepProgress}
+                  onMorningChange={handleMorningChange}
+                  onMorningComplete={handleMorningComplete}
+                  onEveningChange={handleEveningChange}
+                  onEveningComplete={handleEveningComplete}
+                  onGratitudeChange={handleGratitudeChange}
+                  onQuickNotesChange={handleQuickNotesChange}
+                />
+              </div>
+            </CarouselItem>
+
+            <CarouselItem className="h-full">
+              <div className="h-full overflow-y-auto pb-8 pt-2">
+                <ExplorePanel />
+              </div>
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+      </main>
+
+      {/* Modals - Globally mounted */}
+      <QuickJournalModal
+        open={showQuickJournal}
+        onOpenChange={setShowQuickJournal}
+      />
+      <QuickGratitudeModal
+        open={showQuickGratitude}
+        onOpenChange={setShowQuickGratitude}
+      />
+      <QuickMeetingLogModal
+        open={showQuickMeeting}
+        onOpenChange={setShowQuickMeeting}
+      />
+      <RelapseResetModal
+        open={showRelapseReset}
+        onOpenChange={setShowRelapseReset}
+      />
+      <MilestoneCelebrationModal
+        open={!!currentMilestone}
+        onOpenChange={(open) => {
+          if (!open) handleMilestoneCelebrated();
+        }}
+        milestone={currentMilestone}
+      />
+      <ChallengeCompletionModal
+        open={showChallengeCompletion}
+        onOpenChange={setShowChallengeCompletion}
+        onSave={handleChallengeCompletionSave}
+      />
     </div>
   );
 }

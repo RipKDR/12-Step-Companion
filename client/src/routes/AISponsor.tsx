@@ -76,8 +76,6 @@ export default function AISponsor() {
   const clearChat = useAppStore((state) => state.clearAISponsorChat);
   const isTyping = useAppStore((state) => state.aiSponsorChat?.isTyping || false);
   const setTyping = useAppStore((state) => state.setAISponsorTyping);
-  const chatMode = useAppStore((state) => state.aiSponsorChat?.chatMode || 'standard');
-  const setChatMode = useAppStore((state) => state.setAISponsorChatMode);
   const trackEvent = useAppStore((state) => state.trackAnalyticsEvent);
 
   const messages = useMemo<AISponsorMessage[]>(() => {
@@ -155,7 +153,6 @@ export default function AISponsor() {
         message,
         conversationHistory: messages.slice(-MAX_CONVERSATION_HISTORY),
         userContext,
-        chatMode,
       }),
     });
 
@@ -165,8 +162,8 @@ export default function AISponsor() {
     }
 
     const data = await response.json();
-    return { response: data.response, sources: data.sources };
-  }, [messages, userContext, chatMode]);
+    return data.response;
+  }, [messages, userContext]);
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
@@ -199,12 +196,11 @@ export default function AISponsor() {
     }
 
     try {
-      const { response: responseText, sources } = await sendToAI(trimmedInput);
+      const responseText = await sendToAI(trimmedInput);
 
       addMessage({
         role: 'assistant',
         content: responseText,
-        sources,
       });
     } catch (error) {
       console.error('Error sending message:', error);
@@ -275,12 +271,11 @@ export default function AISponsor() {
     setTyping(true);
 
     try {
-      const { response: responseText, sources } = await sendToAI(lastUserMessage.content);
+      const responseText = await sendToAI(lastUserMessage.content);
 
       addMessage({
         role: 'assistant',
         content: responseText,
-        sources,
       });
 
       toast({
@@ -463,35 +458,11 @@ export default function AISponsor() {
                   {message.content}
                 </div>
               ) : (
-                <>
-                  <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-1 prose-pre:bg-muted prose-pre:text-foreground prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-primary">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                  
-                  {/* Sources (Research mode) */}
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-border">
-                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">Sources:</h4>
-                      <ul className="space-y-1.5">
-                        {message.sources.map((source: any, index: number) => (
-                          <li key={index} className="text-xs">
-                            <a
-                              href={source.uri}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center gap-1"
-                            >
-                              <FileText className="h-3 w-3" />
-                              {source.title || source.uri}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-1 prose-pre:bg-muted prose-pre:text-foreground prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-primary">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
               )}
 
               {/* Actions (AI messages only) */}
@@ -588,46 +559,13 @@ export default function AISponsor() {
       <div className="flex flex-col h-screen">
         {/* Header */}
         <div className="border-b px-4 py-3 flex items-center justify-between bg-background">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm bg-primary/10 flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-semibold">AI Sponsor</h1>
-                <p className="text-xs text-muted-foreground">Personal recovery companion</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-sm bg-primary/10 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-primary" />
             </div>
-
-            {/* Mode Selection */}
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
-              <Button
-                variant={chatMode === 'standard' ? 'default' : 'ghost'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setChatMode('standard')}
-                data-testid="button-mode-standard"
-              >
-                Standard
-              </Button>
-              <Button
-                variant={chatMode === 'deep' ? 'default' : 'ghost'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setChatMode('deep')}
-                data-testid="button-mode-deep"
-              >
-                Deep
-              </Button>
-              <Button
-                variant={chatMode === 'research' ? 'default' : 'ghost'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setChatMode('research')}
-                data-testid="button-mode-research"
-              >
-                Research
-              </Button>
+            <div>
+              <h1 className="font-semibold">AI Sponsor</h1>
+              <p className="text-xs text-muted-foreground">Personal recovery companion</p>
             </div>
           </div>
 

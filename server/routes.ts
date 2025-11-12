@@ -81,10 +81,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected routes should use isAuthenticated middleware
   // Example: app.get("/api/protected", isAuthenticated, async (req, res) => { ... });
 
-  // AI Sponsor Chat endpoint with mode support
+  // AI Sponsor Chat endpoint
   app.post('/api/ai-sponsor/chat', isAuthenticated, async (req: any, res) => {
     try {
-      const { message, conversationHistory, userContext, chatMode = 'standard' } = req.body;
+      const { message, conversationHistory, userContext } = req.body;
 
       // Validate message
       if (!message || typeof message !== 'string') {
@@ -120,10 +120,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Initialize or reuse cached AI client (using newer @google/genai SDK)
+      // Initialize or reuse cached AI client
       if (!cachedGenAI) {
-        const { GoogleGenAI } = await import('@google/genai');
-        cachedGenAI = new GoogleGenAI({ apiKey });
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        cachedGenAI = new GoogleGenerativeAI(apiKey);
       }
 
       // Build personalized context section with sanitization
@@ -268,8 +268,14 @@ ${personalContext}
 
 Remember: You're their AI sponsor. You know their journey. Reference it. Build on it. Help them grow.`;
 
-      // Format conversation history for new SDK
-      const formattedHistory = (conversationHistory && Array.isArray(conversationHistory)
+      // Initialize model with personalized system instruction
+      const model = cachedGenAI.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        systemInstruction
+      });
+
+      // Format and validate conversation history
+      const history = (conversationHistory && Array.isArray(conversationHistory)
         ? conversationHistory.slice(-10).map((msg: any) => ({
             role: msg.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: sanitizeText(msg.content || '', MAX_MESSAGE_LENGTH) }]
@@ -277,45 +283,20 @@ Remember: You're their AI sponsor. You know their journey. Reference it. Build o
         : []
       );
 
-      // Add current message to contents
-      const contents = [
-        ...formattedHistory,
-        { role: 'user', parts: [{ text: sanitizeText(message, MAX_MESSAGE_LENGTH) }] }
-      ];
-
-      // Build config based on chat mode
-      let modeHint = '';
-      let config: any = {
-        systemInstruction,
-      };
-
-      if (chatMode === 'deep') {
-        modeHint = "\n\n--- CURRENT MODE ---\nYou are in deep reflection mode. Guide the user with thoughtful, open-ended questions related to Twelve-Step principles, self-examination, and honesty. This is a space for in-depth work.";
-        config.systemInstruction = systemInstruction + modeHint;
-        config.thinkingConfig = { thinkingBudget: 32768 };
-      } else if (chatMode === 'research') {
-        modeHint = "\n\n--- CURRENT MODE ---\nYou are in research mode. Leverage Google Search to provide concise, well-sourced information on recovery-related concepts, literature, or history. Always cite your web sources clearly.";
-        config.systemInstruction = systemInstruction + modeHint;
-        config.tools = [{ googleSearch: {} }];
-      }
-
-      // Call new SDK API with mode-specific configuration
-      const response = await cachedGenAI.models.generateContent({
-        model: 'gemini-2.5-pro',
-        contents,
-        config,
+      // Start chat with history
+      const chat = model.startChat({
+        history,
+        generationConfig: {
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          temperature: AI_TEMPERATURE,
+        },
       });
 
-      // Extract response text and sources (for research mode)
-      const responseText = response.text;
-      const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-        ?.map((c: any) => c.web)
-        .filter((web: any) => web && web.uri);
+      // Send message and get response
+      const result = await chat.sendMessage(sanitizeText(message, MAX_MESSAGE_LENGTH));
+      const responseText = result.response.text();
 
-      res.json({ 
-        response: responseText,
-        sources: sources || undefined
-      });
+      res.json({ response: responseText });
     } catch (error: any) {
       console.error('Error in AI sponsor chat:', error);
 

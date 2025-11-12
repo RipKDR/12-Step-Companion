@@ -364,23 +364,17 @@ export interface ChallengeCompletion {
   notes?: string;
 }
 
-export type ChatMode = 'standard' | 'deep' | 'research';
-
 export interface AISponsorMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: string; // ISO 8601
-  sources?: { uri: string; title: string }[];
-  error?: string;
 }
 
 export interface AISponsorChatState {
   messages: Record<string, AISponsorMessage>; // id -> message
   isTyping: boolean;
   lastMessageTimestamp?: string;
-  chatMode: ChatMode;
-  isRecording: boolean;
 }
 
 export type AnalyticsEventType =

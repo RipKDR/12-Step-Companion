@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, FileText, BookMarked, BarChart3, AlertCircle, ChevronUp } from 'lucide-react';
+import { Home, BookOpen, BookMarked, MoreHorizontal, ChevronUp } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home', testId: 'nav-home' },
-  { path: '/steps', icon: FileText, label: 'Step work', testId: 'nav-steps' },
+  { path: '/steps', icon: BookOpen, label: 'Steps', testId: 'nav-steps' },
   { path: '/journal', icon: BookMarked, label: 'Journal', testId: 'nav-journal' },
-  { path: '/insights', icon: BarChart3, label: 'Insights', testId: 'nav-insights' },
-  { path: '/emergency', icon: AlertCircle, label: 'Emergency', testId: 'nav-emergency' },
+  { path: '/more', icon: MoreHorizontal, label: 'More', testId: 'nav-more' },
 ];
 
 export default function BottomNav() {
@@ -39,10 +38,7 @@ export default function BottomNav() {
     
     const windowHeight = window.innerHeight;
     const isBottomZone = startY > windowHeight - bottomGestureZoneHeight;
-    
-    // Allow swipe from bottom zone, or from nav when it's visible
-    const touchingNav = navRef.current?.contains(e.target as Node) ?? false;
-    isSwipeFromBottomRef.current = isBottomZone || (isVisible && touchingNav);
+    isSwipeFromBottomRef.current = isBottomZone;
   };
 
   const onTouchMove = (e: TouchEvent) => {

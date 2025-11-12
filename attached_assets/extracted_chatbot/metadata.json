@@ -1,7 +1,0 @@
-{
-  "name": "AI Sponsor Chat",
-  "description": "A trauma-informed, recovery-aligned AI sponsor chatbot providing support for individuals in Twelve-Step recovery programs.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}

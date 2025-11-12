@@ -25,8 +25,7 @@ import type {
   RecoveryPointSummary,
   RecoveryPointSource,
   AISponsorMessage,
-  AISponsorChatState,
-  ChatMode
+  AISponsorChatState
 } from '@/types';
 import { storageManager } from '@/lib/storage';
 import { migrateState, CURRENT_VERSION } from './migrations';
@@ -133,8 +132,6 @@ const initialState: AppState = {
   aiSponsorChat: {
     messages: {},
     isTyping: false,
-    chatMode: 'standard',
-    isRecording: false,
   },
 };
 
@@ -229,8 +226,6 @@ interface AppStore extends AppState {
   getAISponsorMessages: () => AISponsorMessage[];
   setAISponsorTyping: (isTyping: boolean) => void;
   clearAISponsorChat: () => void;
-  setAISponsorChatMode: (mode: ChatMode) => void;
-  setAISponsorRecording: (isRecording: boolean) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -935,8 +930,6 @@ export const useAppStore = create<AppStore>()(
               },
             },
             isTyping: state.aiSponsorChat?.isTyping || false,
-            chatMode: state.aiSponsorChat?.chatMode || 'standard',
-            isRecording: state.aiSponsorChat?.isRecording || false,
             lastMessageTimestamp: timestamp,
           },
         }));
@@ -962,8 +955,6 @@ export const useAppStore = create<AppStore>()(
         aiSponsorChat: {
           ...state.aiSponsorChat,
           messages: state.aiSponsorChat?.messages || {},
-          chatMode: state.aiSponsorChat?.chatMode || 'standard',
-          isRecording: state.aiSponsorChat?.isRecording || false,
           isTyping,
         },
       })),
@@ -972,30 +963,8 @@ export const useAppStore = create<AppStore>()(
         aiSponsorChat: {
           messages: {},
           isTyping: false,
-          chatMode: 'standard',
-          isRecording: false,
         },
       }),
-
-      setAISponsorChatMode: (mode) => set((state) => ({
-        aiSponsorChat: {
-          ...state.aiSponsorChat,
-          messages: state.aiSponsorChat?.messages || {},
-          isTyping: state.aiSponsorChat?.isTyping || false,
-          isRecording: state.aiSponsorChat?.isRecording || false,
-          chatMode: mode,
-        },
-      })),
-
-      setAISponsorRecording: (isRecording) => set((state) => ({
-        aiSponsorChat: {
-          ...state.aiSponsorChat,
-          messages: state.aiSponsorChat?.messages || {},
-          isTyping: state.aiSponsorChat?.isTyping || false,
-          chatMode: state.aiSponsorChat?.chatMode || 'standard',
-          isRecording,
-        },
-      })),
     }),
     {
       name: 'recovery-companion-storage',
