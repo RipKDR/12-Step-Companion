@@ -1,11 +1,11 @@
 # Dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
 
 # Build outputs
-dist
-build
+dist/
+build/
 *.tsbuildinfo
 
 # Environment variables
@@ -14,17 +14,6 @@ build
 .env.development.local
 .env.test.local
 .env.production.local
-
-# IDE
-.vscode
-.idea
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
 logs
@@ -35,11 +24,124 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Testing
-coverage
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
 .nyc_output
 
-# Misc
-*.tar.gz
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
 .cache
-.temp
+.parcel-cache
+
+# Next.js (if used)
+.next/
+out/
+
+# Nuxt.js (if used)
+.nuxt
+
+# Vite
+.vite/
+
+# Rollup
+.rollup.cache/
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# IDE - VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# OS - Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# OS - Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# PWA files
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map

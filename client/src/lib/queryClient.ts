@@ -29,10 +29,21 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    const res = await fetch(url, {
       credentials: "include",
     });
 
+    // Special handling for auth endpoint - always return null on any error
+    // This allows app to work without authentication
+    if (url.includes("/api/auth/user")) {
+      if (!res.ok) {
+        return null;
+      }
+      return await res.json();
+    }
+
+    // For other endpoints, handle 401 based on behavior setting
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }

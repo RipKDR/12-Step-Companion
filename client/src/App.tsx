@@ -10,6 +10,7 @@ import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
 import { registerServiceWorker, skipWaiting } from "@/lib/pwa";
 import { useAuth } from "@/hooks/useAuth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Routes
 import Home from "@/routes/Home";
@@ -30,10 +31,12 @@ import Landing from "@/routes/Landing";
 import AISponsor from "@/routes/AISponsor";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const onboardingComplete = useAppStore((state) => state.onboardingComplete);
 
-  if (isLoading || !isAuthenticated) {
+  // Show landing page only while checking auth (brief loading state)
+  // In standalone mode, this will be very brief since auth always succeeds
+  if (isLoading) {
     return (
       <Switch>
         <Route path="/" component={Landing} />
@@ -42,6 +45,7 @@ function Router() {
     );
   }
 
+  // Show onboarding if not completed
   if (!onboardingComplete) {
     return (
       <Switch>
@@ -100,14 +104,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
-        {updateAvailable && (
-          <UpdateNotification
-            onUpdate={handleUpdate}
-            onDismiss={handleDismiss}
-          />
-        )}
+        <ErrorBoundary>
+          <Toaster />
+          <Router />
+          {updateAvailable && (
+            <UpdateNotification
+              onUpdate={handleUpdate}
+              onDismiss={handleDismiss}
+            />
+          )}
+        </ErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
   );

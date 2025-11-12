@@ -1,11 +1,21 @@
-// Landing page for logged-out users
+// Landing page - standalone mode (no auth required)
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, BookOpen, FileText, Phone } from "lucide-react";
+import { useAppStore } from "@/store/useAppStore";
 
 export default function Landing() {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const [, setLocation] = useLocation();
+  const onboardingComplete = useAppStore((state) => state.onboardingComplete);
+
+  const handleGetStarted = () => {
+    // Navigate directly to onboarding or home based on completion status
+    if (onboardingComplete) {
+      setLocation("/");
+    } else {
+      setLocation("/onboarding");
+    }
   };
 
   return (
@@ -71,13 +81,13 @@ export default function Landing() {
         <div className="flex flex-col items-center space-y-4">
           <Button 
             size="lg" 
-            onClick={handleLogin}
+            onClick={handleGetStarted}
             data-testid="button-login"
           >
             Get Started
           </Button>
           <p className="text-sm text-muted-foreground">
-            Sign in to start your wellness journey
+            Start your wellness journey
           </p>
         </div>
       </div>

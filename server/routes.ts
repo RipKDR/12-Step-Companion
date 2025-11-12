@@ -1,4 +1,4 @@
-// API Routes - Optional authentication support
+// API Routes - Standalone mode (no authentication required)
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -62,23 +62,13 @@ function validateUserContext(userContext: any): { valid: boolean; error?: string
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication middleware
+  // Setup authentication middleware (no-op in standalone mode)
   await setupAuth(app);
 
-  // Auth endpoint - returns the current logged-in user (or null if auth disabled)
+  // Auth endpoint - always returns null (no auth in standalone mode)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      // If auth is disabled, return null (local development mode)
-      if (!process.env.REPL_ID || !req.isAuthenticated || !req.user) {
-        return res.json(null);
-      }
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+    // Always return null - app works without authentication
+    return res.json(null);
   });
 
   // Add other application routes here

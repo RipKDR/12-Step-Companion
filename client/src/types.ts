@@ -424,6 +424,17 @@ export interface AnalyticsMetrics {
   lastActivityDate: string;
 }
 
+export interface ResetPlan {
+  id: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+  checkInActions: string[];
+  groundingActions: string[];
+  growthCommitments: string[];
+  implementationIntentionTemplate: string;
+  selfCompassionReminder: string;
+}
+
 export interface AppState {
   version: number;
   profile?: Profile;

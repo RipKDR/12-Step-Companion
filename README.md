@@ -24,9 +24,15 @@ A privacy-first Progressive Web Application (PWA) designed to support individual
 
 ## Prerequisites
 
-- Node.js 20+ and npm
+- **Node.js 20+** and npm (check with `node --version` and `npm --version`)
 - PostgreSQL database (optional, for cloud sync/auth)
 - Google Gemini API key (optional, for AI Sponsor feature)
+
+**Verify installation:**
+```bash
+node --version  # Should show v20.x.x or higher
+npm --version   # Should show 9.x.x or higher
+```
 
 ## Local Development Setup
 
@@ -38,11 +44,20 @@ cd 12-Step-Companion
 npm install
 ```
 
+**Note**: Installation may take a few minutes and show deprecation warnings. This is normal - the app will work fine. You can ignore warnings about deprecated packages.
+
 ### 2. Environment Configuration
 
 Copy `.env.example` to `.env`:
 
 ```bash
+# Windows PowerShell
+Copy-Item .env.example .env
+
+# Windows CMD
+copy .env.example .env
+
+# Mac/Linux
 cp .env.example .env
 ```
 
@@ -83,7 +98,7 @@ npm run db:push
 npm run dev
 ```
 
-The app will be available at `http://localhost:5000`
+The app will be available at `http://localhost:3000` (or the port specified in `PORT` env variable)
 
 - Frontend: Served via Vite with HMR
 - Backend API: Available at `/api/*`
@@ -212,6 +227,19 @@ Authentication is **optional** and disabled by default for local development. To
 
 ## Troubleshooting
 
+> 💡 **Quick Help**: See [INSTALL_TROUBLESHOOTING.md](./INSTALL_TROUBLESHOOTING.md) for detailed installation troubleshooting.
+
+### npm install Shows Warnings
+
+**This is normal!** You may see warnings like:
+- `npm warn deprecated inflight@1.0.6`
+- `npm warn deprecated glob@7.2.3`
+- Security vulnerabilities
+
+**These are safe to ignore** - they're warnings about transitive dependencies (dependencies of dependencies) and don't affect functionality. The app will work perfectly fine.
+
+**If installation completes successfully** (shows "added X packages"), you're good to go!
+
 ### Port Already in Use
 
 Change the port in `.env`:
@@ -220,11 +248,52 @@ Change the port in `.env`:
 PORT=3000
 ```
 
+### npm install Issues
+
+**If npm install fails or hangs:**
+
+1. **Clear npm cache:**
+   ```bash
+   npm cache clean --force
+   ```
+
+2. **Delete lock files and reinstall:**
+   ```bash
+   # Windows PowerShell
+   Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
+   npm install
+   
+   # Mac/Linux
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+3. **Try with different registry (if behind firewall):**
+   ```bash
+   npm install --registry https://registry.npmjs.org/
+   ```
+
+4. **Use yarn as alternative:**
+   ```bash
+   npm install -g yarn
+   yarn install
+   ```
+
+**Common warnings (safe to ignore):**
+- Deprecation warnings about `inflight`, `glob`, `sourcemap-codec` - these are transitive dependencies
+- Security vulnerabilities in dev dependencies - usually not critical for development
+- These warnings don't prevent the app from running
+
 ### Build Fails
 
 1. Clear `node_modules` and reinstall:
 
 ```bash
+# Windows PowerShell
+Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
+npm install
+
+# Mac/Linux
 rm -rf node_modules package-lock.json
 npm install
 ```
@@ -232,6 +301,11 @@ npm install
 2. Clear build cache:
 
 ```bash
+# Windows PowerShell
+Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue
+npm run build
+
+# Mac/Linux
 rm -rf dist
 npm run build
 ```
