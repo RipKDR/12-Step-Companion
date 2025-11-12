@@ -1,4 +1,4 @@
-// Replit Auth implementation - blueprint:javascript_log_in_with_replit
+// Optional Auth implementation - supports Replit Auth or can be disabled for local development
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 
@@ -9,11 +9,19 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// Check if auth is enabled (requires REPL_ID for Replit Auth)
+const isAuthEnabled = () => {
+  return !!process.env.REPL_ID && !!process.env.SESSION_SECRET;
+};
+
 const getOidcConfig = memoize(
   async () => {
+    if (!process.env.REPL_ID) {
+      throw new Error("REPL_ID not configured");
+    }
     return await client.discovery(
       new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
+      process.env.REPL_ID
     );
   },
   { maxAge: 3600 * 1000 }
@@ -64,6 +72,12 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  // Skip auth setup if not configured
+  if (!isAuthEnabled()) {
+    console.log("⚠️  Auth disabled: REPL_ID or SESSION_SECRET not set. Running in local-only mode.");
+    return;
+  }
+
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -106,6 +120,9 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    if (!isAuthEnabled()) {
+      return res.status(503).json({ message: "Authentication not configured" });
+    }
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
@@ -114,6 +131,9 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
+    if (!isAuthEnabled()) {
+      return res.status(503).json({ message: "Authentication not configured" });
+    }
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: "/",
@@ -122,6 +142,9 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    if (!isAuthEnabled()) {
+      return res.status(503).json({ message: "Authentication not configured" });
+    }
     req.logout(() => {
       res.redirect(
         client.buildEndSessionUrl(config, {
@@ -134,6 +157,11 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // If auth is disabled, allow all requests (local development mode)
+  if (!isAuthEnabled()) {
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

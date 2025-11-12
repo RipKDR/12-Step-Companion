@@ -65,9 +65,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware
   await setupAuth(app);
 
-  // Auth endpoint - returns the current logged-in user
+  // Auth endpoint - returns the current logged-in user (or null if auth disabled)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
+      // If auth is disabled, return null (local development mode)
+      if (!process.env.REPL_ID || !req.isAuthenticated || !req.user) {
+        return res.json(null);
+      }
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
@@ -81,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected routes should use isAuthenticated middleware
   // Example: app.get("/api/protected", isAuthenticated, async (req, res) => { ... });
 
-  // AI Sponsor Chat endpoint
+  // AI Sponsor Chat endpoint (works with or without auth)
   app.post('/api/ai-sponsor/chat', isAuthenticated, async (req: any, res) => {
     try {
       const { message, conversationHistory, userContext } = req.body;
