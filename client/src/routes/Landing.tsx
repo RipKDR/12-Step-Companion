@@ -1,4 +1,4 @@
-// Landing page for logged-out users - blueprint:javascript_log_in_with_replit
+// Landing page for logged-out users
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, BookOpen, FileText, Phone } from "lucide-react";

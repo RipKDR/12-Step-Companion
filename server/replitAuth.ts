@@ -1,4 +1,4 @@
-// Optional Auth implementation - supports Replit Auth or can be disabled for local development
+// Optional Authentication - supports OIDC providers (e.g., Replit Auth) or can be disabled for local development
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 

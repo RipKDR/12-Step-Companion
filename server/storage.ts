@@ -1,10 +1,10 @@
-// Replit Auth storage implementation - blueprint:javascript_log_in_with_replit
+// Database storage implementation for user management
 import { users, type User, type UpsertUser } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations - Required for Replit Auth
+  // User operations - Used for authentication when enabled
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
 }
