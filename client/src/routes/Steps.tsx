@@ -5,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
 import { loadStepContent, loadAllSteps } from '@/lib/contentLoader';
@@ -74,9 +75,25 @@ export default function Steps() {
       const totalQuestions = stepQuestionCounts.get(stepNumber) || 0;
       const completed = answers.filter(a => a.answer.trim()).length;
       
+      // Default step titles matching prototype style
+      const stepTitles: Record<number, string> = {
+        1: "We admitted we were powerless",
+        2: "Came to believe in a Power greater",
+        3: "Made a decision to turn our will",
+        4: "Made a searching and fearless inventory",
+        5: "Admitted to God, to ourselves, and to another",
+        6: "Were entirely ready to have God remove",
+        7: "Humbly asked Him to remove our shortcomings",
+        8: "Made a list of all persons we had harmed",
+        9: "Made direct amends to such people",
+        10: "Continued to take personal inventory",
+        11: "Sought through prayer and meditation",
+        12: "Having had a spiritual awakening",
+      };
+      
       return {
         number: stepNumber,
-        title: `Step ${stepNumber}`,
+        title: stepTitles[stepNumber] || `Step ${stepNumber}`,
         completed: totalQuestions > 0 && completed === totalQuestions,
         progress: totalQuestions > 0 ? Math.round((completed / totalQuestions) * 100) : 0,
       };
@@ -115,28 +132,62 @@ export default function Steps() {
     }
   };
 
+  const currentStepNumber = steps.find(s => !s.completed)?.number || 1;
+  const currentStepData = steps.find(s => s.number === currentStepNumber);
+
   if (selectedStep === null) {
     return (
       <div className="max-w-3xl mx-auto px-6 pb-8 sm:pb-12 pt-6">
         <header className="space-y-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Step Work
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Select a step to continue your recovery work
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/40 border border-border">
-            <div className="text-sm font-medium text-foreground">
-              Progress: {steps.filter(s => s.completed).length} of 12 steps completed
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Step Work
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                Work through the 12 steps at your own pace with your sponsor.
+              </p>
             </div>
           </div>
         </header>
+
+        {/* Currently Working On Card */}
+        {currentStepData && (
+          <Card className="mb-6 bg-card-gradient-strong glow-card border-primary/30">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  CURRENTLY WORKING ON
+                </span>
+                <Badge variant="current" className="text-xs">
+                  In Progress
+                </Badge>
+              </div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Step {currentStepNumber}
+                </h2>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {currentStepData.title}
+                </p>
+              </div>
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => setSelectedStep(currentStepNumber)}
+              >
+                Continue Working
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <StepSelector
           steps={steps}
           onSelect={setSelectedStep}
-          currentStep={steps.find(s => !s.completed)?.number || 1}
+          currentStep={currentStepNumber}
         />
       </div>
     );
@@ -162,7 +213,7 @@ export default function Steps() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             {stepContent?.title || `Step ${selectedStep}`}
           </h1>
           {stepContent?.subtitle && (

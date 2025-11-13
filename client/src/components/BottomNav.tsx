@@ -107,13 +107,13 @@ export default function BottomNav() {
         className="fixed bottom-0 left-0 right-0 z-40 pb-3 sm:pb-4 px-3 sm:px-4 transition-transform duration-300 ease-out"
         role="navigation"
         aria-label="Main navigation"
-        aria-hidden={shouldHideNav}
+        aria-hidden={shouldHideNav ? 'true' : 'false'}
         style={{
           paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
           transform: isTouchDevice && !isVisible ? 'translateY(calc(100% + 1rem))' : 'translateY(0)',
         }}
       >
-        <div className="bg-card-gradient border border-card-border rounded-2xl shadow-lg max-w-2xl mx-auto">
+        <div className="bg-card-gradient border border-card-border rounded-2xl shadow-lg glow-card max-w-2xl mx-auto">
           <div className="flex justify-around items-center gap-0.5 p-1.5 sm:p-2">
             {navItems.map((item) => {
               const isActive = location === item.path || (item.path === '/' && location === '/');
@@ -123,9 +123,9 @@ export default function BottomNav() {
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`relative flex flex-col items-center justify-center gap-1 px-2 py-2.5 flex-1 rounded-xl transition-all duration-200 ${
+                  className={`relative flex flex-col items-center justify-center gap-1 px-2 py-2.5 flex-1 rounded-xl transition-all duration-200 min-h-[44px] min-w-[44px] ${
                     isActive
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground glow-primary'
                       : 'text-muted-foreground hover:text-foreground active-elevate-2'
                   }`}
                   data-testid={item.testId}

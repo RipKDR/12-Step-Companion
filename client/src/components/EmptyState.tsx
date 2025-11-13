@@ -11,6 +11,7 @@ interface EmptyStateProps {
     onClick: () => void
   }
   className?: string
+  variant?: "default" | "minimal" | "card"
 }
 
 export function EmptyState({
@@ -19,36 +20,78 @@ export function EmptyState({
   description,
   action,
   className,
+  variant = "default",
 }: EmptyStateProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center py-12 px-4 text-center",
-        className
-      )}
-      role="status"
-      aria-live="polite"
-    >
+  const content = (
+    <>
       {icon && (
-        <div className="mb-4 text-muted-foreground opacity-50" aria-hidden="true">
+        <div 
+          className={cn(
+            "mb-4 text-muted-foreground transition-opacity",
+            variant === "minimal" ? "opacity-40" : "opacity-60"
+          )} 
+          aria-hidden="true"
+        >
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-semibold mb-2" id="empty-state-title">
+      <h3 
+        className={cn(
+          "font-semibold mb-2",
+          variant === "minimal" ? "text-base" : "text-lg"
+        )} 
+        id="empty-state-title"
+      >
         {title}
       </h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6" id="empty-state-description">
+      <p 
+        className={cn(
+          "text-muted-foreground max-w-sm",
+          variant === "minimal" ? "text-xs mb-4" : "text-sm mb-6"
+        )} 
+        id="empty-state-description"
+      >
         {description}
       </p>
       {action && (
         <Button
           onClick={action.onClick}
           variant="default"
+          className="min-h-[44px] min-w-[44px]"
           aria-describedby="empty-state-title empty-state-description"
         >
           {action.label}
         </Button>
       )}
+    </>
+  )
+
+  if (variant === "card") {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center py-16 px-6 text-center rounded-xl border border-card-border bg-card",
+          className
+        )}
+        role="status"
+        aria-live="polite"
+      >
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center text-center",
+        variant === "minimal" ? "py-8 px-4" : "py-12 px-4",
+        className
+      )}
+      role="status"
+      aria-live="polite"
+    >
+      {content}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import SobrietyCounter from "@/components/SobrietyCounter";
+import { EnhancedSobrietyCounter } from "@/components/EnhancedSobrietyCounter";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,9 +44,10 @@ export default function TodayPanel({
           Your Clean Time
         </h2>
         {profile?.cleanDate ? (
-          <SobrietyCounter
+          <EnhancedSobrietyCounter
             cleanDate={profile.cleanDate}
             timezone={profile.timezone}
+            nextMilestone={30}
           />
         ) : (
           <Card className="text-center py-12">

@@ -10,22 +10,23 @@
   /* Automatic computation of border around primary / danger buttons */
   --opaque-button-border-intensity: 8;
 
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .03);
-  --elevate-2: rgba(255,255,255, .06);
+  /* Backgrounds applied on top of other backgrounds when hovered/active - Enhanced */
+  --elevate-1: rgba(255,255,255, .04);
+  --elevate-2: rgba(255,255,255, .08);
+  --elevate-3: rgba(255,255,255, .12);
 
-  /* Figma dark theme colors */
+  /* Figma dark theme colors - Enhanced contrast */
   --background: 220 40% 7%; /* #0A0E1B - Dark blue/indigo */
 
-  --foreground: 0 0% 100%; /* White text */
+  --foreground: 0 0% 98%; /* Slightly softer white for better readability */
 
-  --border: 230 25% 20%;
+  --border: 230 25% 22%; /* Slightly brighter for better visibility */
 
   --card: 230 30% 15%; /* #1A1F36 - Lighter dark blue/purple */
 
-  --card-foreground: 0 0% 100%; /* White text */
+  --card-foreground: 0 0% 98%; /* Consistent with foreground */
 
-  --card-border: 230 25% 20%;
+  --card-border: 230 25% 22%; /* Enhanced border visibility */
 
   --sidebar: 230 30% 12%;
 
@@ -77,18 +78,27 @@
   --chart-4: 35 75% 55%;
   --chart-5: 275 60% 55%;
 
+  /* Status badge colors for prototype matching */
+  --status-completed: 142 71% 45%; /* Green for completed */
+  --status-current: 217 70% 55%; /* Blue for current */
+  --status-locked: 230 15% 50%; /* Gray for locked */
+  --status-completed-foreground: 0 0% 100%;
+  --status-current-foreground: 0 0% 100%;
+  --status-locked-foreground: 0 0% 70%;
+
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: .75rem; /* 12px */
-  --shadow-2xs: 0px 1px 2px 0px hsl(210 10% 10% / 0.04);
-  --shadow-xs: 0px 1px 3px 0px hsl(210 10% 10% / 0.06);
-  --shadow-sm: 0px 2px 4px -1px hsl(210 10% 10% / 0.06), 0px 1px 2px -1px hsl(210 10% 10% / 0.04);
-  --shadow: 0px 4px 6px -1px hsl(210 10% 10% / 0.08), 0px 2px 4px -2px hsl(210 10% 10% / 0.05);
-  --shadow-md: 0px 6px 12px -2px hsl(210 10% 10% / 0.10), 0px 3px 6px -3px hsl(210 10% 10% / 0.06);
-  --shadow-lg: 0px 10px 20px -4px hsl(210 10% 10% / 0.12), 0px 4px 8px -4px hsl(210 10% 10% / 0.08);
-  --shadow-xl: 0px 20px 30px -8px hsl(210 10% 10% / 0.15), 0px 8px 12px -6px hsl(210 10% 10% / 0.10);
-  --shadow-2xl: 0px 30px 50px -12px hsl(210 10% 10% / 0.20);
+  /* Enhanced shadows with better depth perception */
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.08);
+  --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.12);
+  --shadow-sm: 0px 2px 4px -1px hsl(0 0% 0% / 0.15), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 4px 6px -1px hsl(0 0% 0% / 0.20), 0px 2px 4px -2px hsl(0 0% 0% / 0.12);
+  --shadow-md: 0px 6px 12px -2px hsl(0 0% 0% / 0.25), 0px 3px 6px -3px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0px 10px 20px -4px hsl(0 0% 0% / 0.30), 0px 4px 8px -4px hsl(0 0% 0% / 0.18);
+  --shadow-xl: 0px 20px 30px -8px hsl(0 0% 0% / 0.35), 0px 8px 12px -6px hsl(0 0% 0% / 0.22);
+  --shadow-2xl: 0px 30px 50px -12px hsl(0 0% 0% / 0.40);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -232,18 +242,23 @@
   }
 
   h1 {
-    @apply text-3xl font-semibold tracking-tight;
+    @apply text-3xl font-bold tracking-tight;
     line-height: 1.2;
   }
 
   h2 {
-    @apply text-2xl font-semibold tracking-tight;
+    @apply text-2xl font-bold tracking-tight;
     line-height: 1.3;
   }
 
   h3 {
     @apply text-xl font-semibold;
     line-height: 1.4;
+  }
+
+  /* Uppercase utility for labels */
+  .label-uppercase {
+    @apply uppercase tracking-wider text-xs font-semibold;
   }
 
   p {
@@ -276,22 +291,63 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
-  /* Figma-inspired gradient utilities for card backgrounds */
+  /* Enhanced gradient utilities for card backgrounds matching prototype */
   .bg-card-gradient {
-    background: radial-gradient(circle at top right, hsl(230 30% 18% / 0.5), hsl(230 30% 15%));
+    background: radial-gradient(circle at top right, hsl(230 30% 22% / 0.7), hsl(230 30% 15%));
+    border: 1px solid hsl(230 25% 22% / 0.6);
   }
 
   .bg-card-gradient-subtle {
-    background: linear-gradient(135deg, hsl(230 30% 16%), hsl(230 30% 15%));
+    background: linear-gradient(135deg, hsl(230 30% 18%), hsl(230 30% 15%));
+    border: 1px solid hsl(230 25% 22% / 0.5);
   }
 
-  /* Glow effect for progress indicators */
+  /* Stronger card gradient for prominent cards */
+  .bg-card-gradient-strong {
+    background: radial-gradient(circle at top right, hsl(230 30% 25% / 0.8), hsl(230 30% 15%));
+    border: 1px solid hsl(230 25% 25% / 0.7);
+  }
+
+  /* Enhanced depth for elevated cards */
+  .card-elevated {
+    box-shadow: var(--shadow-md);
+    border-color: hsl(var(--card-border) / 0.6);
+  }
+
+  .card-elevated:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: hsl(var(--card-border) / 0.8);
+  }
+
+  /* Enhanced glow effects for modern UI */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(217 70% 55% / 0.3), 0 0 40px hsl(217 70% 55% / 0.2);
+    box-shadow: 0 0 20px hsl(217 70% 55% / 0.4), 0 0 40px hsl(217 70% 55% / 0.3), 0 0 60px hsl(217 70% 55% / 0.2);
   }
 
   .glow-ring {
-    box-shadow: 0 0 0 2px hsl(217 70% 55% / 0.2), 0 0 20px hsl(217 70% 55% / 0.3);
+    box-shadow: 0 0 0 2px hsl(217 70% 55% / 0.3), 0 0 20px hsl(217 70% 55% / 0.4), 0 0 40px hsl(217 70% 55% / 0.2);
+  }
+
+  /* Card glow effect */
+  .glow-card {
+    box-shadow: 0 0 20px hsl(230 30% 15% / 0.5), 0 0 40px hsl(230 30% 15% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.15);
+  }
+
+  /* Accent glow variants */
+  .glow-green {
+    box-shadow: 0 0 20px hsl(142 71% 45% / 0.4), 0 0 40px hsl(142 71% 45% / 0.3);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(275 60% 55% / 0.4), 0 0 40px hsl(275 60% 55% / 0.3);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 20px hsl(0 70% 55% / 0.4), 0 0 40px hsl(0 70% 55% / 0.3);
+  }
+
+  .glow-yellow {
+    box-shadow: 0 0 20px hsl(45 93% 47% / 0.4), 0 0 40px hsl(45 93% 47% / 0.3);
   }
 
   /* Smooth transitions for interactive elements */
@@ -299,14 +355,14 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Card hover effect matching Figma */
+  /* Card hover effect matching Figma - Enhanced */
   .card-hover {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px -4px hsl(210 10% 0% / 0.15), 0 4px 8px -4px hsl(210 10% 0% / 0.10);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -4px hsl(0 0% 0% / 0.25), 0 6px 12px -4px hsl(0 0% 0% / 0.15);
   }
 
   /* Button press feedback */
@@ -333,10 +389,10 @@
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.hover-elevate:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+  .hover-elevate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.10);
+  }
 
 .active-elevate-2 {
   transition: transform 0.1s cubic-bezier(0.4, 0, 1, 1), box-shadow 0.1s cubic-bezier(0.4, 0, 1, 1);
@@ -389,8 +445,45 @@
   top: 0;
 }
 
-/* Focus visible styles */
+  /* Focus visible styles - Enhanced for accessibility */
 *:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  outline-width: 2px;
+}
+
+/* Enhanced focus styles for interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: calc(var(--radius) - 2px);
+}
+
+/* Touch target utilities - WCAG 2.2 AA compliance */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-lg {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Ensure clickable cards meet touch target requirements */
+.card-clickable {
+  min-height: 44px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-clickable:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }

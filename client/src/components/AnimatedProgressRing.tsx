@@ -75,19 +75,16 @@ export function AnimatedProgressRing({
           transition={{ duration: 1.5, ease: "easeOut" }}
         />
       </svg>
-      {showLabel && (
-        <div className="absolute inset-0 flex items-center justify-center">
+      {showLabel && label && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            {label && (
-              <div className="text-xs text-muted-foreground mb-1">{label}</div>
-            )}
             <motion.div
-              className="text-lg font-semibold"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              className="text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {Math.round(progress)}%
+              {label}
             </motion.div>
           </div>
         </div>

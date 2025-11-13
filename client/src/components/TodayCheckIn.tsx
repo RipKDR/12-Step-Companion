@@ -1,4 +1,4 @@
-import { Star, CheckCircle2 } from 'lucide-react';
+import { Star, CheckCircle2, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface TodayCheckInProps {
@@ -20,9 +20,7 @@ export default function TodayCheckIn({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
-            <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-          </div>
+          <Calendar className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Today check-in</h2>
         </div>
         <span className="text-xs text-muted-foreground">{completedCount}/2 done</span>
@@ -31,7 +29,7 @@ export default function TodayCheckIn({
       <div className="space-y-3">
         {/* Morning Intention */}
         <Card
-          className={`bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover button-press ${
+          className={`bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover button-press glow-card ${
             morningCompleted ? 'opacity-75' : ''
           }`}
           onClick={onMorningClick}
@@ -50,7 +48,7 @@ export default function TodayCheckIn({
                 </p>
               </div>
               {morningCompleted && (
-                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))] shrink-0" />
               )}
             </div>
           </CardContent>
@@ -58,7 +56,7 @@ export default function TodayCheckIn({
 
         {/* Evening Reflection */}
         <Card
-          className={`bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover button-press ${
+          className={`bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover button-press glow-card ${
             eveningCompleted ? 'opacity-75' : ''
           }`}
           onClick={onEveningClick}
@@ -77,7 +75,7 @@ export default function TodayCheckIn({
                 </p>
               </div>
               {eveningCompleted && (
-                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))] shrink-0" />
               )}
             </div>
           </CardContent>

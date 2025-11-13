@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
   // Whitespace-nowrap: Badges should never wrap.
-  "whitespace-nowrap inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" +
+  "whitespace-nowrap inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" +
   " hover-elevate " ,
   {
     variants: {
@@ -15,8 +15,13 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow-xs",
-
         outline: " border [border-color:var(--badge-outline)] shadow-xs",
+        completed:
+          "border-transparent bg-[hsl(var(--status-completed))] text-[hsl(var(--status-completed-foreground))] shadow-xs",
+        current:
+          "border-transparent bg-[hsl(var(--status-current))] text-[hsl(var(--status-current-foreground))] shadow-xs",
+        locked:
+          "border-transparent bg-[hsl(var(--status-locked))] text-[hsl(var(--status-locked-foreground))] shadow-xs",
       },
     },
     defaultVariants: {

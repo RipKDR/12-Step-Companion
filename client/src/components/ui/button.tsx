@@ -27,10 +27,10 @@ const buttonVariants = cva(
       // inside buttons. With a min-height they will look appropriate with small amounts of content,
       // but will expand to fit large amounts of content.
       size: {
-        default: "min-h-9 px-4 py-2",
-        sm: "min-h-8 rounded-md px-3 text-xs",
-        lg: "min-h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "min-h-[44px] px-4 py-2", // WCAG 2.2 AA: minimum 44x44px touch target
+        sm: "min-h-[44px] rounded-md px-3 text-xs", // Maintain accessibility even for small buttons
+        lg: "min-h-[48px] rounded-md px-8", // Larger touch target for primary actions
+        icon: "h-[44px] w-[44px]", // Ensure icon buttons meet accessibility standards
       },
     },
     defaultVariants: {

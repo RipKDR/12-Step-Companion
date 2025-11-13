@@ -1,12 +1,14 @@
 import { FileText, BookMarked, AlertCircle, BarChart3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'wouter';
+import { cn } from '@/lib/utils';
 
 interface TodayShortcut {
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   path: string;
+  iconBgColor: string;
   iconColor: string;
 }
 
@@ -16,28 +18,32 @@ const shortcuts: TodayShortcut[] = [
     subtitle: 'Continue Step 4',
     icon: FileText,
     path: '/steps',
-    iconColor: 'text-primary', // Blue/cyan
+    iconBgColor: 'bg-primary/20',
+    iconColor: 'text-primary',
   },
   {
     title: 'Journal',
     subtitle: 'Capture what actually happened today',
     icon: BookMarked,
     path: '/journal',
-    iconColor: 'text-purple-500', // Purple
+    iconBgColor: 'bg-purple-500/20',
+    iconColor: 'text-purple-500',
   },
   {
     title: 'Emergency',
     subtitle: 'Open your support plan instantly',
     icon: AlertCircle,
     path: '/emergency',
-    iconColor: 'text-destructive', // Red
+    iconBgColor: 'bg-destructive/20',
+    iconColor: 'text-destructive',
   },
   {
     title: 'Insights',
     subtitle: 'Patterns, triggers, and progress view',
     icon: BarChart3,
     path: '/analytics',
-    iconColor: 'text-purple-500', // Purple
+    iconBgColor: 'bg-purple-500/20',
+    iconColor: 'text-purple-500',
   },
 ];
 
@@ -68,10 +74,12 @@ export default function TodayShortcuts({ currentStep = 4 }: TodayShortcutsProps)
           const Icon = shortcut.icon;
           return (
             <Link key={shortcut.path} href={shortcut.path}>
-              <Card className="bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover">
+              <Card className="bg-card-gradient border-card-border cursor-pointer hover-elevate active-elevate-2 transition-smooth card-hover glow-card">
                 <CardContent className="p-4">
-                  <div className="flex flex-col gap-2">
-                    <Icon className={`h-6 w-6 ${shortcut.iconColor}`} />
+                  <div className="flex flex-col gap-3">
+                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", shortcut.iconBgColor)}>
+                      <Icon className={cn("h-6 w-6", shortcut.iconColor)} />
+                    </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground mb-0.5">
                         {shortcut.title}
