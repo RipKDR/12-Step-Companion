@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
 import { Sparkles, TrendingUp } from 'lucide-react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 
 export function RecommendedTools() {
   const getRecommendedTools = useAppStore((state) => state.getRecommendedTools);
   const recordToolUsage = useAppStore((state) => state.recordToolUsage);
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   
   // Get current context (from daily card or default)
   const dailyCard = useAppStore((state) => {
@@ -34,7 +34,7 @@ export function RecommendedTools() {
     recordToolUsage(toolName, { ...currentContext });
     
     // Navigate to emergency page and trigger the tool
-    navigate('/emergency');
+    setLocation('/emergency');
     // The tool will be triggered by the Emergency component
     // We could use a query param or state to auto-trigger, but for now just navigate
   };
