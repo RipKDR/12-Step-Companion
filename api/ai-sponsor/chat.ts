@@ -1,0 +1,336 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+// Constants
+const MAX_CONTEXT_LENGTH = 500;
+const MAX_TRIGGERS = 50;
+const MAX_JOURNALS = 3;
+const MAX_OUTPUT_TOKENS = 2048;
+const AI_TEMPERATURE = 0.8;
+const MAX_MESSAGE_LENGTH = 5000;
+
+// Cache AI client instance (module-level cache)
+let cachedGenAI: any = null;
+
+// Input sanitization helper
+function sanitizeText(text: string, maxLength: number = MAX_CONTEXT_LENGTH): string {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .replace(/[\r\n]+/g, ' ') // Replace newlines with spaces
+    .replace(/[<>]/g, '') // Remove HTML brackets
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, maxLength);
+}
+
+// Validate user context structure
+function validateUserContext(userContext: any): { valid: boolean; error?: string } {
+  if (!userContext) return { valid: true }; // Context is optional
+
+  if (userContext.triggers) {
+    if (!Array.isArray(userContext.triggers)) {
+      return { valid: false, error: 'Triggers must be an array' };
+    }
+    if (userContext.triggers.length > MAX_TRIGGERS) {
+      return { valid: false, error: `Maximum ${MAX_TRIGGERS} triggers allowed` };
+    }
+  }
+
+  if (userContext.recentJournals) {
+    if (!Array.isArray(userContext.recentJournals)) {
+      return { valid: false, error: 'Journals must be an array' };
+    }
+    if (userContext.recentJournals.length > MAX_JOURNALS) {
+      return { valid: false, error: `Maximum ${MAX_JOURNALS} journals allowed` };
+    }
+  }
+
+  if (userContext.sobrietyDate) {
+    const date = new Date(userContext.sobrietyDate);
+    if (isNaN(date.getTime())) {
+      return { valid: false, error: 'Invalid sobriety date' };
+    }
+    if (date > new Date()) {
+      return { valid: false, error: 'Sobriety date cannot be in the future' };
+    }
+  }
+
+  return { valid: true };
+}
+
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    const { message, conversationHistory, userContext, contextWindow, promptType } = req.body;
+
+    // Validate message
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        message: 'Message is required',
+        response: 'Please provide a message to send.'
+      });
+    }
+
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({
+        message: 'Message too long',
+        response: `Please send a shorter message (maximum ${MAX_MESSAGE_LENGTH} characters).`
+      });
+    }
+
+    // Validate user context
+    const contextValidation = validateUserContext(userContext);
+    if (!contextValidation.valid) {
+      return res.status(400).json({
+        message: 'Invalid user context',
+        response: contextValidation.error || 'Invalid user data provided.'
+      });
+    }
+
+    // Check for API key
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY not set');
+      return res.status(500).json({
+        message: 'AI service not configured',
+        response: "I'm sorry, but I'm not properly configured at the moment. Please try reaching out to a human sponsor or check back later."
+      });
+    }
+
+    // Initialize or reuse cached AI client
+    if (!cachedGenAI) {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      cachedGenAI = new GoogleGenerativeAI(apiKey);
+    }
+
+    // Build personalized context section with sanitization
+    // Support both old userContext format and new contextWindow format
+    let personalContext = '';
+    
+    // Use structured contextWindow if provided, otherwise fall back to userContext
+    if (contextWindow) {
+      personalContext = '\n\n--- RECOVERY CONTEXT ---\n';
+      
+      if (contextWindow.recentStepWork && Array.isArray(contextWindow.recentStepWork) && contextWindow.recentStepWork.length > 0) {
+        personalContext += `\nRecent Step Work:\n`;
+        contextWindow.recentStepWork.forEach((summary: string, idx: number) => {
+          personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
+        });
+      }
+      
+      if (contextWindow.recentJournals && Array.isArray(contextWindow.recentJournals) && contextWindow.recentJournals.length > 0) {
+        personalContext += `\nRecent Journal Entries:\n`;
+        contextWindow.recentJournals.forEach((summary: string, idx: number) => {
+          personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
+        });
+      }
+      
+      if (contextWindow.activeScenes && Array.isArray(contextWindow.activeScenes) && contextWindow.activeScenes.length > 0) {
+        personalContext += `\nActive Recovery Scenes:\n`;
+        contextWindow.activeScenes.forEach((scene: string, idx: number) => {
+          personalContext += `${idx + 1}. ${sanitizeText(scene, 200)}\n`;
+        });
+      }
+      
+      if (contextWindow.currentStreaks && typeof contextWindow.currentStreaks === 'object') {
+        personalContext += `\nCurrent Streaks:\n`;
+        Object.entries(contextWindow.currentStreaks).forEach(([type, count]) => {
+          if (typeof count === 'number' && count > 0) {
+            personalContext += `- ${type}: ${count} days\n`;
+          }
+        });
+      }
+      
+      if (contextWindow.recentMoodTrend && Array.isArray(contextWindow.recentMoodTrend) && contextWindow.recentMoodTrend.length > 0) {
+        const avgMood = contextWindow.recentMoodTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentMoodTrend.length;
+        personalContext += `\nMood Trend (Last 7 Days): Average ${avgMood.toFixed(1)}/5\n`;
+      }
+      
+      if (contextWindow.recentCravingsTrend && Array.isArray(contextWindow.recentCravingsTrend) && contextWindow.recentCravingsTrend.length > 0) {
+        const avgCravings = contextWindow.recentCravingsTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentCravingsTrend.length;
+        personalContext += `\nCravings Trend (Last 7 Days): Average ${avgCravings.toFixed(1)}/10\n`;
+      }
+      
+      personalContext += '--- END CONTEXT ---\n';
+    } else if (userContext) {
+      // Fallback to old userContext format for backward compatibility
+      personalContext = '\n\n--- PERSONAL CONTEXT ---\n';
+
+      if (userContext.name) {
+        personalContext += `Name: ${sanitizeText(userContext.name, 100)}\n`;
+      }
+
+      if (userContext.sobrietyDate) {
+        try {
+          const cleanDate = new Date(userContext.sobrietyDate);
+          const daysClean = Math.max(0, Math.floor((Date.now() - cleanDate.getTime()) / (1000 * 60 * 60 * 24)));
+          personalContext += `Clean Date: ${cleanDate.toLocaleDateString()} (${daysClean} days clean)\n`;
+        } catch (error) {
+          console.error('Error processing sobriety date:', error);
+        }
+      }
+
+      if (userContext.triggers && Array.isArray(userContext.triggers) && userContext.triggers.length > 0) {
+        personalContext += `\nKnown Triggers:\n`;
+        userContext.triggers.slice(0, MAX_TRIGGERS).forEach((trigger: any) => {
+          const name = sanitizeText(trigger.name, 100);
+          const description = trigger.description ? sanitizeText(trigger.description, 200) : '';
+          const severity = trigger.severity && Number.isInteger(trigger.severity) && trigger.severity >= 1 && trigger.severity <= 10
+            ? trigger.severity
+            : null;
+
+          personalContext += `- ${name}${severity ? ` (Severity: ${severity}/10)` : ''}${description ? `: ${description}` : ''}\n`;
+        });
+      }
+
+      if (userContext.recentJournals && Array.isArray(userContext.recentJournals) && userContext.recentJournals.length > 0) {
+        personalContext += `\nRecent Journal Entries (Last ${Math.min(userContext.recentJournals.length, MAX_JOURNALS)}):\n`;
+        userContext.recentJournals.slice(0, MAX_JOURNALS).forEach((entry: any) => {
+          try {
+            const date = new Date(entry.date).toLocaleDateString();
+            const content = sanitizeText(entry.content || '', 200);
+            if (content) {
+              personalContext += `- ${date}: ${content}${entry.content && entry.content.length > 200 ? '...' : ''}\n`;
+            }
+          } catch (error) {
+            console.error('Error processing journal entry:', error);
+          }
+        });
+      }
+
+      if (userContext.stepProgress && typeof userContext.stepProgress === 'object') {
+        const completedSteps = Object.keys(userContext.stepProgress).filter(step =>
+          userContext.stepProgress[step]?.completed === true
+        );
+        if (completedSteps.length > 0) {
+          personalContext += `\nCompleted Steps: ${completedSteps.map(s => `Step ${s}`).join(', ')}\n`;
+        }
+        const currentStep = Object.keys(userContext.stepProgress).find(step =>
+          !userContext.stepProgress[step]?.completed &&
+          userContext.stepProgress[step]?.answers &&
+          Object.keys(userContext.stepProgress[step].answers).length > 0
+        );
+        if (currentStep) {
+          personalContext += `Currently Working On: Step ${currentStep}\n`;
+        }
+      }
+
+      if (userContext.conversationSummary) {
+        const summary = sanitizeText(userContext.conversationSummary, 500);
+        if (summary) {
+          personalContext += `\nPrevious Conversation Summary:\n${summary}\n`;
+        }
+      }
+
+      personalContext += '--- END CONTEXT ---\n';
+    }
+
+    // Build enhanced system instruction
+    // Use recovery-focused prompt that never quotes copyrighted NA/AA text
+    const systemInstruction = `You are a recovery companion helping someone in 12-step recovery.
+
+YOUR ROLE:
+- You are NOT a therapist or sponsor - you're a digital companion
+- Always encourage human connection (sponsor, meetings, recovery friends)
+- Never quote copyrighted recovery literature - paraphrase and summarize only
+- Ground your responses in the user's own data (step work, journals, scenes, daily check-ins)
+- Be supportive, empathetic, and recovery-focused
+- Help users process their own thoughts, not give medical advice
+
+COMMUNICATION STYLE:
+- Warm but real - like talking to a trusted friend who's been there
+- Direct when needed - recovery companions give honest feedback
+- Reference their personal data to show you know them
+- Ask follow-up questions about previous conversations
+- Use "we" and "us" language (the recovery community)
+- Be conversational, not clinical
+
+CRISIS DETECTION:
+If you detect any of these, provide an immediate action plan:
+- Mention of using or strong cravings
+- Suicidal thoughts or self-harm
+- Extreme isolation or hopelessness
+- Talk of giving up on recovery
+- Dangerous situations
+
+EMERGENCY RESOURCES TO SHARE IN CRISIS:
+- 988 - Mental Health Crisis Lifeline
+- 911 - Immediate emergency
+- Their sponsor (encourage them to call NOW)
+- NA/AA Hotline: 1-800-662-4357
+- Go to a meeting immediately
+- Text a fellowship friend right now
+
+Remember: You're their recovery companion. You know their journey. Reference it. Build on it. Help them grow.
+
+${personalContext}`;
+
+    // Initialize model with personalized system instruction
+    const model = cachedGenAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction
+    });
+
+    // Format and validate conversation history
+    const history = (conversationHistory && Array.isArray(conversationHistory)
+      ? conversationHistory.slice(-10).map((msg: any) => ({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: sanitizeText(msg.content || '', MAX_MESSAGE_LENGTH) }]
+        }))
+      : []
+    );
+
+    // Start chat with history
+    const chat = model.startChat({
+      history,
+      generationConfig: {
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: AI_TEMPERATURE,
+      },
+    });
+
+    // Send message and get response
+    const result = await chat.sendMessage(sanitizeText(message, MAX_MESSAGE_LENGTH));
+    const responseText = result.response.text();
+
+    return res.json({ response: responseText });
+  } catch (error) {
+    console.error('Error in AI sponsor chat:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStatus = 'status' in error && typeof error.status === 'number' ? error.status : undefined;
+
+    // Handle specific error types
+    if (errorStatus === 429 || errorMessage.includes('quota')) {
+      return res.status(429).json({
+        message: 'Rate limit exceeded',
+        response: "I'm receiving a lot of messages right now. Please wait a moment and try again. If you need immediate support, consider calling your sponsor or attending a meeting."
+      });
+    }
+
+    if (errorMessage.includes('API key')) {
+      return res.status(503).json({
+        message: 'Service unavailable',
+        response: "I'm having trouble with my configuration. Please try again later or reach out to a human sponsor."
+      });
+    }
+
+    if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+      return res.status(400).json({
+        message: 'Content filtered',
+        response: "I couldn't process that message. Please rephrase and try again, or reach out to your sponsor for support."
+      });
+    }
+
+    // Generic error response
+    return res.status(500).json({
+      message: 'Internal server error',
+      response: "I'm having trouble responding right now. Please try again in a moment, or reach out to your sponsor or a trusted person if you need immediate support."
+    });
+  }
+}
+
