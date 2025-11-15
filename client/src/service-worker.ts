@@ -6,13 +6,38 @@ declare const self: ServiceWorkerGlobalScope;
 // Note: VitePWA plugin handles precaching automatically via its own service worker
 // This service worker focuses on notification scheduling and meeting reminders
 
-// Take control of all pages immediately
-self.skipWaiting();
+// This is where VitePWA will inject the precache manifest
+// @ts-ignore - This is injected by vite-plugin-pwa at build time
+const manifest = self.__WB_MANIFEST;
+
+// Install event - precache assets
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('recovery-companion-v1').then((cache) => {
+      // Precache all assets from manifest
+      return cache.addAll(
+        manifest.map((entry: { url: string; revision?: string }) => entry.url)
+      );
+    })
+  );
+  // Take control of all pages immediately
+  self.skipWaiting();
+});
 
 // Claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    self.clients.claim()
+    Promise.all([
+      self.clients.claim(),
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name !== 'recovery-companion-v1')
+            .map((name) => caches.delete(name))
+        );
+      }),
+    ])
   );
 });
 
