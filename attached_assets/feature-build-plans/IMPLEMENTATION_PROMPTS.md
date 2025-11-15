@@ -346,6 +346,7 @@ Start with A0, then A1-A5. Reference full build plan for crisis mode UI patterns
 ## Feature 8: Meeting Finder Integration
 
 ```
+log attendance, reminders work, all accessible.
 I'm implementing the Meeting Finder Integration feature for the 12-Step Recovery Companion app. This feature integrates BMLT (NA) and Meeting Guide (AA) to make finding and attending meetings easier.
 
 📋 **Full Build Plan**: See `attached_assets/feature-build-plans/08-meeting-finder-integration.md`
@@ -386,8 +387,7 @@ Build meeting finder system:
 - `client/src/routes/Meetings.tsx` (add finder interface)
 - `client/src/service-worker.ts` (meeting reminders)
 
-**Success Criteria**: BMLT search works (with API key), meetings displayed clearly, can log attendance, reminders work, all accessible.
-
+**Success Criteria**: BMLT search works (with API key), meetings displayed clearly, can 
 Start with A0, then A1-A5. Reference full build plan for BMLT API integration details, AA deep link patterns, and caching strategy.
 ```
 

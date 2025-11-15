@@ -6,15 +6,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SponsorCard from '@/components/SponsorCard';
-import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users, Waves } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Phone, Clock, Heart, FileText, AlertCircle, Loader2, MessageCircle, Users, Waves, Sparkles, Shield } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
 import MindfulnessPack from '@/components/MindfulnessPack';
+import { SceneQuickAccess } from '@/components/recovery-scenes/SceneQuickAccess';
+import { ScenePlaybook } from '@/components/recovery-scenes/ScenePlaybook';
+import { RecommendedTools } from '@/components/coping-coach/RecommendedTools';
+import { ToolOutcomePrompt } from '@/components/coping-coach/ToolOutcomePrompt';
+import SafetyPlanDisplay from '@/components/safety-plan/SafetyPlanDisplay';
+import SafetyPlanBuilder from '@/components/safety-plan/SafetyPlanBuilder';
+import SafetyPlanQuickAccess from '@/components/safety-plan/SafetyPlanQuickAccess';
 
 export default function Emergency() {
   const profile = useAppStore((state) => state.profile);
   const updateProfile = useAppStore((state) => state.updateProfile);
+  const recordToolUsage = useAppStore((state) => state.recordToolUsage);
+  const getSafetyPlan = useAppStore((state) => state.getSafetyPlan);
   const { toast } = useToast();
 
   const [timerActive, setTimerActive] = useState(false);
@@ -28,6 +37,13 @@ export default function Emergency() {
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [sponsorName, setSponsorName] = useState('');
   const [sponsorPhone, setSponsorPhone] = useState('');
+  const [pendingOutcomeUsageId, setPendingOutcomeUsageId] = useState<string | null>(null);
+  const [pendingOutcomeToolName, setPendingOutcomeToolName] = useState<string>('');
+  const outcomeTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [showSafetyPlan, setShowSafetyPlan] = useState(false);
+  const [showSafetyPlanBuilder, setShowSafetyPlanBuilder] = useState(false);
+
+  const safetyPlan = getSafetyPlan();
 
   useEffect(() => {
     if (!timerActive) return;
@@ -84,6 +100,45 @@ export default function Emergency() {
   const stopTimer = () => {
     setTimerActive(false);
     setTimeLeft(300);
+  };
+
+  // Get current context for tool tracking
+  const getCurrentContext = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const dailyCard = useAppStore.getState().dailyCards[today];
+    return {
+      mood: dailyCard?.middayPulseCheck?.mood,
+      craving: dailyCard?.middayPulseCheck?.craving,
+    };
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      outcomeTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      outcomeTimeoutsRef.current.clear();
+    };
+  }, []);
+
+  // Track tool usage and schedule outcome prompt
+  const handleToolStart = (toolName: string) => {
+    const context = getCurrentContext();
+    const usageId = recordToolUsage(toolName, context);
+    
+    // Clear any existing timeout for this tool
+    const existingTimeout = outcomeTimeoutsRef.current.get(usageId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+    
+    // Schedule outcome prompt after 10 minutes (600000ms)
+    const timeoutId = setTimeout(() => {
+      setPendingOutcomeUsageId(usageId);
+      setPendingOutcomeToolName(toolName);
+      outcomeTimeoutsRef.current.delete(usageId);
+    }, 10 * 60 * 1000); // 10 minutes
+    
+    outcomeTimeoutsRef.current.set(usageId, timeoutId);
   };
 
   const crisisLines = [
@@ -221,6 +276,56 @@ export default function Emergency() {
 
       <div className="space-y-6">
 
+      {/* Safety Plan - Primary Action */}
+      {safetyPlan ? (
+        <Card className="bg-primary/10 border-primary/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Shield className="h-5 w-5" />
+              Your Safety Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Your personalized safety plan is ready. Open it when you need support.
+            </p>
+            <Button
+              onClick={() => setShowSafetyPlan(true)}
+              className="w-full min-h-[44px]"
+              size="lg"
+            >
+              <Shield className="h-5 w-5 mr-2" />
+              Open Safety Plan
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Shield className="h-5 w-5" />
+              Create Your Safety Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Build a personalized safety plan when you're stable. It will be ready when you need it most.
+            </p>
+            <Button
+              onClick={() => setShowSafetyPlanBuilder(true)}
+              className="w-full min-h-[44px]"
+              size="lg"
+            >
+              <Shield className="h-5 w-5 mr-2" />
+              Create Safety Plan
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recommended Tools */}
+      <RecommendedTools />
+
       <Card className="bg-destructive/5 border-destructive/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
@@ -312,6 +417,22 @@ export default function Emergency() {
         testId="sponsor-card"
       />
 
+      {/* Recovery Scenes */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            Recovery Scenes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Open a situation-specific playbook for your current moment. These scenes help you navigate high-risk situations with prepared actions.
+          </p>
+          <SceneQuickAccess variant="button" />
+        </CardContent>
+      </Card>
+
       <a 
         href="https://www.na.org.au/multi/searchable-map/" 
         target="_blank" 
@@ -333,7 +454,14 @@ export default function Emergency() {
         <Button
           variant={timerActive ? "default" : "outline"}
           className="h-24 flex-col gap-2"
-          onClick={() => timerActive ? stopTimer() : setTimerActive(true)}
+          onClick={() => {
+            if (!timerActive) {
+              handleToolStart('timer');
+              setTimerActive(true);
+            } else {
+              stopTimer();
+            }
+          }}
           data-testid="button-timer"
         >
           {timerActive ? <Loader2 className="h-8 w-8 animate-spin" /> : <Clock className="h-8 w-8" />}
@@ -343,7 +471,14 @@ export default function Emergency() {
         <Button
           variant={breathingActive ? "default" : "outline"}
           className="h-24 flex-col gap-2"
-          onClick={() => setBreathingActive(!breathingActive)}
+          onClick={() => {
+            if (!breathingActive) {
+              handleToolStart('breathing');
+              setBreathingActive(true);
+            } else {
+              setBreathingActive(false);
+            }
+          }}
           data-testid="button-breathing"
         >
           <Heart className="h-8 w-8" />
@@ -353,7 +488,14 @@ export default function Emergency() {
         <Button
           variant={groundingActive ? "default" : "outline"}
           className="h-24 flex-col gap-2"
-          onClick={() => setGroundingActive(!groundingActive)}
+          onClick={() => {
+            if (!groundingActive) {
+              handleToolStart('grounding');
+              setGroundingActive(true);
+            } else {
+              setGroundingActive(false);
+            }
+          }}
           data-testid="button-grounding"
         >
           <Users className="h-8 w-8" />
@@ -363,7 +505,14 @@ export default function Emergency() {
         <Button
           variant={mindfulnessActive ? "default" : "outline"}
           className="h-24 flex-col gap-2"
-          onClick={() => setMindfulnessActive(!mindfulnessActive)}
+          onClick={() => {
+            if (!mindfulnessActive) {
+              handleToolStart('mindfulness');
+              setMindfulnessActive(true);
+            } else {
+              setMindfulnessActive(false);
+            }
+          }}
           data-testid="button-mindfulness"
         >
           <Waves className="h-8 w-8" />
@@ -373,7 +522,14 @@ export default function Emergency() {
         <Button
           variant={copingNotesVisible ? "default" : "outline"}
           className="h-24 flex-col gap-2"
-          onClick={() => setCopingNotesVisible(!copingNotesVisible)}
+          onClick={() => {
+            if (!copingNotesVisible) {
+              handleToolStart('coping-strategies');
+              setCopingNotesVisible(true);
+            } else {
+              setCopingNotesVisible(false);
+            }
+          }}
           data-testid="button-coping"
         >
           <FileText className="h-8 w-8" />
@@ -539,6 +695,44 @@ export default function Emergency() {
               Save
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tool Outcome Prompt */}
+      {pendingOutcomeUsageId && (
+        <ToolOutcomePrompt
+          usageId={pendingOutcomeUsageId}
+          toolName={pendingOutcomeToolName}
+          open={!!pendingOutcomeUsageId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPendingOutcomeUsageId(null);
+              setPendingOutcomeToolName('');
+            }
+          }}
+        />
+      )}
+
+      {/* Safety Plan Quick Access */}
+      <SafetyPlanQuickAccess />
+
+      {/* Safety Plan Display Dialog */}
+      <Dialog open={showSafetyPlan} onOpenChange={setShowSafetyPlan}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <SafetyPlanDisplay onClose={() => setShowSafetyPlan(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Safety Plan Builder Dialog */}
+      <Dialog open={showSafetyPlanBuilder} onOpenChange={setShowSafetyPlanBuilder}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <SafetyPlanBuilder
+            onComplete={() => {
+              setShowSafetyPlanBuilder(false);
+              setShowSafetyPlan(true);
+            }}
+            onCancel={() => setShowSafetyPlanBuilder(false)}
+          />
         </DialogContent>
       </Dialog>
       </div>

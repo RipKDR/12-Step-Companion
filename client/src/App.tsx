@@ -45,6 +45,7 @@ const Achievements = lazy(() => import("@/routes/Achievements"));
 const UsageInsights = lazy(() => import("@/routes/UsageInsights"));
 const Landing = lazy(() => import("@/routes/Landing"));
 const AISponsor = lazy(() => import("@/routes/AISponsor"));
+const SponsorConnection = lazy(() => import("@/routes/SponsorConnection"));
 
 function Router() {
   const { isLoading } = useAuth();
@@ -94,6 +95,7 @@ function Router() {
             <Route path="/contacts" component={Contacts} />
             <Route path="/achievements" component={Achievements} />
             <Route path="/ai-sponsor" component={AISponsor} />
+            <Route path="/sponsor-connection" component={SponsorConnection} />
             <Route path="/settings" component={Settings} />
             <Route path="/onboarding" component={Onboarding} />
             <Route component={NotFound} />

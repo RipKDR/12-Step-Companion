@@ -4,7 +4,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { InlineEditor } from "./InlineEditor"
-import { Calendar, X } from "lucide-react"
+import { Calendar, X, Sparkles } from "lucide-react"
+import { useLocation } from "wouter"
 import { cn } from "@/lib/utils"
 import type { JournalEntry } from "@/types"
 
@@ -21,6 +22,7 @@ export function JournalEntryEditor({
   onCancel,
   className,
 }: JournalEntryEditorProps) {
+  const [, setLocation] = useLocation();
   const [content, setContent] = useState(entry.content)
   const [tags, setTags] = useState(entry.tags.join(", "))
 
@@ -112,6 +114,18 @@ export function JournalEntryEditor({
         )}
 
         <div className="flex gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              sessionStorage.setItem('copilot_initial_message', `Can you help me process this journal entry? I wrote: "${content.substring(0, 200)}${content.length > 200 ? '...' : ''}". Can you help me identify themes or connections to my step work?`);
+              setLocation('/ai-sponsor');
+            }}
+            className="gap-2"
+          >
+            <Sparkles className="h-3 w-3" />
+            Process with Copilot
+          </Button>
           <Button onClick={handleSave} size="sm" className="flex-1">
             Save Changes
           </Button>

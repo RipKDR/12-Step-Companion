@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, ChevronLeft, ChevronRight, BookOpen, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
 import { exportStepAnswers } from '@/lib/export';
@@ -16,8 +16,11 @@ import { EmptyStepsState } from '@/components/EmptyState';
 import { StepCardSkeletonList } from '@/components/StepCardSkeleton';
 import { InlineEditor } from '@/components/InlineEditor';
 import { haptics } from '@/lib/haptics';
+import ShareBadge from '@/components/sponsor-connection/ShareBadge';
+import { useLocation } from 'wouter';
 
 export default function Steps() {
+  const [, setLocation] = useLocation();
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [stepContent, setStepContent] = useState<StepContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -299,19 +302,45 @@ export default function Steps() {
               return (
                 <Card key={question.id} data-testid={`question-${question.id}`} role="article" aria-labelledby={`question-title-${question.id}`}>
                   <CardHeader>
-                    {question.section && (
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2" aria-label="Section">
-                        {question.section}
-                      </p>
-                    )}
-                    <CardTitle className="text-lg leading-relaxed" id={`question-title-${question.id}`}>
-                      {question.prompt}
-                    </CardTitle>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        {question.section && (
+                          <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2" aria-label="Section">
+                            {question.section}
+                          </p>
+                        )}
+                        <CardTitle className="text-lg leading-relaxed" id={`question-title-${question.id}`}>
+                          {question.prompt}
+                        </CardTitle>
+                      </div>
+                      {existingAnswer?.answer && (
+                        <ShareBadge
+                          itemType="step-entry"
+                          itemId={question.id}
+                          size="sm"
+                        />
+                      )}
+                    </div>
                     {question.help && (
                       <p className="text-sm text-muted-foreground mt-2" id={`question-help-${question.id}`}>
                         {question.help}
                       </p>
                     )}
+                    <div className="mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Store initial message in sessionStorage for AISponsor to pick up
+                          sessionStorage.setItem('copilot_initial_message', `I'm working on Step ${selectedStep}, Question ${currentQuestionIndex + 1}: "${question.prompt}". Can you help me think through this?`);
+                          setLocation('/ai-sponsor');
+                        }}
+                        className="gap-2"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        Ask Copilot
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>

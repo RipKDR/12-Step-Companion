@@ -406,6 +406,7 @@ export default function Journal() {
               }
               return (
                 <JournalEntryCard
+                  entryId={entry.id}
                   key={entry.id}
                   date={entry.date}
                   content={entry.content}

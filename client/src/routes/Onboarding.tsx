@@ -5,13 +5,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Heart, Lock, Globe, Calendar, Sparkles, CheckCircle } from 'lucide-react';
+import { Heart, Lock, Globe, Calendar, Sparkles, CheckCircle, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useAppStore } from '@/store/useAppStore';
 import { detectTimezone } from '@/lib/time';
 import { getTodayDate } from '@/lib/time';
+import SafetyPlanBuilder from '@/components/safety-plan/SafetyPlanBuilder';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
@@ -21,6 +26,7 @@ export default function Onboarding() {
   const [cleanTime, setCleanTime] = useState('00:00');
   const [timezone] = useState(detectTimezone());
   const [gratitude, setGratitude] = useState('');
+  const [showSafetyPlanBuilder, setShowSafetyPlanBuilder] = useState(false);
 
   const setProfile = useAppStore((state) => state.setProfile);
   const completeOnboarding = useAppStore((state) => state.completeOnboarding);
@@ -195,8 +201,74 @@ export default function Onboarding() {
     );
   }
 
-  // Step 3: You're Ready!
+  // Step 3: Safety Plan (Optional)
   if (step === 3) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Shield className="h-6 w-6 text-primary" />
+              <CardTitle className="text-xl font-semibold">Create Your Safety Plan</CardTitle>
+            </div>
+            <CardDescription>
+              Build a personalized safety plan for when things get tough. You can skip this and create it later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">People to contact</p>
+                  <p className="text-muted-foreground">Your sponsor, recovery friends, crisis lines</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                <Heart className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Reasons not to use</p>
+                  <p className="text-muted-foreground">Your own words about why you stay clean</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Actions before using</p>
+                  <p className="text-muted-foreground">What to do when cravings hit</p>
+                </div>
+              </div>
+            </div>
+
+            <Progress value={progress} className="h-2" />
+            <p className="text-center text-sm text-muted-foreground">
+              Step {step} of {TOTAL_STEPS}
+            </p>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setStep(4)}
+                className="flex-1"
+              >
+                Skip for Now
+              </Button>
+              <Button
+                onClick={() => setShowSafetyPlanBuilder(true)}
+                className="flex-1"
+                data-testid="button-create-safety-plan"
+              >
+                Create Plan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Step 4: You're Ready!
+  if (step === 4) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-md">
@@ -252,5 +324,23 @@ export default function Onboarding() {
     );
   }
 
-  return null;
+  return (
+    <>
+      {/* Safety Plan Builder Dialog */}
+      <Dialog open={showSafetyPlanBuilder} onOpenChange={setShowSafetyPlanBuilder}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <SafetyPlanBuilder
+            onComplete={() => {
+              setShowSafetyPlanBuilder(false);
+              setStep(4);
+            }}
+            onCancel={() => {
+              setShowSafetyPlanBuilder(false);
+              setStep(4);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

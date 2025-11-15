@@ -122,6 +122,7 @@ export default function Worksheets() {
         return (
           <Input
             id={field.id}
+            name={field.id}
             value={value}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             placeholder={field.help}
@@ -133,6 +134,7 @@ export default function Worksheets() {
         return (
           <Textarea
             id={field.id}
+            name={field.id}
             value={value}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             placeholder={field.help}
@@ -145,6 +147,7 @@ export default function Worksheets() {
         return (
           <Input
             id={field.id}
+            name={field.id}
             type="number"
             value={value}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -159,7 +162,7 @@ export default function Worksheets() {
             value={value}
             onValueChange={(val) => handleFieldChange(field.id, val)}
           >
-            <SelectTrigger data-testid={`select-${field.id}`}>
+            <SelectTrigger id={field.id} name={field.id} data-testid={`select-${field.id}`}>
               <SelectValue placeholder={field.help || 'Select an option'} />
             </SelectTrigger>
             <SelectContent>

@@ -120,6 +120,7 @@ export default function PracticePanel({
           {/* Primary Streak - Hero Card */}
           {(() => {
             const streakConfigs = [
+              { key: 'recoveryRhythm', title: 'Recovery Rhythm', icon: Sparkles, color: 'purple' as const, streak: streaks.recoveryRhythm },
               { key: 'journaling', title: 'Journaling', icon: PenLine, color: 'blue' as const, streak: streaks.journaling },
               { key: 'dailyCards', title: 'Daily Cards', icon: Calendar, color: 'green' as const, streak: streaks.dailyCards },
               { key: 'stepWork', title: 'Step Work', icon: BookOpen, color: 'purple' as const, streak: streaks.stepWork },

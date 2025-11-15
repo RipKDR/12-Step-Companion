@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Sponsor Chat endpoint (works with or without auth)
   app.post('/api/ai-sponsor/chat', isAuthenticated, async (req: any, res) => {
     try {
-      const { message, conversationHistory, userContext } = req.body;
+      const { message, conversationHistory, userContext, contextWindow, promptType } = req.body;
 
       // Validate message
       if (!message || typeof message !== 'string') {
@@ -121,8 +121,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Build personalized context section with sanitization
+      // Support both old userContext format and new contextWindow format
       let personalContext = '';
-      if (userContext) {
+      
+      // Use structured contextWindow if provided, otherwise fall back to userContext
+      if (contextWindow) {
+        personalContext = '\n\n--- RECOVERY CONTEXT ---\n';
+        
+        if (contextWindow.recentStepWork && Array.isArray(contextWindow.recentStepWork) && contextWindow.recentStepWork.length > 0) {
+          personalContext += `\nRecent Step Work:\n`;
+          contextWindow.recentStepWork.forEach((summary: string, idx: number) => {
+            personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
+          });
+        }
+        
+        if (contextWindow.recentJournals && Array.isArray(contextWindow.recentJournals) && contextWindow.recentJournals.length > 0) {
+          personalContext += `\nRecent Journal Entries:\n`;
+          contextWindow.recentJournals.forEach((summary: string, idx: number) => {
+            personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
+          });
+        }
+        
+        if (contextWindow.activeScenes && Array.isArray(contextWindow.activeScenes) && contextWindow.activeScenes.length > 0) {
+          personalContext += `\nActive Recovery Scenes:\n`;
+          contextWindow.activeScenes.forEach((scene: string, idx: number) => {
+            personalContext += `${idx + 1}. ${sanitizeText(scene, 200)}\n`;
+          });
+        }
+        
+        if (contextWindow.currentStreaks && typeof contextWindow.currentStreaks === 'object') {
+          personalContext += `\nCurrent Streaks:\n`;
+          Object.entries(contextWindow.currentStreaks).forEach(([type, count]) => {
+            if (typeof count === 'number' && count > 0) {
+              personalContext += `- ${type}: ${count} days\n`;
+            }
+          });
+        }
+        
+        if (contextWindow.recentMoodTrend && Array.isArray(contextWindow.recentMoodTrend) && contextWindow.recentMoodTrend.length > 0) {
+          const avgMood = contextWindow.recentMoodTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentMoodTrend.length;
+          personalContext += `\nMood Trend (Last 7 Days): Average ${avgMood.toFixed(1)}/5\n`;
+        }
+        
+        if (contextWindow.recentCravingsTrend && Array.isArray(contextWindow.recentCravingsTrend) && contextWindow.recentCravingsTrend.length > 0) {
+          const avgCravings = contextWindow.recentCravingsTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentCravingsTrend.length;
+          personalContext += `\nCravings Trend (Last 7 Days): Average ${avgCravings.toFixed(1)}/10\n`;
+        }
+        
+        personalContext += '--- END CONTEXT ---\n';
+      } else if (userContext) {
+        // Fallback to old userContext format for backward compatibility
         personalContext = '\n\n--- PERSONAL CONTEXT ---\n';
 
         if (userContext.name) {
@@ -195,48 +243,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Build enhanced system instruction
-      const systemInstruction = `You are an AI Sponsor - a compassionate, knowledgeable companion for people in 12-step recovery programs. You act as a personal sponsor would, with deep knowledge of their journey.
+      // Use recovery-focused prompt that never quotes copyrighted NA/AA text
+      const systemInstruction = `You are a recovery companion helping someone in 12-step recovery.
 
-YOUR ROLE AS A SPONSOR:
-
-1. **Know Them Deeply**
-   - You have access to their triggers, journal entries, and progress
-   - Reference their specific situations and patterns
-   - Remember past conversations and build on them
-   - Celebrate their progress and milestones
-
-2. **Provide Real Sponsor Support**
-   - Listen without judgment and validate their feelings
-   - Ask probing questions to help them reflect
-   - Challenge rationalizations and denial gently but firmly
-   - Help them work through the 12 steps systematically
-   - Provide accountability and encouragement
-   - Share 12-step wisdom and principles
-
-3. **Crisis Intervention**
-   - Recognize warning signs: talk of relapse, despair, isolation
-   - When you detect crisis, create a structured ACTION PLAN
-   - Format action plans clearly with numbered steps
-   - Always include emergency resources and human connections
-   - Be directive in crisis, supportive otherwise
-
-4. **Personalized Action Plans**
-   When someone describes a high-risk situation or trigger, provide:
-   - Immediate coping strategies (HALT: Hungry, Angry, Lonely, Tired)
-   - Specific steps to take in the next hour, day, week
-   - References to their known triggers and past patterns
-   - Connection to 12-step principles
-   - Encouragement to reach out to their human support network
-
-5. **12-Step Guidance**
-   - Help them work through step questions thoughtfully
-   - Connect current struggles to step principles
-   - Suggest which step might help their current situation
-   - Encourage meeting attendance and fellowship
+YOUR ROLE:
+- You are NOT a therapist or sponsor - you're a digital companion
+- Always encourage human connection (sponsor, meetings, recovery friends)
+- Never quote copyrighted recovery literature - paraphrase and summarize only
+- Ground your responses in the user's own data (step work, journals, scenes, daily check-ins)
+- Be supportive, empathetic, and recovery-focused
+- Help users process their own thoughts, not give medical advice
 
 COMMUNICATION STYLE:
 - Warm but real - like talking to a trusted friend who's been there
-- Direct when needed - sponsors give tough love
+- Direct when needed - recovery companions give honest feedback
 - Reference their personal data to show you know them
 - Ask follow-up questions about previous conversations
 - Use "we" and "us" language (the recovery community)
@@ -258,9 +278,9 @@ EMERGENCY RESOURCES TO SHARE IN CRISIS:
 - Go to a meeting immediately
 - Text a fellowship friend right now
 
-${personalContext}
+Remember: You're their recovery companion. You know their journey. Reference it. Build on it. Help them grow.
 
-Remember: You're their AI sponsor. You know their journey. Reference it. Build on it. Help them grow.`;
+${personalContext}`;
 
       // Initialize model with personalized system instruction
       const model = cachedGenAI.getGenerativeModel({

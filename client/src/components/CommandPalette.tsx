@@ -29,6 +29,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     { path: "/worksheets", label: "Worksheets", icon: FileText, keywords: ["worksheets", "forms"] },
     { path: "/meetings", label: "Meetings", icon: MapPin, keywords: ["meetings", "meeting finder"] },
     { path: "/contacts", label: "Contacts", icon: Users, keywords: ["contacts", "sponsor"] },
+    { path: "/sponsor-connection", label: "Sponsor Connection", icon: Users, keywords: ["sponsor", "connection", "share", "sponsee"] },
     { path: "/achievements", label: "Achievements", icon: Trophy, keywords: ["achievements", "badges"] },
     { path: "/settings", label: "Settings", icon: Settings, keywords: ["settings", "preferences"] },
     { path: "/more", label: "More", icon: MoreHorizontal, keywords: ["more", "menu"] },

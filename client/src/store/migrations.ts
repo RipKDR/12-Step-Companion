@@ -2,7 +2,7 @@ import type { AppState } from '@/types';
 import { initializeStreak } from '@/lib/streaks';
 import { createInitialRecoveryPoints } from './recoveryPointsDefaults';
 
-export const CURRENT_VERSION = 9;
+export const CURRENT_VERSION = 10;
 
 type Migration = (state: Partial<AppState>) => Partial<AppState>;
 
@@ -19,13 +19,64 @@ const migrations: Record<number, Migration> = {
         dailyCards: initializeStreak('dailyCards'),
         meetings: initializeStreak('meetings'),
         stepWork: initializeStreak('stepWork'),
+        recoveryRhythm: initializeStreak('recoveryRhythm'),
       };
+    } else if (!state.streaks.recoveryRhythm) {
+      state.streaks.recoveryRhythm = initializeStreak('recoveryRhythm');
     }
     return state;
   },
   3: (state: Partial<AppState>) => {
     // V3: Add notification settings
-    if (!state.settings.notifications) {
+    if (!state.settings) {
+      state.settings = {
+        theme: 'system',
+        highContrast: false,
+        reducedMotion: false,
+        cloudSync: false,
+        notifications: {
+          enabled: false,
+          permission: 'default',
+          morningCheckIn: {
+            enabled: true,
+            time: '08:00'
+          },
+          eveningReflection: {
+            enabled: true,
+            time: '20:00'
+          },
+          middayPulseCheck: {
+            enabled: false,
+            time: '14:00'
+          },
+          milestoneAlerts: true,
+          streakReminders: true,
+          challengeReminders: true,
+          quietHours: {
+            enabled: true,
+            start: '22:00',
+            end: '07:00'
+          },
+          jitaiNotifications: {
+            enabled: true,
+            respectQuietHours: true,
+            maxPerDay: 3
+          },
+          meetingReminders: {
+            enabled: false,
+            minutesBefore: [15, 30, 60],
+            respectQuietHours: true
+          }
+        },
+        enableVoiceRecording: false,
+        analytics: {
+          enabled: false,
+          collectUsageData: true,
+          collectPerformanceData: false,
+          retentionDays: 90,
+        },
+      };
+    } else if (!state.settings.notifications) {
       state.settings.notifications = {
         enabled: false,
         permission: 'default',
@@ -37,6 +88,10 @@ const migrations: Record<number, Migration> = {
           enabled: true,
           time: '20:00'
         },
+        middayPulseCheck: {
+          enabled: false,
+          time: '14:00'
+        },
         milestoneAlerts: true,
         streakReminders: true,
         challengeReminders: true,
@@ -44,8 +99,40 @@ const migrations: Record<number, Migration> = {
           enabled: true,
           start: '22:00',
           end: '07:00'
+        },
+        jitaiNotifications: {
+          enabled: true,
+          respectQuietHours: true,
+          maxPerDay: 3
+        },
+        meetingReminders: {
+          enabled: false,
+          minutesBefore: [15, 30, 60],
+          respectQuietHours: true
         }
       };
+    } else {
+      // Ensure new fields exist
+      if (!state.settings.notifications.middayPulseCheck) {
+        state.settings.notifications.middayPulseCheck = {
+          enabled: false,
+          time: '14:00'
+        };
+      }
+      if (!state.settings.notifications.jitaiNotifications) {
+        state.settings.notifications.jitaiNotifications = {
+          enabled: true,
+          respectQuietHours: true,
+          maxPerDay: 3
+        };
+      }
+      if (!state.settings.notifications.meetingReminders) {
+        state.settings.notifications.meetingReminders = {
+          enabled: false,
+          minutesBefore: [15, 30, 60],
+          respectQuietHours: true
+        };
+      }
     }
     return state;
   },
@@ -111,6 +198,43 @@ const migrations: Record<number, Migration> = {
       ...defaults.rewards,
       ...(state.recoveryPoints.rewards || {}),
     };
+
+    return state;
+  },
+  10: (state: Partial<AppState>) => {
+    // V10: Add Recovery Rhythm fields to DailyCard and recoveryRhythm streak
+    if (!state.streaks) {
+      state.streaks = {
+        journaling: initializeStreak('journaling'),
+        dailyCards: initializeStreak('dailyCards'),
+        meetings: initializeStreak('meetings'),
+        stepWork: initializeStreak('stepWork'),
+        recoveryRhythm: initializeStreak('recoveryRhythm'),
+      };
+    } else if (!state.streaks.recoveryRhythm) {
+      state.streaks.recoveryRhythm = initializeStreak('recoveryRhythm');
+    }
+
+    // Migrate existing dailyCards to include new fields with defaults
+    if (state.dailyCards) {
+      const migratedCards: Record<string, any> = {};
+      Object.entries(state.dailyCards).forEach(([date, card]) => {
+        migratedCards[date] = {
+          ...card,
+          middayCompleted: card.middayCompleted ?? false,
+          // New fields are optional, so no migration needed - they'll be undefined by default
+        };
+      });
+      state.dailyCards = migratedCards;
+    }
+
+    // Add middayPulseCheck notification setting if missing
+    if (state.settings?.notifications && !state.settings.notifications.middayPulseCheck) {
+      state.settings.notifications.middayPulseCheck = {
+        enabled: false,
+        time: '14:00',
+      };
+    }
 
     return state;
   },

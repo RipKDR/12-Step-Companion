@@ -4,6 +4,7 @@ import { Calendar, Smile, Frown, Meh, AlertTriangle } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 import { SwipeableItem } from './SwipeableItem';
 import { ContextualMenu } from './ContextualMenu';
+import ShareBadge from './sponsor-connection/ShareBadge';
 
 interface JournalEntryCardProps {
   date: string;
@@ -15,6 +16,7 @@ interface JournalEntryCardProps {
   triggerIntensity?: number;
   audioData?: string;
   audioDuration?: number;
+  entryId?: string;
   onClick: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -38,6 +40,7 @@ export default function JournalEntryCard({
   triggerIntensity, 
   audioData, 
   audioDuration, 
+  entryId,
   onClick,
   onDelete,
   onEdit,
@@ -73,11 +76,20 @@ export default function JournalEntryCard({
             <Calendar className="h-4 w-4" aria-hidden="true" />
             <time dateTime={date}>{formattedDate}</time>
           </div>
-          {getMoodIcon(mood) && (
-            <span aria-label={`Mood: ${mood ? (mood >= 7 ? 'Good' : mood >= 4 ? 'Neutral' : 'Low') : 'Not specified'}`}>
-              {getMoodIcon(mood)}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {entryId && (
+              <ShareBadge
+                itemType="journal-entry"
+                itemId={entryId}
+                size="sm"
+              />
+            )}
+            {getMoodIcon(mood) && (
+              <span aria-label={`Mood: ${mood ? (mood >= 7 ? 'Good' : mood >= 4 ? 'Neutral' : 'Low') : 'Not specified'}`}>
+                {getMoodIcon(mood)}
+              </span>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

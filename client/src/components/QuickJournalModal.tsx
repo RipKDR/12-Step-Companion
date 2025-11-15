@@ -155,6 +155,7 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
             <Label htmlFor="journal-content">Your thoughts</Label>
             <Textarea
               id="journal-content"
+              name="journal-content"
               placeholder="What's on your mind?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -165,12 +166,15 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
 
           {/* Mood Selector */}
           <div className="space-y-2">
-            <Label>How are you feeling?</Label>
-            <div className="flex gap-2 justify-around">
+            <Label htmlFor="mood-selector">How are you feeling?</Label>
+            <div id="mood-selector" className="flex gap-2 justify-around" role="group" aria-labelledby="mood-selector-label">
+              <span id="mood-selector-label" className="sr-only">Select your mood</span>
               {MOODS.map((m) => (
                 <button
                   key={m.value}
                   type="button"
+                  id={`mood-${m.value}`}
+                  name="mood"
                   onClick={() => setMood(m.value)}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
                     mood === m.value
@@ -178,6 +182,8 @@ export default function QuickJournalModal({ open, onOpenChange }: QuickJournalMo
                       : 'hover:bg-muted'
                   }`}
                   title={m.label}
+                  aria-label={m.label}
+                  aria-pressed={mood === m.value}
                 >
                   <span className="text-2xl">{m.emoji}</span>
                   <span className="text-xs">{m.label}</span>

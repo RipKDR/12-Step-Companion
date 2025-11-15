@@ -20,7 +20,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell, BarChart3, Settings as SettingsIcon, Shield } from 'lucide-react';
+import { Download, Upload, Lock, User, FileText, AlertTriangle, Bell, BarChart3, Settings as SettingsIcon, Shield, MapPin, Search } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { exportJSON, exportEncrypted } from '@/lib/export';
@@ -39,6 +39,9 @@ export default function Settings() {
   const updateNotificationPermission = useAppStore((state) => state.updateNotificationPermission);
   const exportData = useAppStore((state) => state.exportData);
   const importData = useAppStore((state) => state.importData);
+  const bmltApiRoot = useAppStore((state) => state.bmltApiRoot);
+  const bmltApiKey = useAppStore((state) => state.bmltApiKey);
+  const setBMLTConfig = useAppStore((state) => state.setBMLTConfig);
 
   const [showEncryptDialog, setShowEncryptDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -46,6 +49,8 @@ export default function Settings() {
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isEncryptedImport, setIsEncryptedImport] = useState(false);
+  const [bmltApiRootInput, setBMLTApiRootInput] = useState(bmltApiRoot || '');
+  const [bmltApiKeyInput, setBMLTApiKeyInput] = useState(bmltApiKey || '');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -506,6 +511,156 @@ export default function Settings() {
               </div>
             </>
           )}
+
+          {/* Meeting Reminders */}
+          <Separator />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="meeting-reminders-enabled">Meeting Reminders</Label>
+                <p className="text-sm text-muted-foreground">Get notified before your favorite meetings</p>
+              </div>
+              <Switch
+                id="meeting-reminders-enabled"
+                checked={settings.notifications.meetingReminders.enabled}
+                onCheckedChange={(checked) =>
+                  updateNotificationSettings({
+                    meetingReminders: { ...settings.notifications.meetingReminders, enabled: checked }
+                  })
+                }
+                data-testid="switch-meeting-reminders-enabled"
+              />
+            </div>
+
+            {settings.notifications.meetingReminders.enabled && (
+              <div className="space-y-4 pl-6 border-l-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="respect-quiet-hours-meetings">Respect Quiet Hours</Label>
+                  <Switch
+                    id="respect-quiet-hours-meetings"
+                    checked={settings.notifications.meetingReminders.respectQuietHours}
+                    onCheckedChange={(checked) =>
+                      updateNotificationSettings({
+                        meetingReminders: {
+                          ...settings.notifications.meetingReminders,
+                          respectQuietHours: checked
+                        }
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Default Reminder Times</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Available reminder times: {settings.notifications.meetingReminders.minutesBefore.join(', ')} minutes before
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* BMLT API Configuration */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Search className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle>Meeting Finder (BMLT)</CardTitle>
+              <CardDescription>Configure BMLT API for NA meeting search</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>BMLT API Setup</AlertTitle>
+            <AlertDescription className="mt-2">
+              <p className="mb-2">
+                To use the meeting finder, you need to provide your BMLT (Basic Meeting List Tool) API root URL.
+              </p>
+              <p className="mb-2">
+                <strong>How to get your BMLT API root:</strong>
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-sm">
+                <li>Contact your local NA service body or area</li>
+                <li>Ask for the BMLT server URL for your region</li>
+                <li>Enter the root URL below (e.g., https://bmlt.example.com)</li>
+              </ol>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Some BMLT servers may require an API key. Check with your service body if searches fail.
+              </p>
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="bmlt-api-root">
+                BMLT API Root URL <span className="text-muted-foreground">(required)</span>
+              </Label>
+              <Input
+                id="bmlt-api-root"
+                type="url"
+                placeholder="https://bmlt.example.com"
+                value={bmltApiRootInput}
+                onChange={(e) => setBMLTApiRootInput(e.target.value)}
+                data-testid="input-bmlt-api-root"
+              />
+              <p className="text-xs text-muted-foreground">
+                The root URL of your BMLT server (without trailing slash)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bmlt-api-key">
+                API Key <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id="bmlt-api-key"
+                type="password"
+                placeholder="Enter API key if required"
+                value={bmltApiKeyInput}
+                onChange={(e) => setBMLTApiKeyInput(e.target.value)}
+                data-testid="input-bmlt-api-key"
+              />
+              <p className="text-xs text-muted-foreground">
+                Some BMLT servers require an API key for access
+              </p>
+            </div>
+
+            <Button
+              onClick={() => {
+                if (!bmltApiRootInput.trim()) {
+                  toast({
+                    title: 'API root required',
+                    description: 'Please enter a BMLT API root URL',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+
+                setBMLTConfig(bmltApiRootInput.trim(), bmltApiKeyInput.trim() || undefined);
+                toast({
+                  title: 'BMLT configuration saved',
+                  description: 'Your BMLT API settings have been saved',
+                });
+              }}
+              data-testid="button-save-bmlt-config"
+            >
+              Save BMLT Configuration
+            </Button>
+
+            {bmltApiRoot && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium mb-1">Current Configuration</p>
+                <p className="text-xs text-muted-foreground">
+                  Root: {bmltApiRoot}
+                  {bmltApiKey && <span className="ml-2">• API Key: ••••••••</span>}
+                </p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
         </TabsContent>

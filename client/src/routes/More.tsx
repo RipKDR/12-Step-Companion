@@ -9,7 +9,8 @@ import {
   Trophy,
   Phone,
   ChevronRight,
-  Bot
+  Bot,
+  UserCheck
 } from 'lucide-react';
 
 const menuItems = [
@@ -40,6 +41,13 @@ const menuItems = [
     icon: Phone,
     path: '/contacts',
     testId: 'more-contacts'
+  },
+  {
+    title: 'Sponsor Connection',
+    description: 'Connect and share with your sponsor',
+    icon: UserCheck,
+    path: '/sponsor-connection',
+    testId: 'more-sponsor-connection'
   },
   {
     title: 'AI Sponsor',

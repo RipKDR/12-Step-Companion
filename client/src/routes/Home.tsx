@@ -16,6 +16,10 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { Sparkles, ChevronDown } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
+import { SceneQuickAccess } from "@/components/recovery-scenes/SceneQuickAccess";
+import MorningIntentionCard from "@/components/recovery-rhythm/MorningIntentionCard";
+import MiddayPulseCheck from "@/components/recovery-rhythm/MiddayPulseCheck";
+import EveningInventoryCard from "@/components/recovery-rhythm/EveningInventoryCard";
 import { getTodayDate } from "@/lib/time";
 import { loadAllSteps } from "@/lib/contentLoader";
 import { checkSobrietyMilestone, checkStreakMilestone } from "@/lib/milestones";
@@ -31,12 +35,26 @@ import type {
   UnlockedAchievement,
   DailyChallenge,
   ChallengeTheme,
+  DailyCard,
 } from "@/types";
+import ShareBadge from '@/components/sponsor-connection/ShareBadge';
+import RiskSignalCard from '@/components/jitai/RiskSignalCard';
+import InterventionSuggestions from '@/components/jitai/InterventionSuggestions';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Clock, MapPin, Navigation } from 'lucide-react';
+import { useLocation } from 'wouter';
+import type { Meeting } from '@/types';
+import { formatDistance } from '@/lib/location';
 
 export default function Home() {
   const profile = useAppStore((state) => state.profile);
   const getDailyCard = useAppStore((state) => state.getDailyCard);
   const updateDailyCard = useAppStore((state) => state.updateDailyCard);
+  const setMorningIntention = useAppStore((state) => state.setMorningIntention);
+  const setMiddayPulseCheck = useAppStore((state) => state.setMiddayPulseCheck);
+  const setEveningInventory = useAppStore((state) => state.setEveningInventory);
   const getStepAnswers = useAppStore((state) => state.getStepAnswers);
   const stepAnswersState = useAppStore((state) => state.stepAnswers);
   const streaks = useAppStore((state) => state.streaks);
@@ -52,10 +70,22 @@ export default function Home() {
   const completeChallenge = useAppStore((state) => state.completeChallenge);
   const trackAnalyticsEvent = useAppStore((state) => state.trackAnalyticsEvent);
   const awardPoints = useAppStore((state) => state.awardPoints);
+  const detectRiskSignals = useAppStore((state) => state.detectRiskSignals);
+  const dismissRiskSignal = useAppStore((state) => state.dismissRiskSignal);
+  const riskSignalsRaw = useAppStore((state) => state.riskSignals);
+  const riskSignals = useMemo(() => {
+    const signals = riskSignalsRaw || {};
+    return Object.values(signals).filter((s) => !s.dismissedAtISO);
+  }, [riskSignalsRaw]);
+  const meetingCache = useAppStore((state) => state.meetingCache);
+  const getFavoriteMeetings = useAppStore((state) => state.getFavoriteMeetings);
+  const getMeetingsWithReminders = useAppStore((state) => state.getMeetingsWithReminders);
+  const [, setLocation] = useLocation();
 
   const [stepQuestionCounts, setStepQuestionCounts] = useState<
     Map<number, number>
   >(new Map());
+  const [showInterventionSuggestions, setShowInterventionSuggestions] = useState(false);
   const [showQuickJournal, setShowQuickJournal] = useState(false);
   const [showQuickGratitude, setShowQuickGratitude] = useState(false);
   const [showQuickMeeting, setShowQuickMeeting] = useState(false);
@@ -87,6 +117,16 @@ export default function Home() {
       setStepQuestionCounts(counts);
     });
   }, []);
+
+  // Check for risk signals on mount and after daily card updates
+  useEffect(() => {
+    const signals = detectRiskSignals();
+    // Show intervention suggestions if high-risk signals detected
+    const highRiskSignals = signals.filter((s) => s.severity >= 70);
+    if (highRiskSignals.length > 0) {
+      setShowInterventionSuggestions(true);
+    }
+  }, [detectRiskSignals, dailyCard?.updatedAtISO]);
 
   // Load today's challenge
   useEffect(() => {
@@ -260,6 +300,19 @@ export default function Home() {
     updateDailyCard(todayDate, { quickNotes: value });
   }, [todayDate, updateDailyCard]);
 
+  // Recovery Rhythm handlers
+  const handleMorningIntention = useCallback((intention: DailyCard['morningIntention'], custom?: string, reminder?: string) => {
+    setMorningIntention(todayDate, intention, custom, reminder);
+  }, [todayDate, setMorningIntention]);
+
+  const handleMiddayPulseCheck = useCallback((mood: number, craving: number, context: string[]) => {
+    setMiddayPulseCheck(todayDate, mood, craving, context);
+  }, [todayDate, setMiddayPulseCheck]);
+
+  const handleEveningInventory = useCallback((stayedClean: DailyCard['eveningStayedClean'], stayedConnected: DailyCard['eveningStayedConnected'], gratitude?: string, improvement?: string) => {
+    setEveningInventory(todayDate, stayedClean, stayedConnected, gratitude, improvement);
+  }, [todayDate, setEveningInventory]);
+
   const isChallengeCompleted = isTodayChallengeCompleted(completedChallenges);
   const weeklyCount = getWeeklyCompletionCount(completedChallenges);
 
@@ -300,6 +353,82 @@ export default function Home() {
     updateDailyCard(todayDate, { eveningCompleted: !dailyCard?.eveningCompleted });
   }, [todayDate, dailyCard?.eveningCompleted, updateDailyCard]);
 
+  // Get meetings starting soon (next 60 minutes)
+  const meetingsStartingSoon = useMemo(() => {
+    const now = new Date();
+    const currentDay = now.getDay();
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
+    const oneHourLater = currentTime + 60;
+
+    // Combine meetings from cache and favorites
+    const allMeetings: Meeting[] = [];
+    if (meetingCache) {
+      allMeetings.push(...meetingCache.meetings);
+    }
+    const favorites = getFavoriteMeetings();
+    favorites.forEach(fav => {
+      if (!allMeetings.find(m => m.id === fav.id)) {
+        allMeetings.push(fav);
+      }
+    });
+
+    return allMeetings.filter(meeting => {
+      if (meeting.dayOfWeek !== currentDay) return false;
+      const [hours, minutes] = meeting.time.split(':').map(Number);
+      const meetingTime = hours * 60 + minutes;
+      return meetingTime >= currentTime && meetingTime <= oneHourLater;
+    }).sort((a, b) => {
+      const [aHours, aMins] = a.time.split(':').map(Number);
+      const [bHours, bMins] = b.time.split(':').map(Number);
+      const aTime = aHours * 60 + aMins;
+      const bTime = bHours * 60 + bMins;
+      return aTime - bTime;
+    });
+  }, [meetingCache, getFavoriteMeetings]);
+
+  // Get next meeting reminder
+  const nextReminder = useMemo<{ meeting: Meeting; minutesUntil: number } | null>(() => {
+    const meetingsWithReminders = getMeetingsWithReminders();
+    if (meetingsWithReminders.length === 0) return null;
+
+    const now = new Date();
+    const currentDay = now.getDay();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    let next: Meeting | null = null;
+    let minMinutesUntil = Infinity;
+
+    meetingsWithReminders.forEach(meeting => {
+      if (!meeting.reminderEnabled) return;
+
+      const [hours, minutes] = meeting.time.split(':').map(Number);
+      const meetingTime = hours * 60 + minutes;
+      const reminderTime = meetingTime - meeting.reminderMinutesBefore;
+
+      let daysUntil = (meeting.dayOfWeek - currentDay + 7) % 7;
+      if (daysUntil === 0 && reminderTime <= currentTime) {
+        daysUntil = 7;
+      }
+
+      const minutesUntil = daysUntil * 24 * 60 + reminderTime - currentTime;
+
+      if (minutesUntil >= 0 && minutesUntil < minMinutesUntil) {
+        minMinutesUntil = minutesUntil;
+        next = meeting;
+      }
+    });
+
+    return next ? { meeting: next, minutesUntil: minMinutesUntil } : null;
+  }, [getMeetingsWithReminders]);
+
+  const formatMeetingTime = (meeting: Meeting): string => {
+    const [hours, minutes] = meeting.time.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
   return (
     <div className="min-h-screen pb-24">
       {/* Skip to main content link */}
@@ -324,6 +453,19 @@ export default function Home() {
           aria-live="polite"
           aria-atomic="true"
         >
+        {/* Risk Signals */}
+        {riskSignals.length > 0 && (
+          <div className="space-y-3">
+            {riskSignals.map((signal) => (
+              <RiskSignalCard
+                key={signal.id}
+                signal={signal}
+                onDismiss={() => dismissRiskSignal(signal.id)}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Welcome Section */}
         <section className="flex items-center gap-3">
           <Sparkles className="h-6 w-6 text-primary" />
@@ -370,10 +512,156 @@ export default function Home() {
           <TodayShortcuts currentStep={stepProgress.currentStep} />
         </section>
 
-        {/* Today Check-in */}
+        {/* Meetings Starting Soon */}
+        {meetingsStartingSoon.length > 0 && (
+          <section aria-labelledby="meetings-soon-heading">
+            <h2 id="meetings-soon-heading" className="sr-only">
+              Meetings Starting Soon
+            </h2>
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      Meetings Starting Soon
+                    </CardTitle>
+                    <CardDescription>
+                      {meetingsStartingSoon.length} meeting{meetingsStartingSoon.length !== 1 ? 's' : ''} in the next hour
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary">{meetingsStartingSoon.length}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {meetingsStartingSoon.slice(0, 3).map((meeting) => {
+                  const [hours, minutes] = meeting.time.split(':').map(Number);
+                  const now = new Date();
+                  const meetingTime = new Date(now);
+                  meetingTime.setHours(hours, minutes, 0, 0);
+                  const minutesUntil = Math.max(0, Math.floor((meetingTime.getTime() - now.getTime()) / 60000));
+
+                  return (
+                    <div
+                      key={meeting.id}
+                      className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors"
+                      onClick={() => setLocation('/meetings?tab=finder')}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-xs">{meeting.program}</Badge>
+                          <span className="font-medium text-sm">{meeting.name}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatMeetingTime(meeting)} • {minutesUntil === 0 ? 'Starting now' : `in ${minutesUntil} min`}
+                          {meeting.location && meeting.distanceKm && (
+                            <span> • {formatDistance(meeting.distanceKm)}</span>
+                          )}
+                        </div>
+                      </div>
+                      <Navigation className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  );
+                })}
+                {meetingsStartingSoon.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setLocation('/meetings?tab=finder')}
+                  >
+                    View all ({meetingsStartingSoon.length})
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* Next Meeting Reminder */}
+        {nextReminder && (
+          <section aria-labelledby="next-reminder-heading">
+            <h2 id="next-reminder-heading" className="sr-only">
+              Next Meeting Reminder
+            </h2>
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4" />
+                  Next Reminder
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="font-medium">{nextReminder.meeting.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Reminder in {Math.floor(nextReminder.minutesUntil / 60)}h {nextReminder.minutesUntil % 60}m
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLocation('/meetings?tab=reminders')}
+                    className="w-full"
+                  >
+                    Manage Reminders
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* Recovery Rhythm */}
+        <CollapsibleSection
+          title="Recovery Rhythm"
+          defaultOpen={true}
+          icon={<Sparkles className="h-4 w-4" />}
+          action={dailyCard && (
+            <ShareBadge
+              itemType="daily-entry"
+              itemId={todayDate}
+              size="sm"
+            />
+          )}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Three quick check-ins to build your daily recovery habit
+            </p>
+            <MorningIntentionCard
+              date={todayDate}
+              dailyCard={dailyCard || undefined}
+              onComplete={handleMorningIntention}
+            />
+            <MiddayPulseCheck
+              date={todayDate}
+              dailyCard={dailyCard || undefined}
+              onComplete={handleMiddayPulseCheck}
+            />
+            <EveningInventoryCard
+              date={todayDate}
+              dailyCard={dailyCard || undefined}
+              onComplete={handleEveningInventory}
+            />
+            
+            {/* Show streak if complete rhythm exists */}
+            {streaks.recoveryRhythm.current > 0 && (
+              <div className="pt-2 border-t">
+                <div className="flex items-center gap-2 text-sm">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="font-medium">
+                    {streaks.recoveryRhythm.current} day{streaks.recoveryRhythm.current !== 1 ? 's' : ''} of complete rhythm
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+
+        {/* Today Check-in (Legacy) */}
         <CollapsibleSection
           title="Today's Check-in"
-          defaultOpen={true}
+          defaultOpen={false}
           icon={<Sparkles className="h-4 w-4" />}
         >
           <TodayCheckIn
@@ -415,6 +703,15 @@ export default function Home() {
         onOpenChange={setShowChallengeCompletion}
         onSave={handleChallengeCompletionSave}
       />
+
+      <InterventionSuggestions
+        signals={riskSignals}
+        open={showInterventionSuggestions}
+        onOpenChange={setShowInterventionSuggestions}
+      />
+      
+      {/* Recovery Scenes Quick Access */}
+      <SceneQuickAccess variant="fab" />
     </div>
   );
 }

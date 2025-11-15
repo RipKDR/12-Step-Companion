@@ -14,6 +14,7 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean
   className?: string
   icon?: ReactNode
+  action?: ReactNode
 }
 
 export function CollapsibleSection({
@@ -22,6 +23,7 @@ export function CollapsibleSection({
   defaultOpen = false,
   className,
   icon,
+  action,
 }: CollapsibleSectionProps) {
   return (
     <Accordion
@@ -32,9 +34,16 @@ export function CollapsibleSection({
     >
       <AccordionItem value="section" className="border-none">
         <AccordionTrigger className="hover:no-underline py-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            <span className="font-medium">{title}</span>
+          <div className="flex items-center justify-between w-full pr-4">
+            <div className="flex items-center gap-2">
+              {icon}
+              <span className="font-medium">{title}</span>
+            </div>
+            {action && (
+              <div onClick={(e) => e.stopPropagation()}>
+                {action}
+              </div>
+            )}
           </div>
         </AccordionTrigger>
         <AccordionContent className="pt-2 pb-4">

@@ -4,9 +4,12 @@ import GratitudeList from "@/components/GratitudeList";
 import QuickNotes from "@/components/QuickNotes";
 import MeditationTimer from "@/components/MeditationTimer";
 import ProgressRing from "@/components/ProgressRing";
+import MorningIntentionCard from "@/components/recovery-rhythm/MorningIntentionCard";
+import MiddayPulseCheck from "@/components/recovery-rhythm/MiddayPulseCheck";
+import EveningInventoryCard from "@/components/recovery-rhythm/EveningInventoryCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Sunrise, Moon, ChevronDown, ChevronUp } from "lucide-react";
+import { Sunrise, Moon, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { Link } from "wouter";
 import type { DailyCard as DailyCardData } from "@/types";
 
@@ -23,6 +26,11 @@ interface RoutinePanelProps {
   onEveningComplete: () => void;
   onGratitudeChange: (items: string[]) => void;
   onQuickNotesChange: (value: string) => void;
+  // Recovery Rhythm handlers
+  onMorningIntention: (intention: DailyCardData['morningIntention'], custom?: string, reminder?: string) => void;
+  onMiddayPulseCheck: (mood: number, craving: number, context: string[]) => void;
+  onEveningInventory: (stayedClean: DailyCardData['eveningStayedClean'], stayedConnected: DailyCardData['eveningStayedConnected'], gratitude?: string, improvement?: string) => void;
+  date: string;
 }
 
 export default function RoutinePanel({
@@ -34,6 +42,10 @@ export default function RoutinePanel({
   onEveningComplete,
   onGratitudeChange,
   onQuickNotesChange,
+  onMorningIntention,
+  onMiddayPulseCheck,
+  onEveningInventory,
+  date,
 }: RoutinePanelProps) {
   const [showDailyPractice, setShowDailyPractice] = useState(false);
 
@@ -102,35 +114,63 @@ export default function RoutinePanel({
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-4 pt-0">
-                <DailyCard
-                  title="Morning Intent"
-                  icon={<Sunrise className="h-5 w-5" />}
-                  value={dailyCard?.morningIntent || ""}
-                  completed={dailyCard?.morningCompleted || false}
-                  onChange={onMorningChange}
-                  onComplete={onMorningComplete}
-                  testId="morning-card"
-                />
-                <DailyCard
-                  title="Evening Reflection"
-                  icon={<Moon className="h-5 w-5" />}
-                  value={dailyCard?.eveningReflection || ""}
-                  completed={dailyCard?.eveningCompleted || false}
-                  onChange={onEveningChange}
-                  onComplete={onEveningComplete}
-                  testId="evening-card"
-                />
-                <GratitudeList
-                  items={dailyCard?.gratitudeItems || []}
-                  onChange={onGratitudeChange}
-                  testId="gratitude-list"
-                />
-                <QuickNotes
-                  value={dailyCard?.quickNotes || ""}
-                  onChange={onQuickNotesChange}
-                  testId="quick-notes"
-                />
-                <MeditationTimer testId="meditation-timer" />
+                {/* Recovery Rhythm - New structured check-ins */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Recovery Rhythm
+                  </h3>
+                  <MorningIntentionCard
+                    date={date}
+                    dailyCard={dailyCard || undefined}
+                    onComplete={onMorningIntention}
+                  />
+                  <MiddayPulseCheck
+                    date={date}
+                    dailyCard={dailyCard || undefined}
+                    onComplete={onMiddayPulseCheck}
+                  />
+                  <EveningInventoryCard
+                    date={date}
+                    dailyCard={dailyCard || undefined}
+                    onComplete={onEveningInventory}
+                  />
+                </div>
+
+                {/* Legacy Daily Cards - Keep for backward compatibility */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Additional Reflections
+                  </h3>
+                  <DailyCard
+                    title="Morning Intent"
+                    icon={<Sunrise className="h-5 w-5" />}
+                    value={dailyCard?.morningIntent || ""}
+                    completed={dailyCard?.morningCompleted || false}
+                    onChange={onMorningChange}
+                    onComplete={onMorningComplete}
+                    testId="morning-card"
+                  />
+                  <DailyCard
+                    title="Evening Reflection"
+                    icon={<Moon className="h-5 w-5" />}
+                    value={dailyCard?.eveningReflection || ""}
+                    completed={dailyCard?.eveningCompleted || false}
+                    onChange={onEveningChange}
+                    onComplete={onEveningComplete}
+                    testId="evening-card"
+                  />
+                  <GratitudeList
+                    items={dailyCard?.gratitudeItems || []}
+                    onChange={onGratitudeChange}
+                    testId="gratitude-list"
+                  />
+                  <QuickNotes
+                    value={dailyCard?.quickNotes || ""}
+                    onChange={onQuickNotesChange}
+                    testId="quick-notes"
+                  />
+                  <MeditationTimer testId="meditation-timer" />
+                </div>
               </CardContent>
             </CollapsibleContent>
           </Card>

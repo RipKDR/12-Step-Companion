@@ -248,6 +248,8 @@ export default function RelapseResetModal({ open, onOpenChange }: RelapseResetMo
               ))}
             </div>
             <Textarea
+              id="implementation-intention"
+              name="implementation-intention"
               value={implementationIntention}
               onChange={(event) => setImplementationIntention(event.target.value)}
               className="min-h-[90px]"

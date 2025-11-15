@@ -2,12 +2,19 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { AISponsorMessage } from '@/types';
+import type { AISponsorMessage, CopilotContext } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -47,9 +54,21 @@ import {
   Calendar,
   FileText,
   List,
+  Sparkles,
+  TrendingUp,
+  Calendar as CalendarIcon,
+  Settings,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { gatherContextForCopilot, buildContextPrompt } from '@/lib/copilot-context';
+import { buildChatPrompt } from '@/lib/copilot-prompts';
+import { generateWeeklyDigest, getWeekDates } from '@/lib/copilot-digest';
+import { detectPatterns } from '@/lib/copilot-patterns';
+import WeeklyDigest from '@/components/recovery-copilot/WeeklyDigest';
+import MeetingPrep from '@/components/recovery-copilot/MeetingPrep';
+import PatternDetection from '@/components/recovery-copilot/PatternDetection';
+import CopilotSettings from '@/components/recovery-copilot/CopilotSettings';
 
 // Constants
 const MAX_CONVERSATION_HISTORY = 10;
@@ -88,6 +107,23 @@ export default function AISponsor() {
   const profile = useAppStore((state) => state.profile);
   const journalEntries = useAppStore((state) => state.journalEntries);
   const stepAnswers = useAppStore((state) => state.stepAnswers);
+  const dailyCards = useAppStore((state) => state.dailyCards);
+  const recoveryScenes = useAppStore((state) => state.recoveryScenes || {});
+  const streaks = useAppStore((state) => state.streaks);
+  const copilotSettings = useAppStore((state) => state.aiSponsorChat?.settings);
+  const weeklyDigest = useAppStore((state) => state.aiSponsorChat?.weeklyDigest);
+  const detectedPatterns = useAppStore((state) => state.aiSponsorChat?.detectedPatterns);
+  const setWeeklyDigest = useAppStore((state) => state.setWeeklyDigest);
+  const setDetectedPatterns = useAppStore((state) => state.setDetectedPatterns);
+  const clearDetectedPatterns = useAppStore((state) => state.clearDetectedPatterns);
+
+  // Agentic feature modals
+  const [showWeeklyDigest, setShowWeeklyDigest] = useState(false);
+  const [showMeetingPrep, setShowMeetingPrep] = useState(false);
+  const [showPatternDetection, setShowPatternDetection] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isGeneratingDigest, setIsGeneratingDigest] = useState(false);
+  const [isDetectingPatterns, setIsDetectingPatterns] = useState(false);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -102,12 +138,55 @@ export default function AISponsor() {
   // Show welcome message if no messages
   useEffect(() => {
     if (messages.length === 0) {
-      addMessage({
-        role: 'assistant',
-        content: "Hi! I'm your AI Sponsor. I'm here to listen and support you through difficult moments. I have access to your triggers, journal entries, and step progress to provide personalized guidance. How can I help you today?",
-      });
+      // Check for initial message from other components
+      const initialMessage = sessionStorage.getItem('copilot_initial_message');
+      if (initialMessage) {
+        sessionStorage.removeItem('copilot_initial_message');
+        // Set input and auto-send after a brief delay
+        setInput(initialMessage);
+        const timer = setTimeout(() => {
+          if (initialMessage.trim() && !isLoading) {
+            // Manually trigger send
+            const trimmedInput = initialMessage.trim();
+            if (trimmedInput) {
+              addMessage({
+                role: 'user',
+                content: trimmedInput,
+              });
+              
+              setIsLoading(true);
+              setTyping(true);
+              
+              sendToAI(trimmedInput)
+                .then((responseText) => {
+                  addMessage({
+                    role: 'assistant',
+                    content: responseText,
+                  });
+                })
+                .catch((error) => {
+                  toast({
+                    title: 'Failed to send message',
+                    description: error.message || 'Please try again.',
+                    variant: 'destructive',
+                  });
+                })
+                .finally(() => {
+                  setIsLoading(false);
+                  setTyping(false);
+                });
+            }
+          }
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else {
+        addMessage({
+          role: 'assistant',
+          content: "Hi! I'm your Recovery Copilot. I'm here to listen and support you through difficult moments. I have access to your step work, journals, recovery scenes, and daily check-ins to provide personalized guidance. How can I help you today?",
+        });
+      }
     }
-  }, [messages.length, addMessage]);
+  }, [messages.length, addMessage, isLoading, sendToAI, setTyping, toast]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -117,7 +196,26 @@ export default function AISponsor() {
     }
   }, [input]);
 
-  // Memoize user context to avoid recalculation on every render
+  // Gather structured context using new copilot utilities
+  const contextWindow = useMemo<CopilotContext | undefined>(() => {
+    if (!copilotSettings) return undefined;
+    
+    return gatherContextForCopilot(copilotSettings, {
+      stepAnswers,
+      journalEntries,
+      recoveryScenes,
+      dailyCards,
+      streaks,
+    });
+  }, [copilotSettings, stepAnswers, journalEntries, recoveryScenes, dailyCards, streaks]);
+
+  // Build context prompt string for display
+  const contextPromptString = useMemo(() => {
+    if (!contextWindow) return '';
+    return buildContextPrompt(contextWindow);
+  }, [contextWindow]);
+
+  // Legacy userContext for backward compatibility
   const userContext = useMemo(() => {
     const journalsList = Object.values(journalEntries || {})
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -134,7 +232,6 @@ export default function AISponsor() {
       })),
       recentJournals: journalsList.slice(0, 3).map(j => ({
         date: j.date,
-        // Truncate content on client side for privacy/performance
         content: j.content?.substring(0, MAX_JOURNAL_PREVIEW) || '',
         mood: j.mood,
       })),
@@ -142,17 +239,24 @@ export default function AISponsor() {
     };
   }, [profile?.name, profile?.cleanDate, journalEntries, stepAnswers]);
 
-  // Extract shared API call logic
+  // Extract shared API call logic with structured context
   const sendToAI = useCallback(async (message: string) => {
+    // Use structured contextWindow if available, otherwise fall back to userContext
+    const prompt = contextWindow 
+      ? buildChatPrompt(message, contextWindow)
+      : message;
+
     const response = await fetch('/api/ai-sponsor/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message,
+        message: prompt,
         conversationHistory: messages.slice(-MAX_CONVERSATION_HISTORY),
-        userContext,
+        userContext: contextWindow ? undefined : userContext, // Use new format if available
+        contextWindow: contextWindow, // New structured format
+        promptType: 'chat',
       }),
     });
 
@@ -163,7 +267,7 @@ export default function AISponsor() {
 
     const data = await response.json();
     return data.response;
-  }, [messages, userContext]);
+  }, [messages, contextWindow, userContext]);
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
@@ -294,25 +398,121 @@ export default function AISponsor() {
     }
   }, [messages, isLoading, sendToAI, addMessage, setTyping, toast]);
 
+  // Agentic feature handlers
+  const handleGenerateWeeklyDigest = useCallback(async () => {
+    if (!contextWindow) {
+      toast({
+        title: 'No context available',
+        description: 'Please enable data sharing in settings first.',
+        variant: 'default',
+      });
+      return;
+    }
+
+    setIsGeneratingDigest(true);
+    try {
+      const weekDates = getWeekDates();
+      const digest = await generateWeeklyDigest(contextWindow, weekDates.start, weekDates.end);
+      setWeeklyDigest(digest);
+      setShowWeeklyDigest(true);
+      toast({
+        title: 'Weekly digest generated',
+        description: 'Your weekly recovery summary is ready.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Failed to generate digest',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingDigest(false);
+    }
+  }, [contextWindow, setWeeklyDigest, toast]);
+
+  const handleDetectPatterns = useCallback(async () => {
+    if (!contextWindow) {
+      toast({
+        title: 'No context available',
+        description: 'Please enable data sharing in settings first.',
+        variant: 'default',
+      });
+      return;
+    }
+
+    setIsDetectingPatterns(true);
+    try {
+      const patterns = await detectPatterns(contextWindow);
+      setDetectedPatterns(patterns);
+      if (patterns.length > 0) {
+        setShowPatternDetection(true);
+        toast({
+          title: 'Patterns detected',
+          description: `Found ${patterns.length} pattern${patterns.length > 1 ? 's' : ''} in your recovery journey.`,
+        });
+      } else {
+        toast({
+          title: 'No patterns found',
+          description: 'Keep tracking your recovery to detect patterns.',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Failed to detect patterns',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDetectingPatterns(false);
+    }
+  }, [contextWindow, setDetectedPatterns, toast]);
+
   const ContextPanel = () => {
-    const daysClean = userContext.sobrietyDate
-      ? Math.max(0, Math.floor((Date.now() - new Date(userContext.sobrietyDate).getTime()) / (1000 * 60 * 60 * 24)))
+    const daysClean = profile?.cleanDate
+      ? Math.max(0, Math.floor((Date.now() - new Date(profile.cleanDate).getTime()) / (1000 * 60 * 60 * 24)))
       : null;
+
+    const contextSources: string[] = [];
+    if (copilotSettings?.includeStepWork) contextSources.push('Step Work');
+    if (copilotSettings?.includeJournals) contextSources.push('Journals');
+    if (copilotSettings?.includeScenes) contextSources.push('Recovery Scenes');
+    if (copilotSettings?.includeDailyCards) contextSources.push('Daily Check-ins');
 
     return (
       <Collapsible open={showContext} onOpenChange={setShowContext}>
         <CollapsibleTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2">
             <Info className="h-4 w-4" />
-            <span className="text-xs">Personal Context</span>
+            <span className="text-xs">Context</span>
+            {contextSources.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {contextSources.length}
+              </Badge>
+            )}
             <ChevronDown className={cn('h-3 w-3 transition-transform', showContext && 'rotate-180')} />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
           <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
             <p className="text-xs text-muted-foreground">
-              AI Sponsor uses this information to provide personalized support:
+              Recovery Copilot uses this information to provide personalized support:
             </p>
+
+            {contextSources.length > 0 && (
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium mb-1">Data Sources</div>
+                  <div className="flex flex-wrap gap-1">
+                    {contextSources.map((source, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {source}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {daysClean !== null && (
               <div className="flex items-start gap-2">
@@ -324,48 +524,37 @@ export default function AISponsor() {
               </div>
             )}
 
-            {userContext.triggers.length > 0 && (
+            {contextWindow?.currentStreaks && Object.keys(contextWindow.currentStreaks).length > 0 && (
               <div className="flex items-start gap-2">
                 <Heart className="h-4 w-4 text-primary mt-0.5" />
-                <div className="flex-1">
-                  <div className="font-medium mb-1">Known Triggers</div>
-                  <div className="flex flex-wrap gap-1">
-                    {userContext.triggers.slice(0, 5).map((t, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {t.name}
-                      </Badge>
-                    ))}
-                    {userContext.triggers.length > 5 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{userContext.triggers.length - 5} more
-                      </Badge>
-                    )}
+                <div>
+                  <div className="font-medium mb-1">Current Streaks</div>
+                  <div className="text-muted-foreground text-xs">
+                    {Object.entries(contextWindow.currentStreaks)
+                      .filter(([_, count]) => count > 0)
+                      .map(([type, count]) => `${type}: ${count} days`)
+                      .join(', ')}
                   </div>
                 </div>
               </div>
             )}
 
-            {userContext.recentJournals.length > 0 && (
+            {contextWindow?.recentStepWork && contextWindow.recentStepWork.length > 0 && (
+              <div className="flex items-start gap-2">
+                <List className="h-4 w-4 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium">Recent Step Work</div>
+                  <div className="text-muted-foreground">Last {contextWindow.recentStepWork.length} entries</div>
+                </div>
+              </div>
+            )}
+
+            {contextWindow?.recentJournals && contextWindow.recentJournals.length > 0 && (
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-primary mt-0.5" />
                 <div>
                   <div className="font-medium">Recent Journals</div>
-                  <div className="text-muted-foreground">Last {userContext.recentJournals.length} entries</div>
-                </div>
-              </div>
-            )}
-
-            {userContext.stepProgress && Object.keys(userContext.stepProgress).length > 0 && (
-              <div className="flex items-start gap-2">
-                <List className="h-4 w-4 text-primary mt-0.5" />
-                <div>
-                  <div className="font-medium">Step Progress</div>
-                  <div className="text-muted-foreground">
-                    {Object.values(userContext.stepProgress).reduce((steps, answer) => {
-                      if (!steps.includes(answer.stepNumber)) steps.push(answer.stepNumber);
-                      return steps;
-                    }, [] as number[]).length} steps in progress
-                  </div>
+                  <div className="text-muted-foreground">Last {contextWindow.recentJournals.length} entries</div>
                 </div>
               </div>
             )}
@@ -571,21 +760,82 @@ export default function AISponsor() {
 
           <div className="flex items-center gap-2">
             <ContextPanel />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowClearDialog(true)}
-                    disabled={messages.length === 0}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Clear conversation</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Agentic Action Buttons */}
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleGenerateWeeklyDigest}
+                      disabled={isGeneratingDigest || !contextWindow}
+                    >
+                      {isGeneratingDigest ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CalendarIcon className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Generate Weekly Digest</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMeetingPrep(true)}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Meeting Prep</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDetectPatterns}
+                      disabled={isDetectingPatterns || !contextWindow}
+                    >
+                      {isDetectingPatterns ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <TrendingUp className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Detect Patterns</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSettings(true)}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copilot Settings</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowClearDialog(true)}
+                      disabled={messages.length === 0}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Clear conversation</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
         </div>
 
@@ -658,9 +908,32 @@ export default function AISponsor() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              AI Sponsor uses your personal data to provide tailored support. For crisis, call 988 or your sponsor immediately.
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-muted-foreground">
+                {copilotSettings && (
+                  <>
+                    {[
+                      copilotSettings.includeStepWork && 'Step Work',
+                      copilotSettings.includeJournals && 'Journals',
+                      copilotSettings.includeScenes && 'Scenes',
+                      copilotSettings.includeDailyCards && 'Daily Check-ins',
+                    ].filter(Boolean).length > 0 ? (
+                      <>Using: {[
+                        copilotSettings.includeStepWork && 'Step Work',
+                        copilotSettings.includeJournals && 'Journals',
+                        copilotSettings.includeScenes && 'Scenes',
+                        copilotSettings.includeDailyCards && 'Daily Check-ins',
+                      ].filter(Boolean).join(', ')}</>
+                    ) : (
+                      <>Enable data sharing in settings for personalized support</>
+                    )}
+                  </>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                For crisis, call 988 or your sponsor immediately.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -681,6 +954,79 @@ export default function AISponsor() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Weekly Digest Dialog */}
+        <Dialog open={showWeeklyDigest} onOpenChange={setShowWeeklyDigest}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Weekly Recovery Digest</DialogTitle>
+              <DialogDescription>
+                A summary of your recovery journey this week
+              </DialogDescription>
+            </DialogHeader>
+            {weeklyDigest && (
+              <WeeklyDigest
+                digest={weeklyDigest}
+                onRegenerate={handleGenerateWeeklyDigest}
+                onDismiss={() => setShowWeeklyDigest(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Meeting Prep Dialog */}
+        <Dialog open={showMeetingPrep} onOpenChange={setShowMeetingPrep}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Meeting Prep</DialogTitle>
+              <DialogDescription>
+                Get help phrasing your share for meetings
+              </DialogDescription>
+            </DialogHeader>
+            <MeetingPrep context={contextWindow} />
+          </DialogContent>
+        </Dialog>
+
+        {/* Pattern Detection Dialog */}
+        <Dialog open={showPatternDetection} onOpenChange={setShowPatternDetection}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Detected Patterns</DialogTitle>
+              <DialogDescription>
+                Patterns noticed in your recovery journey
+              </DialogDescription>
+            </DialogHeader>
+            {detectedPatterns && detectedPatterns.length > 0 ? (
+              <PatternDetection
+                patterns={detectedPatterns}
+                onDismiss={(patternId) => {
+                  const updated = detectedPatterns.filter((p) => p.id !== patternId);
+                  if (updated.length === 0) {
+                    clearDetectedPatterns();
+                    setShowPatternDetection(false);
+                  } else {
+                    setDetectedPatterns(updated);
+                  }
+                }}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">No patterns detected yet.</p>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Settings Dialog */}
+        <Dialog open={showSettings} onOpenChange={setShowSettings}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Recovery Copilot Settings</DialogTitle>
+              <DialogDescription>
+                Control what data Recovery Copilot uses
+              </DialogDescription>
+            </DialogHeader>
+            <CopilotSettings />
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
