@@ -125,6 +125,129 @@ export default function AISponsor() {
   const [isGeneratingDigest, setIsGeneratingDigest] = useState(false);
   const [isDetectingPatterns, setIsDetectingPatterns] = useState(false);
 
+  // Gather structured context using new copilot utilities
+  const contextWindow = useMemo<CopilotContext | undefined>(() => {
+    if (!copilotSettings) return undefined;
+    
+    try {
+      return gatherContextForCopilot(copilotSettings, {
+        stepAnswers: stepAnswers || {},
+        journalEntries: journalEntries || {},
+        recoveryScenes: recoveryScenes || {},
+        dailyCards: dailyCards || {},
+        streaks: streaks || {
+          journaling: { current: 0, longest: 0, lastUpdatedISO: new Date().toISOString() },
+          dailyCards: { current: 0, longest: 0, lastUpdatedISO: new Date().toISOString() },
+          meetings: { current: 0, longest: 0, lastUpdatedISO: new Date().toISOString() },
+          stepWork: { current: 0, longest: 0, lastUpdatedISO: new Date().toISOString() },
+          recoveryRhythm: { current: 0, longest: 0, lastUpdatedISO: new Date().toISOString() },
+        },
+      });
+    } catch (error) {
+      console.error('Error gathering context for copilot:', error);
+      return undefined;
+    }
+  }, [copilotSettings, stepAnswers, journalEntries, recoveryScenes, dailyCards, streaks]);
+
+  // Build context prompt string for display
+  const contextPromptString = useMemo(() => {
+    if (!contextWindow) return '';
+    try {
+      return buildContextPrompt(contextWindow);
+    } catch (error) {
+      console.error('Error building context prompt:', error);
+      return '';
+    }
+  }, [contextWindow]);
+
+  // Legacy userContext for backward compatibility
+  const userContext = useMemo(() => {
+    try {
+      const journalsList = Object.values(journalEntries || {})
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      const triggersList = journalsList.filter(entry => entry.isTrigger);
+
+      return {
+        name: profile?.name,
+        sobrietyDate: profile?.cleanDate,
+        triggers: triggersList.slice(0, 5).map(t => ({
+          name: t.triggerType || 'Unknown',
+          description: t.content?.substring(0, 100) || '',
+          severity: t.triggerIntensity || 5,
+        })),
+        recentJournals: journalsList.slice(0, 3).map(j => ({
+          date: j.date,
+          content: j.content?.substring(0, MAX_JOURNAL_PREVIEW) || '',
+          mood: j.mood,
+        })),
+        stepProgress: stepAnswers || {},
+      };
+    } catch (error) {
+      console.error('Error building user context:', error);
+      return {
+        name: profile?.name,
+        sobrietyDate: profile?.cleanDate,
+        triggers: [],
+        recentJournals: [],
+        stepProgress: {},
+      };
+    }
+  }, [profile?.name, profile?.cleanDate, journalEntries, stepAnswers]);
+
+  // Extract shared API call logic with structured context
+  // Moved before useEffect to fix dependency order issue
+  const sendToAI = useCallback(async (message: string): Promise<string> => {
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      throw new Error('Message is required and must be a non-empty string');
+    }
+
+    try {
+      // Use structured contextWindow if available, otherwise fall back to userContext
+      const prompt = contextWindow 
+        ? buildChatPrompt(message, contextWindow)
+        : message;
+
+      const response = await fetch('/api/ai-sponsor/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+          conversationHistory: (messages || []).slice(-MAX_CONVERSATION_HISTORY),
+          userContext: contextWindow ? undefined : userContext, // Use new format if available
+          contextWindow: contextWindow, // New structured format
+          promptType: 'chat',
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to get response from AI Sponsor';
+        try {
+          const error = await response.json();
+          errorMessage = error.response || error.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      if (!data || typeof data.response !== 'string') {
+        throw new Error('Invalid response format from AI Sponsor');
+      }
+      return data.response;
+    } catch (error) {
+      // Re-throw with better error message if needed
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred while communicating with AI Sponsor');
+    }
+  }, [messages, contextWindow, userContext]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -132,7 +255,11 @@ export default function AISponsor() {
 
   // Track when chat is opened
   useEffect(() => {
-    trackEvent('ai_sponsor_chat_opened');
+    try {
+      trackEvent('ai_sponsor_chat_opened');
+    } catch (error) {
+      console.error('Error tracking analytics event:', error);
+    }
   }, [trackEvent]);
 
   // Show welcome message if no messages
@@ -149,41 +276,54 @@ export default function AISponsor() {
             // Manually trigger send
             const trimmedInput = initialMessage.trim();
             if (trimmedInput) {
-              addMessage({
-                role: 'user',
-                content: trimmedInput,
-              });
-              
-              setIsLoading(true);
-              setTyping(true);
-              
-              sendToAI(trimmedInput)
-                .then((responseText) => {
-                  addMessage({
-                    role: 'assistant',
-                    content: responseText,
-                  });
-                })
-                .catch((error) => {
-                  toast({
-                    title: 'Failed to send message',
-                    description: error.message || 'Please try again.',
-                    variant: 'destructive',
-                  });
-                })
-                .finally(() => {
-                  setIsLoading(false);
-                  setTyping(false);
+              try {
+                addMessage({
+                  role: 'user',
+                  content: trimmedInput,
                 });
+                
+                setIsLoading(true);
+                setTyping(true);
+                
+                sendToAI(trimmedInput)
+                  .then((responseText) => {
+                    if (responseText) {
+                      addMessage({
+                        role: 'assistant',
+                        content: responseText,
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    console.error('Error sending initial message:', error);
+                    toast({
+                      title: 'Failed to send message',
+                      description: error instanceof Error ? error.message : 'Please try again.',
+                      variant: 'destructive',
+                    });
+                  })
+                  .finally(() => {
+                    setIsLoading(false);
+                    setTyping(false);
+                  });
+              } catch (error) {
+                console.error('Error in initial message handler:', error);
+                setIsLoading(false);
+                setTyping(false);
+              }
             }
           }
         }, 1000);
         return () => clearTimeout(timer);
       } else {
-        addMessage({
-          role: 'assistant',
-          content: "Hi! I'm your Recovery Copilot. I'm here to listen and support you through difficult moments. I have access to your step work, journals, recovery scenes, and daily check-ins to provide personalized guidance. How can I help you today?",
-        });
+        try {
+          addMessage({
+            role: 'assistant',
+            content: "Hi! I'm your Recovery Copilot. I'm here to listen and support you through difficult moments. I have access to your step work, journals, recovery scenes, and daily check-ins to provide personalized guidance. How can I help you today?",
+          });
+        } catch (error) {
+          console.error('Error adding welcome message:', error);
+        }
       }
     }
   }, [messages.length, addMessage, isLoading, sendToAI, setTyping, toast]);
@@ -195,79 +335,6 @@ export default function AISponsor() {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
     }
   }, [input]);
-
-  // Gather structured context using new copilot utilities
-  const contextWindow = useMemo<CopilotContext | undefined>(() => {
-    if (!copilotSettings) return undefined;
-    
-    return gatherContextForCopilot(copilotSettings, {
-      stepAnswers,
-      journalEntries,
-      recoveryScenes,
-      dailyCards,
-      streaks,
-    });
-  }, [copilotSettings, stepAnswers, journalEntries, recoveryScenes, dailyCards, streaks]);
-
-  // Build context prompt string for display
-  const contextPromptString = useMemo(() => {
-    if (!contextWindow) return '';
-    return buildContextPrompt(contextWindow);
-  }, [contextWindow]);
-
-  // Legacy userContext for backward compatibility
-  const userContext = useMemo(() => {
-    const journalsList = Object.values(journalEntries || {})
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
-    const triggersList = journalsList.filter(entry => entry.isTrigger);
-
-    return {
-      name: profile?.name,
-      sobrietyDate: profile?.cleanDate,
-      triggers: triggersList.slice(0, 5).map(t => ({
-        name: t.triggerType || 'Unknown',
-        description: t.content?.substring(0, 100) || '',
-        severity: t.triggerIntensity || 5,
-      })),
-      recentJournals: journalsList.slice(0, 3).map(j => ({
-        date: j.date,
-        content: j.content?.substring(0, MAX_JOURNAL_PREVIEW) || '',
-        mood: j.mood,
-      })),
-      stepProgress: stepAnswers,
-    };
-  }, [profile?.name, profile?.cleanDate, journalEntries, stepAnswers]);
-
-  // Extract shared API call logic with structured context
-  const sendToAI = useCallback(async (message: string) => {
-    // Use structured contextWindow if available, otherwise fall back to userContext
-    const prompt = contextWindow 
-      ? buildChatPrompt(message, contextWindow)
-      : message;
-
-    const response = await fetch('/api/ai-sponsor/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: prompt,
-        conversationHistory: messages.slice(-MAX_CONVERSATION_HISTORY),
-        userContext: contextWindow ? undefined : userContext, // Use new format if available
-        contextWindow: contextWindow, // New structured format
-        promptType: 'chat',
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.response || 'Failed to get response from AI Sponsor');
-    }
-
-    const data = await response.json();
-    return data.response;
-  }, [messages, contextWindow, userContext]);
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
@@ -286,10 +353,20 @@ export default function AISponsor() {
 
     setLastSentTime(now);
 
-    addMessage({
-      role: 'user',
-      content: trimmedInput,
-    });
+    try {
+      addMessage({
+        role: 'user',
+        content: trimmedInput,
+      });
+    } catch (error) {
+      console.error('Error adding user message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add message. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setInput('');
     setIsLoading(true);
@@ -301,6 +378,10 @@ export default function AISponsor() {
 
     try {
       const responseText = await sendToAI(trimmedInput);
+
+      if (!responseText || typeof responseText !== 'string') {
+        throw new Error('Invalid response received from AI Sponsor');
+      }
 
       addMessage({
         role: 'assistant',
@@ -316,14 +397,22 @@ export default function AISponsor() {
         variant: 'destructive',
       });
 
-      addMessage({
-        role: 'assistant',
-        content: "I'm having trouble connecting right now. Please try again in a moment, or reach out to a human sponsor if you need immediate support.",
-      });
+      try {
+        addMessage({
+          role: 'assistant',
+          content: "I'm having trouble connecting right now. Please try again in a moment, or reach out to a human sponsor if you need immediate support.",
+        });
+      } catch (addError) {
+        console.error('Error adding error message:', addError);
+      }
     } finally {
       setIsLoading(false);
       setTyping(false);
-      textareaRef.current?.focus();
+      try {
+        textareaRef.current?.focus();
+      } catch (focusError) {
+        // Ignore focus errors
+      }
     }
   }, [input, isLoading, lastSentTime, sendToAI, addMessage, setTyping, toast]);
 
@@ -369,13 +458,24 @@ export default function AISponsor() {
     if (messages.length < 2 || isLoading) return;
 
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
-    if (!lastUserMessage) return;
+    if (!lastUserMessage || !lastUserMessage.content) {
+      toast({
+        title: 'Cannot regenerate',
+        description: 'No previous message found to regenerate.',
+        variant: 'default',
+      });
+      return;
+    }
 
     setIsLoading(true);
     setTyping(true);
 
     try {
       const responseText = await sendToAI(lastUserMessage.content);
+      
+      if (!responseText || typeof responseText !== 'string') {
+        throw new Error('Invalid response received');
+      }
 
       addMessage({
         role: 'assistant',
@@ -387,9 +487,13 @@ export default function AISponsor() {
         description: 'A new response has been generated.',
       });
     } catch (error) {
+      console.error('Error regenerating response:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unable to regenerate response. Please try again.';
       toast({
         title: 'Regeneration failed',
-        description: 'Unable to regenerate response.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -412,7 +516,15 @@ export default function AISponsor() {
     setIsGeneratingDigest(true);
     try {
       const weekDates = getWeekDates();
+      if (!weekDates || !weekDates.start || !weekDates.end) {
+        throw new Error('Failed to get week dates');
+      }
+      
       const digest = await generateWeeklyDigest(contextWindow, weekDates.start, weekDates.end);
+      if (!digest || typeof digest !== 'object') {
+        throw new Error('Invalid digest format received');
+      }
+      
       setWeeklyDigest(digest);
       setShowWeeklyDigest(true);
       toast({
@@ -420,9 +532,13 @@ export default function AISponsor() {
         description: 'Your weekly recovery summary is ready.',
       });
     } catch (error) {
+      console.error('Error generating weekly digest:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred while generating your weekly digest.';
       toast({
         title: 'Failed to generate digest',
-        description: 'Please try again later.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -443,6 +559,10 @@ export default function AISponsor() {
     setIsDetectingPatterns(true);
     try {
       const patterns = await detectPatterns(contextWindow);
+      if (!Array.isArray(patterns)) {
+        throw new Error('Invalid patterns format received');
+      }
+      
       setDetectedPatterns(patterns);
       if (patterns.length > 0) {
         setShowPatternDetection(true);
@@ -457,9 +577,13 @@ export default function AISponsor() {
         });
       }
     } catch (error) {
+      console.error('Error detecting patterns:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred while detecting patterns.';
       toast({
         title: 'Failed to detect patterns',
-        description: 'Please try again later.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -524,14 +648,16 @@ export default function AISponsor() {
               </div>
             )}
 
-            {contextWindow?.currentStreaks && Object.keys(contextWindow.currentStreaks).length > 0 && (
+            {contextWindow?.currentStreaks && 
+             typeof contextWindow.currentStreaks === 'object' &&
+             Object.keys(contextWindow.currentStreaks).length > 0 && (
               <div className="flex items-start gap-2">
                 <Heart className="h-4 w-4 text-primary mt-0.5" />
                 <div>
                   <div className="font-medium mb-1">Current Streaks</div>
                   <div className="text-muted-foreground text-xs">
                     {Object.entries(contextWindow.currentStreaks)
-                      .filter(([_, count]) => count > 0)
+                      .filter(([_, count]) => typeof count === 'number' && count > 0)
                       .map(([type, count]) => `${type}: ${count} days`)
                       .join(', ')}
                   </div>
@@ -539,7 +665,9 @@ export default function AISponsor() {
               </div>
             )}
 
-            {contextWindow?.recentStepWork && contextWindow.recentStepWork.length > 0 && (
+            {contextWindow?.recentStepWork && 
+             Array.isArray(contextWindow.recentStepWork) && 
+             contextWindow.recentStepWork.length > 0 && (
               <div className="flex items-start gap-2">
                 <List className="h-4 w-4 text-primary mt-0.5" />
                 <div>
@@ -549,7 +677,9 @@ export default function AISponsor() {
               </div>
             )}
 
-            {contextWindow?.recentJournals && contextWindow.recentJournals.length > 0 && (
+            {contextWindow?.recentJournals && 
+             Array.isArray(contextWindow.recentJournals) && 
+             contextWindow.recentJournals.length > 0 && (
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-primary mt-0.5" />
                 <div>
@@ -964,12 +1094,14 @@ export default function AISponsor() {
                 A summary of your recovery journey this week
               </DialogDescription>
             </DialogHeader>
-            {weeklyDigest && (
+            {weeklyDigest && typeof weeklyDigest === 'object' ? (
               <WeeklyDigest
                 digest={weeklyDigest}
                 onRegenerate={handleGenerateWeeklyDigest}
                 onDismiss={() => setShowWeeklyDigest(false)}
               />
+            ) : (
+              <p className="text-sm text-muted-foreground">No weekly digest available.</p>
             )}
           </DialogContent>
         </Dialog>
@@ -983,7 +1115,7 @@ export default function AISponsor() {
                 Get help phrasing your share for meetings
               </DialogDescription>
             </DialogHeader>
-            <MeetingPrep context={contextWindow} />
+            <MeetingPrep context={contextWindow || undefined} />
           </DialogContent>
         </Dialog>
 
@@ -996,16 +1128,20 @@ export default function AISponsor() {
                 Patterns noticed in your recovery journey
               </DialogDescription>
             </DialogHeader>
-            {detectedPatterns && detectedPatterns.length > 0 ? (
+            {detectedPatterns && Array.isArray(detectedPatterns) && detectedPatterns.length > 0 ? (
               <PatternDetection
                 patterns={detectedPatterns}
                 onDismiss={(patternId) => {
-                  const updated = detectedPatterns.filter((p) => p.id !== patternId);
-                  if (updated.length === 0) {
-                    clearDetectedPatterns();
-                    setShowPatternDetection(false);
-                  } else {
-                    setDetectedPatterns(updated);
+                  try {
+                    const updated = detectedPatterns.filter((p) => p && p.id !== patternId);
+                    if (updated.length === 0) {
+                      clearDetectedPatterns();
+                      setShowPatternDetection(false);
+                    } else {
+                      setDetectedPatterns(updated);
+                    }
+                  } catch (error) {
+                    console.error('Error dismissing pattern:', error);
                   }
                 }}
               />

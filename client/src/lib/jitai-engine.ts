@@ -171,16 +171,18 @@ export function matchRule(
     }
 
     case 'meeting-gap': {
-      if (context.meetings.length === 0) {
+      const meetingsWithDates = context.meetings.filter((m) => m.date)
+
+      if (meetingsWithDates.length === 0) {
         // No meetings ever logged
         const daysSinceStart = Math.floor((now.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24));
         return daysSinceStart >= condition.threshold;
       }
 
-      const sortedMeetings = [...context.meetings].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      const lastMeetingDate = new Date(sortedMeetings[0].date);
+      const sortedMeetings = [...meetingsWithDates].sort(
+        (a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime(),
+      )
+      const lastMeetingDate = new Date(sortedMeetings[0].date as string)
       const daysSinceLastMeeting = Math.floor(
         (now.getTime() - lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -297,11 +299,13 @@ export function detectRiskSignals(context: RiskDetectionContext): RiskSignal[] {
   }
 
   // Pattern 3: Skipped meetings (7+ days gap)
-  if (context.meetings.length > 0) {
-    const sortedMeetings = [...context.meetings].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    const lastMeetingDate = new Date(sortedMeetings[0].date);
+  const meetingsWithDates = context.meetings.filter((m) => m.date)
+
+  if (meetingsWithDates.length > 0) {
+    const sortedMeetings = [...meetingsWithDates].sort(
+      (a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime(),
+    )
+    const lastMeetingDate = new Date(sortedMeetings[0].date as string)
     const daysSinceLastMeeting = Math.floor(
       (new Date().getTime() - lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24)
     );

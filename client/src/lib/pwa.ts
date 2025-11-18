@@ -10,20 +10,14 @@ let wb: Workbox | null = null;
 /**
  * Register service worker and set up update notifications
  */
-export function registerServiceWorker(
-  onUpdate?: (registration: ServiceWorkerRegistration) => void
-): void {
+export function registerServiceWorker(onUpdate?: () => void): void {
   if ('serviceWorker' in navigator) {
     wb = new Workbox('/sw.js');
 
     wb.addEventListener('waiting', () => {
       console.log('New service worker waiting');
-      if (onUpdate && wb) {
-        wb.getSW().then((sw) => {
-          if (sw) {
-            onUpdate(sw);
-          }
-        });
+      if (onUpdate) {
+        onUpdate();
       }
     });
 

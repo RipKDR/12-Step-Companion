@@ -64,14 +64,12 @@ export function SwipeableItem({
     }
   }
 
-  const deleteOpacity = useSpring(
-    springX,
-    (value) => Math.max(0, Math.min(1, -value / deleteThreshold))
+  const deleteOpacity = useTransform(springX, (value: number) =>
+    Math.max(0, Math.min(1, -value / deleteThreshold)),
   )
 
-  const archiveOpacity = useSpring(
-    springX,
-    (value) => Math.max(0, Math.min(1, value / deleteThreshold))
+  const archiveOpacity = useTransform(springX, (value: number) =>
+    Math.max(0, Math.min(1, value / deleteThreshold)),
   )
 
   return (

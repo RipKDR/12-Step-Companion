@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 interface AccessibleButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost"
   size?: "default" | "sm" | "lg" | "icon"
   loading?: boolean
   "aria-label"?: string

@@ -79,7 +79,7 @@ export default function UsageInsights() {
     );
   }
 
-  const eventTypeLabels: Record<AnalyticsEventType, string> = {
+  const eventTypeLabels: Partial<Record<AnalyticsEventType, string>> = {
     app_opened: "App Sessions",
     profile_created: "Profile Created",
     journal_entry_created: "Journal Entries",

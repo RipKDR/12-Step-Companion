@@ -616,7 +616,6 @@ export type AnalyticsEventType =
   | "milestone_celebrated"
   | "daily_challenge_completed"
   | "streak_extended"
-  | "streak_extended"
   | "recovery_points_awarded"
   | "recovery_reward_redeemed"
   | "recovery_points_summary_exported"

@@ -65,3 +65,10 @@ export interface WindowWithSpeechRecognition extends Window {
   webkitSpeechRecognition?: SpeechRecognitionConstructor;
 }
 
+// Minimal fallback type for SpeechGrammarList when not provided by DOM lib
+// This keeps TypeScript happy without affecting runtime behavior.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface SpeechGrammarList {
+  length?: number;
+}
+

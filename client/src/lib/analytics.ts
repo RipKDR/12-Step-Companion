@@ -111,6 +111,10 @@ export class AnalyticsManager {
       journal_entry_audio_recorded: 0,
       daily_card_morning_completed: 0,
       daily_card_evening_completed: 0,
+      morning_intention_set: 0,
+      midday_pulse_check_completed: 0,
+      evening_inventory_completed: 0,
+      recovery_rhythm_streak_milestone: 0,
       step_answer_saved: 0,
       meeting_logged: 0,
       goal_created: 0,
@@ -124,6 +128,17 @@ export class AnalyticsManager {
       recovery_points_awarded: 0,
       recovery_reward_redeemed: 0,
       recovery_points_summary_exported: 0,
+      ai_sponsor_chat_opened: 0,
+      ai_sponsor_message_sent: 0,
+      ai_sponsor_message_received: 0,
+      ai_sponsor_feedback_positive: 0,
+      ai_sponsor_feedback_negative: 0,
+      tool_used: 0,
+      tool_outcome_recorded: 0,
+      tool_recommendation_shown: 0,
+      tool_recommendation_used: 0,
+      experiment_started: 0,
+      experiment_completed: 0,
     };
 
     // Count events by type
@@ -155,12 +170,11 @@ export class AnalyticsManager {
     const allDates = [
       ...Object.values(state.journalEntries).map((e) => e.date),
       ...Object.values(state.dailyCards).map((c) => c.date),
-      ...(state.meetings?.map((m) => m.date) || []),
-    ];
-    const lastActivityDate =
-      allDates.length > 0
-        ? allDates.sort().reverse()[0]
-        : new Date().toISOString();
+      ...(state.meetings?.map((m) => m.date).filter((d): d is string => !!d) || []),
+    ]
+
+    const lastActivityDate: string =
+      allDates.length > 0 ? [...allDates].sort().reverse()[0] : new Date().toISOString()
 
     return {
       totalEvents: Object.keys(events).length,

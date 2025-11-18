@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { motion, useMotionValue, useSpring } from "framer-motion"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface AnimatedProgressRingProps {
@@ -36,10 +36,9 @@ export function AnimatedProgressRing({
     progressValue.set(progress)
   }, [progress, progressValue])
 
-  const offset = useSpring(
-    springProgress,
-    (value) => circumference - (value / 100) * circumference
-  )
+  const offset = useTransform(springProgress, (value: number) => {
+    return circumference - (value / 100) * circumference
+  })
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>

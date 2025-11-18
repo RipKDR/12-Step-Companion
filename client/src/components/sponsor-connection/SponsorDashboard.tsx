@@ -31,7 +31,7 @@ export default function SponsorDashboard() {
 
       const recentJournals = sharedItems
         .filter((item) => item.itemType === 'journal-entry')
-        .map((item) => journalEntries[item.id])
+        .map((item) => journalEntries[item.itemId])
         .filter(Boolean)
         .slice(0, 5); // Last 5 entries
 
