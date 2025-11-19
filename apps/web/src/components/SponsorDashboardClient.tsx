@@ -25,7 +25,7 @@ export function SponsorDashboardClient({ sponseeId }: SponsorDashboardClientProp
           <CardTitle>Shared Step Entries</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Step entries shared by sponsee will appear here.
           </p>
         </CardContent>
@@ -36,7 +36,7 @@ export function SponsorDashboardClient({ sponseeId }: SponsorDashboardClientProp
           <CardTitle>Shared Daily Entries</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Daily entries shared by sponsee will appear here.
           </p>
         </CardContent>
@@ -47,7 +47,7 @@ export function SponsorDashboardClient({ sponseeId }: SponsorDashboardClientProp
           <CardTitle>Shared Action Plans</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Action plans shared by sponsee will appear here.
           </p>
         </CardContent>

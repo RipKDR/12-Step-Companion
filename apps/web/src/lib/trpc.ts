@@ -17,11 +17,21 @@ export function getTRPCClient() {
       httpBatchLink({
         url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/trpc`,
         async headers() {
-          const session = await getSession();
-          const accessToken = (session as any)?.accessToken;
-          return {
-            ...(accessToken && { authorization: `Bearer ${accessToken}` }),
-          };
+          // Only run on client side
+          if (typeof window === "undefined") {
+            return {};
+          }
+          
+          try {
+            const session = await getSession();
+            const accessToken = (session as any)?.accessToken;
+            return {
+              ...(accessToken && { authorization: `Bearer ${accessToken}` }),
+            };
+          } catch (error) {
+            // Handle error gracefully during SSR/hydration
+            return {};
+          }
         },
       }),
     ],

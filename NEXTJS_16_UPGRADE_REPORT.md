@@ -99,7 +99,11 @@
    - Upgraded `@types/react-dom`: 18.3.7 → 19.0.0
 
 2. **package.json** (root)
-   - Upgraded `next`: 14.2.33 → 16.0.3 (for consistency)
+   - Upgraded `next`: 14.2.33 → 16.0.3
+   - Upgraded `react`: 18.3.1 → 19.0.0
+   - Upgraded `react-dom`: 18.3.1 → 19.0.0
+   - Upgraded `@types/react`: 18.3.26 → 19.0.0
+   - Upgraded `@types/react-dom`: 18.3.7 → 19.0.0
 
 ### Configuration Files
 3. **apps/web/next.config.js**

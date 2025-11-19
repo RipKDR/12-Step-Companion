@@ -46,7 +46,7 @@ export default async function SponsorDashboardPage() {
           ))}
         </div>
       ) : (
-        <p className="text-gray-600">No active sponsees. Share your sponsor code to connect.</p>
+        <p className="text-muted-foreground">No active sponsees. Share your sponsor code to connect.</p>
       )}
     </div>
   );
