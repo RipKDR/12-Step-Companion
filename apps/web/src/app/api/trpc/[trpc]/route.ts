@@ -5,8 +5,8 @@
  */
 
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "../../../../../../packages/api/src/routers/_app";
-import { createContextNextJS } from "../../../../../../packages/api/src/context-nextjs";
+import { appRouter } from "@12-step-companion/api/routers/_app";
+import { createContextNextJS } from "@12-step-companion/api/context-nextjs";
 import type { NextRequest } from "next/server";
 
 const handler = (req: NextRequest) =>
