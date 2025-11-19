@@ -1,0 +1,11 @@
+{
+  "name": "@12-step-companion/types",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/supabase.ts",
+  "types": "./src/supabase.ts",
+  "exports": {
+    ".": "./src/supabase.ts"
+  }
+}
+

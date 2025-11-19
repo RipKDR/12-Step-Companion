@@ -198,8 +198,11 @@ function scheduleAllNotifications(settings: NotificationSettings) {
   // Warmline availability check-ins (legacy feature - removed from NotificationSettings)
   // This code is kept for backward compatibility but won't execute with current type definitions
   // If this feature is needed, add availabilityCheckIn back to NotificationSettings type
-  // Using type assertion to access potentially undefined property
-  const availabilityCheckIn = (settings as any).availabilityCheckIn;
+  // Using type guard to safely access potentially undefined property
+  const settingsWithLegacy = settings as NotificationSettings & {
+    availabilityCheckIn?: { enabled: boolean; time: string; message?: string };
+  };
+  const availabilityCheckIn = settingsWithLegacy.availabilityCheckIn;
   if (availabilityCheckIn && availabilityCheckIn.enabled) {
     scheduleDailyNotification(
       'availability-checkin',

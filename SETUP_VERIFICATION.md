@@ -1,68 +1,126 @@
-# ✅ Setup Verification Complete!
+# Setup Verification Checklist
 
-## Configuration Status
+Since you've completed the setup, verify these items:
 
-### ✅ **Everything is Correct!**
+## ✅ Environment Variables
 
-1. **PORT=5000** ✅
-   - Your Express app server uses port 5000
-   - This is correct and won't conflict
+Check your `.env` file has:
 
-2. **DATABASE_URL** ✅
-   - Your Neon database connection string is **correct**
-   - **No port conflict!** Neon databases don't use port 5000
-   - Neon handles ports automatically (typically 5432 internally, but you don't specify it)
-   - Your connection string format is perfect: `postgresql://user:pass@host/database?sslmode=require`
+```env
+# Supabase (REQUIRED)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGci... (long JWT token)
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGci... (VERY long JWT token, 200+ chars)
 
-3. **SESSION_SECRET** ✅ **FIXED**
-   - Was: `generate_with_openssl_rand_base64_32` (placeholder)
-   - Now: Generated secure random secret ✅
+# Mobile App (REQUIRED for mobile)
+EXPO_PUBLIC_API_URL=http://localhost:5000
+# Or your production URL: https://your-api.com
+```
 
-4. **Other Settings** ✅
-   - NODE_ENV=development ✅
-   - GEMINI_API_KEY set ✅
-   - Database connection string correct ✅
+**Important Notes:**
+- Service role key should be a JWT token (starts with `eyJhbGci...`)
+- Get it from: Supabase Dashboard → Settings → API → `service_role` secret key
+- EXPO_PUBLIC_API_URL should be a URL, not a token/key
 
-## 🔍 About the "Port 5000" Concern
+## ✅ Database Migrations
 
-**Good news:** There's **NO port conflict!**
+**Check in Supabase Dashboard:**
+1. Go to "Table Editor"
+2. Verify these tables exist:
+   - profiles
+   - steps
+   - step_entries
+   - daily_entries
+   - action_plans
+   - routines
+   - sponsor_relationships
 
-- **Your app server** uses port **5000** (Express/Node.js)
-- **Your Neon database** uses its own ports (handled by Neon infrastructure)
-- Neon connection strings **don't include port numbers** - Neon handles this automatically
-- No conflict exists! ✅
+**If tables are missing:**
+1. Go to "SQL Editor"
+2. Copy/paste `server/migrations/0001_supabase_schema.sql`
+3. Click "Run"
+4. Repeat for `server/migrations/0002_rls_policies.sql`
 
-## 🚀 Next Steps
+## ✅ Test Connection
 
-1. **Test the setup:**
+**Option 1: Use verification script**
+```bash
+npm run verify
+```
+
+**Option 2: Manual test**
+1. Start server: `npm run dev`
+2. Open browser: `http://localhost:5000/api/trpc/steps.getAll?input={"program":"NA"}`
+3. Should return `[]` (empty) or array of steps
+
+## ✅ Seed Data
+
+If tables exist but are empty:
+```bash
+npm run seed:steps
+```
+
+This populates the steps table with NA/AA step definitions.
+
+## 🎯 What to Do Next
+
+Once verified:
+
+1. **Start developing**
+   - Use tRPC hooks in components
+   - See `client/src/hooks/` for examples
+   - See `client/src/components/examples/` for component patterns
+
+2. **Test mobile app** (optional)
    ```bash
+   cd apps/mobile
+   npm install
+   npx expo start
+   ```
+
+3. **Test web portal** (optional)
+   ```bash
+   cd apps/web
+   npm install
    npm run dev
    ```
 
-2. **Verify database connection** (if using auth):
-   ```bash
-   npm run db:push
-   ```
+4. **Migrate existing components**
+   - Follow `docs/TRPC_MIGRATION_GUIDE.md`
+   - Replace local state with tRPC hooks
+   - Start with read-only queries, then add mutations
 
-3. **Start developing!**
-   - App will run on `http://localhost:5000`
-   - Database will connect automatically (if DATABASE_URL is set)
+## 🐛 Common Issues
 
-## 🔒 Security Note
+**"Invalid service role key"**
+- Service role key should be 200+ characters
+- Get from: Supabase Dashboard → Settings → API
+- Copy the entire `service_role` secret key (not anon key)
 
-Your `.env` file contains sensitive information:
-- Database credentials
-- API keys
-- Session secrets
+**"Table does not exist"**
+- Run migrations in Supabase SQL Editor
+- Check you're using the correct Supabase project
 
-**Make sure `.env` is in `.gitignore`** (it should be already) ✅
+**"tRPC endpoint 404"**
+- Make sure server is running: `npm run dev`
+- Check server console for errors
+- Verify Express mounts tRPC at `/api/trpc`
 
-## ✅ Summary
+## 📚 Helpful Files
 
-- ✅ No port conflicts
-- ✅ Database URL correct
-- ✅ SESSION_SECRET fixed
-- ✅ All configuration correct
+- `VERIFY_SETUP.md` - Detailed verification steps
+- `QUICK_TEST.md` - Quick test guide
+- `SETUP_GUIDE.md` - Complete setup instructions
+- `NEXT_STEPS.md` - What to do after setup
+- `docs/TRPC_MIGRATION_GUIDE.md` - How to migrate components
 
-**You're all set!** 🎉
+## ✨ Success Indicators
 
+You'll know setup is complete when:
+- ✅ Server starts without errors
+- ✅ tRPC endpoint returns data (or empty array)
+- ✅ Can query from React components using hooks
+- ✅ Tables exist in Supabase
+- ✅ Seed script runs successfully
+
+**Ready to build! 🚀**

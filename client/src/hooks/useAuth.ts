@@ -4,8 +4,9 @@ import type { User } from "@shared/schema";
 
 export function useAuth() {
   // In standalone mode, we still call the endpoint but treat null as "authenticated"
+  // Query key format matches queryClient's getQueryFn which joins with "/"
   const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
+    queryKey: ["api", "auth", "user"],
     retry: false,
     // Return null on error to treat as "auth disabled, allow access"
     throwOnError: false,

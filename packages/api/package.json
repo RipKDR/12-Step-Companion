@@ -1,0 +1,23 @@
+{
+  "name": "@12-step-companion/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/trpc.ts",
+  "types": "./src/trpc.ts",
+  "exports": {
+    ".": "./src/trpc.ts",
+    "./routers/_app": "./src/routers/_app.ts",
+    "./context": "./src/context.ts",
+    "./context-nextjs": "./src/context-nextjs.ts"
+  },
+  "dependencies": {
+    "@trpc/server": "^11.7.1",
+    "@supabase/supabase-js": "^2.83.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "typescript": "^5.7.2"
+  }
+}
+

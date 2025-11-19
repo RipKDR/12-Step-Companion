@@ -4,6 +4,8 @@ import type {
   WindowWithInstallPrompt,
   NavigatorWithStandalone,
 } from './pwa-types';
+import { logger } from './logger';
+import { toast } from '@/hooks/use-toast';
 
 let wb: Workbox | null = null;
 
@@ -15,7 +17,7 @@ export function registerServiceWorker(onUpdate?: () => void): void {
     wb = new Workbox('/sw.js');
 
     wb.addEventListener('waiting', () => {
-      console.log('New service worker waiting');
+      logger.info('New service worker waiting');
       if (onUpdate) {
         onUpdate();
       }
@@ -23,14 +25,22 @@ export function registerServiceWorker(onUpdate?: () => void): void {
 
     wb.addEventListener('activated', (event) => {
       if (!event.isUpdate) {
-        console.log('Service worker activated for first time');
+        logger.info('Service worker activated for first time');
       } else {
-        console.log('Service worker updated successfully');
+        logger.info('Service worker updated successfully');
       }
     });
 
     wb.register().catch((error) => {
-      console.error('Service worker registration failed:', error);
+      logger.error('Service worker registration failed', error);
+      
+      // Show user-facing error notification
+      // Note: Users can retry by refreshing the page
+      toast({
+        title: 'Service Worker Error',
+        description: 'Failed to register service worker. Some features may not work offline. Please refresh the page to retry.',
+        variant: 'destructive',
+      });
     });
   }
 }
@@ -64,7 +74,7 @@ export function promptInstall(): Promise<boolean> {
     const deferredPrompt = win.deferredPrompt;
     
     if (!deferredPrompt) {
-      console.log('Install prompt not available');
+      logger.info('Install prompt not available');
       resolve(false);
       return;
     }
@@ -73,10 +83,10 @@ export function promptInstall(): Promise<boolean> {
     
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted install prompt');
+        logger.info('User accepted install prompt');
         resolve(true);
       } else {
-        console.log('User dismissed install prompt');
+        logger.info('User dismissed install prompt');
         resolve(false);
       }
       
@@ -90,5 +100,5 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   const win = window as WindowWithInstallPrompt;
   win.deferredPrompt = e as BeforeInstallPromptEvent;
-  console.log('Install prompt captured');
+  logger.info('Install prompt captured');
 });

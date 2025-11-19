@@ -6,7 +6,7 @@ import { buildContextPrompt } from './copilot-context';
  * CRITICAL: Never quote copyrighted NA/AA literature verbatim.
  * Use neutral, paraphrased language only.
  */
-export const SYSTEM_PROMPT = `You are a recovery companion helping someone in 12-step recovery.
+const SYSTEM_PROMPT_TEXT = `You are a recovery companion helping someone in 12-step recovery.
 
 YOUR ROLE:
 - You are NOT a therapist or sponsor - you're a digital companion
@@ -42,6 +42,15 @@ EMERGENCY RESOURCES TO SHARE IN CRISIS:
 
 Remember: You're their recovery companion. You know their journey. Reference it. Build on it. Help them grow.`;
 
+// Internal function to get system prompt (for use in other functions)
+function getSystemPrompt(): string {
+  return SYSTEM_PROMPT_TEXT;
+}
+
+// Export SYSTEM_PROMPT as a const - initialized directly from the template string
+// This avoids any function calls during module initialization that could cause temporal dead zone issues
+export const SYSTEM_PROMPT: string = SYSTEM_PROMPT_TEXT;
+
 /**
  * Builds a chat prompt with context
  */
@@ -51,7 +60,7 @@ export function buildChatPrompt(
 ): string {
   const contextStr = buildContextPrompt(context);
   
-  let prompt = `${SYSTEM_PROMPT}\n\n`;
+  let prompt = `${getSystemPrompt()}\n\n`;
   
   if (contextStr.trim()) {
     prompt += `## USER'S RECOVERY CONTEXT\n${contextStr}\n\n`;
@@ -73,7 +82,7 @@ export function buildDigestPrompt(
 ): string {
   const contextStr = buildContextPrompt(context);
   
-  let prompt = `${SYSTEM_PROMPT}\n\n`;
+  let prompt = `${getSystemPrompt()}\n\n`;
   prompt += `## TASK: Generate Weekly Recovery Digest\n`;
   prompt += `Period: ${weekStartDate} to ${weekEndDate}\n\n`;
   
@@ -98,7 +107,7 @@ export function buildMeetingPrepPrompt(
   userShare: string,
   context?: CopilotContext
 ): string {
-  let prompt = `${SYSTEM_PROMPT}\n\n`;
+  let prompt = `${getSystemPrompt()}\n\n`;
   prompt += `## TASK: Help Prepare Share for Meeting\n\n`;
   prompt += `The user wants to share this at a meeting:\n"${userShare}"\n\n`;
   
@@ -130,7 +139,7 @@ export function buildSponsorSummaryPrompt(
 ): string {
   const contextStr = buildContextPrompt(context);
   
-  let prompt = `${SYSTEM_PROMPT}\n\n`;
+  let prompt = `${getSystemPrompt()}\n\n`;
   prompt += `## TASK: Generate Summary for Sponsor\n`;
   prompt += `Period: ${periodStartDate} to ${periodEndDate} (${period})\n\n`;
   
@@ -158,7 +167,7 @@ export function buildPatternDetectionPrompt(
 ): string {
   const contextStr = buildContextPrompt(context);
   
-  let prompt = `${SYSTEM_PROMPT}\n\n`;
+  let prompt = `${getSystemPrompt()}\n\n`;
   prompt += `## TASK: Detect Patterns in Recovery Journey\n\n`;
   
   if (contextStr.trim()) {

@@ -1,10 +1,8 @@
 import { Switch, Route } from "wouter";
 import { useEffect, useState } from "react";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { TRPCProvider } from "./lib/trpc-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
 import BottomNav from "@/components/BottomNav";
 import UpdateNotification from "@/components/UpdateNotification";
 import { useAppStore } from "@/store/useAppStore";
@@ -14,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
 import { lazy, Suspense } from "react";
+import { createRouteWrapper } from "@/components/RouteWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 
@@ -28,24 +27,25 @@ const RouteFallback = () => (
   </div>
 );
 
-// Routes - Lazy loaded for code splitting
-const Home = lazy(() => import("@/routes/Home"));
-const Steps = lazy(() => import("@/routes/Steps"));
-const Journal = lazy(() => import("@/routes/Journal"));
-const More = lazy(() => import("@/routes/More"));
-const Worksheets = lazy(() => import("@/routes/Worksheets"));
-const Meetings = lazy(() => import("@/routes/Meetings"));
-const Emergency = lazy(() => import("@/routes/Emergency"));
-const Resources = lazy(() => import("@/routes/Resources"));
-const Settings = lazy(() => import("@/routes/Settings"));
-const Onboarding = lazy(() => import("@/routes/Onboarding"));
-const Analytics = lazy(() => import("@/routes/Analytics"));
-const Contacts = lazy(() => import("@/routes/Contacts"));
-const Achievements = lazy(() => import("@/routes/Achievements"));
-const UsageInsights = lazy(() => import("@/routes/UsageInsights"));
-const Landing = lazy(() => import("@/routes/Landing"));
-const AISponsor = lazy(() => import("@/routes/AISponsor"));
-const SponsorConnection = lazy(() => import("@/routes/SponsorConnection"));
+// Routes - Lazy loaded for code splitting with error boundaries
+const Home = createRouteWrapper(() => import("@/routes/Home"), "Home");
+const Steps = createRouteWrapper(() => import("@/routes/Steps"), "Steps");
+const Journal = createRouteWrapper(() => import("@/routes/Journal"), "Journal");
+const More = createRouteWrapper(() => import("@/routes/More"), "More");
+const Worksheets = createRouteWrapper(() => import("@/routes/Worksheets"), "Worksheets");
+const Meetings = createRouteWrapper(() => import("@/routes/Meetings"), "Meetings");
+const Emergency = createRouteWrapper(() => import("@/routes/Emergency"), "Emergency");
+const Resources = createRouteWrapper(() => import("@/routes/Resources"), "Resources");
+const Settings = createRouteWrapper(() => import("@/routes/Settings"), "Settings");
+const Onboarding = createRouteWrapper(() => import("@/routes/Onboarding"), "Onboarding");
+const Analytics = createRouteWrapper(() => import("@/routes/Analytics"), "Analytics");
+const Contacts = createRouteWrapper(() => import("@/routes/Contacts"), "Contacts");
+const Achievements = createRouteWrapper(() => import("@/routes/Achievements"), "Achievements");
+const UsageInsights = createRouteWrapper(() => import("@/routes/UsageInsights"), "Usage Insights");
+const Landing = createRouteWrapper(() => import("@/routes/Landing"), "Landing");
+const AISponsor = createRouteWrapper(() => import("@/routes/AISponsor"), "AI Sponsor");
+const SponsorConnection = createRouteWrapper(() => import("@/routes/SponsorConnection"), "Sponsor Connection");
+const NotFound = createRouteWrapper(() => import("@/pages/not-found"), "Not Found");
 
 function Router() {
   const { isLoading } = useAuth();
@@ -129,7 +129,7 @@ function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <TRPCProvider>
       <TooltipProvider>
         <ErrorBoundary>
           <Toaster />
@@ -143,7 +143,7 @@ function App() {
           )}
         </ErrorBoundary>
       </TooltipProvider>
-    </QueryClientProvider>
+    </TRPCProvider>
   );
 }
 

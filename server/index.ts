@@ -50,30 +50,40 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      const status = (err as { status?: number; statusCode?: number }).status || 
+                     (err as { status?: number; statusCode?: number }).statusCode || 
+                     500;
+      const message = err instanceof Error ? err.message : "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
-  });
+      // Log error for debugging (but don't expose to client)
+      log(`Error: ${message} (Status: ${status})`);
+      
+      res.status(status).json({ message });
+      // Don't throw after sending response - just log
+    });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    // Serve the app on the port specified in the environment variable PORT
+    // Defaults to 3000 if not specified
+    // This serves both the API and the client
+    const port = parseInt(process.env.PORT || '3000', 10);
+    server.listen(port, "0.0.0.0", () => {
+      log(`serving on port ${port}`);
+    });
+  } catch (error) {
+    log(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
   }
-
-  // Serve the app on the port specified in the environment variable PORT
-  // Defaults to 3000 if not specified
-  // This serves both the API and the client
-  const port = parseInt(process.env.PORT || '3000', 10);
-  server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
-  });
 })();

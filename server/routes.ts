@@ -1,21 +1,83 @@
 // API Routes - Standalone mode (no authentication required)
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import type { GoogleGenerativeAI } from "@google/generative-ai";
+import type { TypedRequest } from "./types/express";
+import { isStringArray, isNumberArray, isValidContextWindow } from "./types/guards";
+import { log } from "./vite";
+import { authenticatedRateLimiter } from "./middleware/rateLimit";
+import { validateChatRequest } from "./middleware/validateRequest";
+import { sanitizeError } from "./utils/sanitizeError";
+import {
+  MAX_CONTEXT_LENGTH,
+  MAX_TRIGGERS,
+  MAX_JOURNALS,
+  MAX_OUTPUT_TOKENS,
+  AI_TEMPERATURE,
+  MAX_MESSAGE_LENGTH,
+  CACHE_TTL_MS,
+  REQUEST_TIMEOUT_MS,
+} from "./constants";
 
-// Constants
-const MAX_CONTEXT_LENGTH = 500;
-const MAX_TRIGGERS = 50;
-const MAX_JOURNALS = 3;
-const MAX_OUTPUT_TOKENS = 2048;
-const AI_TEMPERATURE = 0.8;
-const MAX_MESSAGE_LENGTH = 5000;
+// Type definitions
+interface UserContext {
+  name?: string;
+  sobrietyDate?: string;
+  triggers?: Array<{
+    name?: string;
+    description?: string;
+    severity?: number;
+  }>;
+  recentJournals?: Array<{
+    date?: string;
+    content?: string;
+  }>;
+  stepProgress?: Record<string, {
+    completed?: boolean;
+    answers?: Record<string, unknown>;
+  }>;
+  conversationSummary?: string;
+}
 
-// Cache AI client instance
-let cachedGenAI: any = null;
+interface ContextWindow {
+  recentStepWork?: string[];
+  recentJournals?: string[];
+  activeScenes?: string[];
+  currentStreaks?: Record<string, number>;
+  recentMoodTrend?: number[];
+  recentCravingsTrend?: number[];
+}
 
-// Input sanitization helper
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface ChatRequest {
+  message: string;
+  conversationHistory?: ChatMessage[];
+  userContext?: UserContext;
+  contextWindow?: ContextWindow;
+  promptType?: string;
+}
+
+// Cache AI client instance with proper typing and expiration
+interface CachedAIClient {
+  client: GoogleGenerativeAI;
+  createdAt: number;
+}
+
+let cachedGenAI: CachedAIClient | null = null;
+
+/**
+ * Input sanitization helper
+ * Removes HTML tags, normalizes whitespace, and limits length
+ * @param text - Text to sanitize
+ * @param maxLength - Maximum length (defaults to MAX_CONTEXT_LENGTH)
+ * @returns Sanitized text string
+ */
 function sanitizeText(text: string, maxLength: number = MAX_CONTEXT_LENGTH): string {
   if (!text || typeof text !== 'string') return '';
   return text
@@ -26,30 +88,42 @@ function sanitizeText(text: string, maxLength: number = MAX_CONTEXT_LENGTH): str
     .substring(0, maxLength);
 }
 
-// Validate user context structure
-function validateUserContext(userContext: any): { valid: boolean; error?: string } {
+/**
+ * Validate user context structure
+ * Checks that userContext is a valid object with proper structure
+ * @param userContext - User context object to validate
+ * @returns Object with valid flag and optional error message
+ */
+function validateUserContext(userContext: unknown): { valid: boolean; error?: string } {
   if (!userContext) return { valid: true }; // Context is optional
 
-  if (userContext.triggers) {
-    if (!Array.isArray(userContext.triggers)) {
+  // Type guard to check if userContext is an object
+  if (typeof userContext !== 'object' || userContext === null) {
+    return { valid: false, error: 'User context must be an object' };
+  }
+
+  const ctx = userContext as UserContext;
+
+  if (ctx.triggers) {
+    if (!Array.isArray(ctx.triggers)) {
       return { valid: false, error: 'Triggers must be an array' };
     }
-    if (userContext.triggers.length > MAX_TRIGGERS) {
+    if (ctx.triggers.length > MAX_TRIGGERS) {
       return { valid: false, error: `Maximum ${MAX_TRIGGERS} triggers allowed` };
     }
   }
 
-  if (userContext.recentJournals) {
-    if (!Array.isArray(userContext.recentJournals)) {
+  if (ctx.recentJournals) {
+    if (!Array.isArray(ctx.recentJournals)) {
       return { valid: false, error: 'Journals must be an array' };
     }
-    if (userContext.recentJournals.length > MAX_JOURNALS) {
+    if (ctx.recentJournals.length > MAX_JOURNALS) {
       return { valid: false, error: `Maximum ${MAX_JOURNALS} journals allowed` };
     }
   }
 
-  if (userContext.sobrietyDate) {
-    const date = new Date(userContext.sobrietyDate);
+  if (ctx.sobrietyDate) {
+    const date = new Date(ctx.sobrietyDate);
     if (isNaN(date.getTime())) {
       return { valid: false, error: 'Invalid sobriety date' };
     }
@@ -61,12 +135,26 @@ function validateUserContext(userContext: any): { valid: boolean; error?: string
   return { valid: true };
 }
 
+/**
+ * Register all application routes
+ * Sets up authentication, API endpoints, and returns HTTP server
+ * @param app - Express application instance
+ * @returns Promise resolving to HTTP server
+ */
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware (no-op in standalone mode)
   await setupAuth(app);
 
+  // Mount tRPC router at /api/trpc (before other routes to avoid conflicts)
+  try {
+    const { mountTRPC } = await import("./routes-trpc");
+    mountTRPC(app);
+  } catch (error) {
+    log(`Warning: Failed to mount tRPC router: ${error}`, "routes");
+  }
+
   // Auth endpoint - always returns null (no auth in standalone mode)
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (_req: Request, res: Response) => {
     // Always return null - app works without authentication
     return res.json(null);
   });
@@ -76,48 +164,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Example: app.get("/api/protected", isAuthenticated, async (req, res) => { ... });
 
   // AI Sponsor Chat endpoint (works with or without auth)
-  app.post('/api/ai-sponsor/chat', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai-sponsor/chat', authenticatedRateLimiter, isAuthenticated, validateChatRequest, async (req: TypedRequest<ChatRequest>, res: Response) => {
     try {
       const { message, conversationHistory, userContext, contextWindow, promptType } = req.body;
 
-      // Validate message
-      if (!message || typeof message !== 'string') {
-        return res.status(400).json({
-          message: 'Message is required',
-          response: 'Please provide a message to send.'
-        });
-      }
-
-      if (message.length > MAX_MESSAGE_LENGTH) {
-        return res.status(400).json({
-          message: 'Message too long',
-          response: `Please send a shorter message (maximum ${MAX_MESSAGE_LENGTH} characters).`
-        });
-      }
-
-      // Validate user context
+      // Note: Message and userContext validation is handled by validateChatRequest middleware
+      // Additional validation for userContext structure (if needed)
       const contextValidation = validateUserContext(userContext);
       if (!contextValidation.valid) {
-        return res.status(400).json({
+        res.status(400).json({
           message: 'Invalid user context',
           response: contextValidation.error || 'Invalid user data provided.'
         });
+        return;
       }
 
       // Check for API key
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        console.error('GEMINI_API_KEY not set');
-        return res.status(500).json({
+        log('GEMINI_API_KEY not set', 'routes');
+        res.status(500).json({
           message: 'AI service not configured',
           response: "I'm sorry, but I'm not properly configured at the moment. Please try reaching out to a human sponsor or check back later."
         });
+        return;
       }
 
-      // Initialize or reuse cached AI client
-      if (!cachedGenAI) {
+      // Initialize or reuse cached AI client (with expiration check)
+      const now = Date.now();
+      if (!cachedGenAI || (now - cachedGenAI.createdAt) > CACHE_TTL_MS) {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
-        cachedGenAI = new GoogleGenerativeAI(apiKey);
+        cachedGenAI = {
+          client: new GoogleGenerativeAI(apiKey) as GoogleGenerativeAI,
+          createdAt: now,
+        };
+        log('AI client cache initialized', 'routes');
       }
 
       // Build personalized context section with sanitization
@@ -125,31 +206,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let personalContext = '';
       
       // Use structured contextWindow if provided, otherwise fall back to userContext
-      if (contextWindow) {
+      if (contextWindow && isValidContextWindow(contextWindow)) {
         personalContext = '\n\n--- RECOVERY CONTEXT ---\n';
         
-        if (contextWindow.recentStepWork && Array.isArray(contextWindow.recentStepWork) && contextWindow.recentStepWork.length > 0) {
+        if (contextWindow.recentStepWork && isStringArray(contextWindow.recentStepWork) && contextWindow.recentStepWork.length > 0) {
           personalContext += `\nRecent Step Work:\n`;
           contextWindow.recentStepWork.forEach((summary: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
           });
         }
         
-        if (contextWindow.recentJournals && Array.isArray(contextWindow.recentJournals) && contextWindow.recentJournals.length > 0) {
+        if (contextWindow.recentJournals && isStringArray(contextWindow.recentJournals) && contextWindow.recentJournals.length > 0) {
           personalContext += `\nRecent Journal Entries:\n`;
           contextWindow.recentJournals.forEach((summary: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
           });
         }
         
-        if (contextWindow.activeScenes && Array.isArray(contextWindow.activeScenes) && contextWindow.activeScenes.length > 0) {
+        if (contextWindow.activeScenes && isStringArray(contextWindow.activeScenes) && contextWindow.activeScenes.length > 0) {
           personalContext += `\nActive Recovery Scenes:\n`;
           contextWindow.activeScenes.forEach((scene: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(scene, 200)}\n`;
           });
         }
         
-        if (contextWindow.currentStreaks && typeof contextWindow.currentStreaks === 'object') {
+        if (contextWindow.currentStreaks && typeof contextWindow.currentStreaks === 'object' && contextWindow.currentStreaks !== null) {
           personalContext += `\nCurrent Streaks:\n`;
           Object.entries(contextWindow.currentStreaks).forEach(([type, count]) => {
             if (typeof count === 'number' && count > 0) {
@@ -158,12 +239,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        if (contextWindow.recentMoodTrend && Array.isArray(contextWindow.recentMoodTrend) && contextWindow.recentMoodTrend.length > 0) {
+        if (contextWindow.recentMoodTrend && isNumberArray(contextWindow.recentMoodTrend) && contextWindow.recentMoodTrend.length > 0) {
           const avgMood = contextWindow.recentMoodTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentMoodTrend.length;
           personalContext += `\nMood Trend (Last 7 Days): Average ${avgMood.toFixed(1)}/5\n`;
         }
         
-        if (contextWindow.recentCravingsTrend && Array.isArray(contextWindow.recentCravingsTrend) && contextWindow.recentCravingsTrend.length > 0) {
+        if (contextWindow.recentCravingsTrend && isNumberArray(contextWindow.recentCravingsTrend) && contextWindow.recentCravingsTrend.length > 0) {
           const avgCravings = contextWindow.recentCravingsTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentCravingsTrend.length;
           personalContext += `\nCravings Trend (Last 7 Days): Average ${avgCravings.toFixed(1)}/10\n`;
         }
@@ -183,14 +264,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const daysClean = Math.max(0, Math.floor((Date.now() - cleanDate.getTime()) / (1000 * 60 * 60 * 24)));
             personalContext += `Clean Date: ${cleanDate.toLocaleDateString()} (${daysClean} days clean)\n`;
           } catch (error) {
-            console.error('Error processing sobriety date:', error);
+            log(`Error processing sobriety date: ${error instanceof Error ? error.message : String(error)}`, 'routes');
           }
         }
 
         if (userContext.triggers && Array.isArray(userContext.triggers) && userContext.triggers.length > 0) {
           personalContext += `\nKnown Triggers:\n`;
-          userContext.triggers.slice(0, MAX_TRIGGERS).forEach((trigger: any) => {
-            const name = sanitizeText(trigger.name, 100);
+          userContext.triggers.slice(0, MAX_TRIGGERS).forEach((trigger) => {
+            const name = sanitizeText(trigger.name || '', 100);
             const description = trigger.description ? sanitizeText(trigger.description, 200) : '';
             const severity = trigger.severity && Number.isInteger(trigger.severity) && trigger.severity >= 1 && trigger.severity <= 10
               ? trigger.severity
@@ -202,30 +283,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (userContext.recentJournals && Array.isArray(userContext.recentJournals) && userContext.recentJournals.length > 0) {
           personalContext += `\nRecent Journal Entries (Last ${Math.min(userContext.recentJournals.length, MAX_JOURNALS)}):\n`;
-          userContext.recentJournals.slice(0, MAX_JOURNALS).forEach((entry: any) => {
+          userContext.recentJournals.slice(0, MAX_JOURNALS).forEach((entry) => {
             try {
-              const date = new Date(entry.date).toLocaleDateString();
+              const date = entry.date ? new Date(entry.date).toLocaleDateString() : 'Unknown date';
               const content = sanitizeText(entry.content || '', 200);
               if (content) {
                 personalContext += `- ${date}: ${content}${entry.content && entry.content.length > 200 ? '...' : ''}\n`;
               }
             } catch (error) {
-              console.error('Error processing journal entry:', error);
+              log(`Error processing journal entry: ${error instanceof Error ? error.message : String(error)}`, 'routes');
             }
           });
         }
 
         if (userContext.stepProgress && typeof userContext.stepProgress === 'object') {
-          const completedSteps = Object.keys(userContext.stepProgress).filter(step =>
-            userContext.stepProgress[step]?.completed === true
+          const stepProgress = userContext.stepProgress;
+          const completedSteps = Object.keys(stepProgress).filter(step =>
+            stepProgress[step]?.completed === true
           );
           if (completedSteps.length > 0) {
             personalContext += `\nCompleted Steps: ${completedSteps.map(s => `Step ${s}`).join(', ')}\n`;
           }
-          const currentStep = Object.keys(userContext.stepProgress).find(step =>
-            !userContext.stepProgress[step]?.completed &&
-            userContext.stepProgress[step]?.answers &&
-            Object.keys(userContext.stepProgress[step].answers).length > 0
+          const currentStep = Object.keys(stepProgress).find(step =>
+            !stepProgress[step]?.completed &&
+            stepProgress[step]?.answers &&
+            Object.keys(stepProgress[step].answers || {}).length > 0
           );
           if (currentStep) {
             personalContext += `Currently Working On: Step ${currentStep}\n`;
@@ -283,14 +365,14 @@ Remember: You're their recovery companion. You know their journey. Reference it.
 ${personalContext}`;
 
       // Initialize model with personalized system instruction
-      const model = cachedGenAI.getGenerativeModel({
+      const model = cachedGenAI.client.getGenerativeModel({
         model: 'gemini-1.5-flash',
         systemInstruction
       });
 
       // Format and validate conversation history
       const history = (conversationHistory && Array.isArray(conversationHistory)
-        ? conversationHistory.slice(-10).map((msg: any) => ({
+        ? conversationHistory.slice(-10).map((msg) => ({
             role: msg.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: sanitizeText(msg.content || '', MAX_MESSAGE_LENGTH) }]
           }))
@@ -306,41 +388,70 @@ ${personalContext}`;
         },
       });
 
-      // Send message and get response
-      const result = await chat.sendMessage(sanitizeText(message, MAX_MESSAGE_LENGTH));
+      // Send message and get response with timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("Request timeout")), REQUEST_TIMEOUT_MS);
+      });
+
+      const result = await Promise.race([
+        chat.sendMessage(sanitizeText(message, MAX_MESSAGE_LENGTH)),
+        timeoutPromise,
+      ]);
+      
       const responseText = result.response.text();
 
       res.json({ response: responseText });
     } catch (error) {
-      console.error('Error in AI sponsor chat:', error);
+      // Log full error server-side for debugging
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStatus = 'status' in error && typeof error.status === 'number' ? error.status : undefined;
+      log(`Error in AI sponsor chat: ${errorMessage}`, 'routes');
 
-      // Handle specific error types
-      if (errorStatus === 429 || errorMessage.includes('quota')) {
-        return res.status(429).json({
-          message: 'Rate limit exceeded',
+      // Sanitize error for client
+      const sanitized = sanitizeError(error, 500);
+
+      // Handle timeout specifically
+      if (errorMessage.includes('timeout') || errorMessage.includes('Request timeout')) {
+        res.status(504).json({
+          message: 'Request timeout',
+          response: "The request took too long to process. Please try again, or reach out to your sponsor if you need immediate support."
+        });
+        return;
+      }
+
+      // Handle specific error types with sanitized messages
+      if (sanitized.statusCode === 429 || errorMessage.includes('quota')) {
+        res.status(429).json({
+          message: sanitized.message,
           response: "I'm receiving a lot of messages right now. Please wait a moment and try again. If you need immediate support, consider calling your sponsor or attending a meeting."
         });
+        return;
       }
 
       if (errorMessage.includes('API key')) {
-        return res.status(503).json({
-          message: 'Service unavailable',
+        res.status(503).json({
+          message: sanitized.message,
           response: "I'm having trouble with my configuration. Please try again later or reach out to a human sponsor."
         });
+        return;
       }
 
       if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
-        return res.status(400).json({
-          message: 'Content filtered',
+        res.status(400).json({
+          message: sanitized.message,
           response: "I couldn't process that message. Please rephrase and try again, or reach out to your sponsor for support."
         });
+        return;
       }
 
-      // Generic error response
-      res.status(500).json({
-        message: 'Internal server error',
+      // Clear cache on API errors to force reinitialization
+      if (sanitized.statusCode >= 500) {
+        cachedGenAI = null;
+        log('AI client cache cleared due to error', 'routes');
+      }
+
+      // Generic error response with sanitized message
+      res.status(sanitized.statusCode).json({
+        message: sanitized.message,
         response: "I'm having trouble responding right now. Please try again in a moment, or reach out to your sponsor or a trusted person if you need immediate support."
       });
     }
