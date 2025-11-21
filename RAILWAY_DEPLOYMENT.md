@@ -44,6 +44,11 @@ The Dockerfile uses a multi-stage build:
 
 ## Troubleshooting
 
+### Build fails with "ERR_PNPM_OUTDATED_LOCKFILE"
+- The Dockerfile uses `--no-frozen-lockfile` to allow lockfile updates during build
+- **Recommended**: Update your lockfile locally by running `pnpm install` and committing `pnpm-lock.yaml`
+- This ensures reproducible builds and faster CI/CD
+
 ### Build fails with "pnpm not found"
 - Railway should auto-detect pnpm from `pnpm-lock.yaml`
 - If not, ensure `pnpm-workspace.yaml` exists

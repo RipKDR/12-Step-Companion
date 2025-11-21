@@ -246,6 +246,7 @@ BEGIN
     WHERE sponsor_id = auth.uid()
       AND sponsee_id = sponsee_user_id
       AND status = 'active'
+      AND status IS DISTINCT FROM 'revoked'
   );
 END;
 $$;
@@ -259,4 +260,3 @@ $$;
 -- 3. Service role key bypasses RLS - use with extreme caution
 -- 4. Policies are restrictive by default - only allow what's explicitly needed
 -- 5. Test all policies with different user contexts before production deployment
-

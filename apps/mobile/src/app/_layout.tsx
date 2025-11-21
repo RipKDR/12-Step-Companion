@@ -9,6 +9,7 @@ import { TRPCProvider } from "../../lib/trpc-provider";
 import { initDatabase } from "../../lib/sqlite";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { SyncManager } from "../components/SyncManager";
 
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
@@ -33,6 +34,7 @@ export default function RootLayout() {
 
   return (
     <TRPCProvider>
+      <SyncManager />
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -40,4 +42,3 @@ export default function RootLayout() {
     </TRPCProvider>
   );
 }
-

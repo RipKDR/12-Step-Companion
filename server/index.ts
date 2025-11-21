@@ -3,7 +3,7 @@ import "./env";
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { log } from "./lib/logger";
 
 const app = express();
 
@@ -59,31 +59,20 @@ app.use((req, res, next) => {
                      500;
       const message = err instanceof Error ? err.message : "Internal Server Error";
 
-      // Log error for debugging (but don't expose to client)
+      // Log error for debugging
       log(`Error: ${message} (Status: ${status})`);
       
       res.status(status).json({ message });
-      // Don't throw after sending response - just log
     });
-
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
 
     // Serve the app on the port specified in the environment variable PORT
     // Defaults to 3000 if not specified
-    // This serves both the API and the client
     const port = parseInt(process.env.PORT || '3000', 10);
     server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });
   } catch (error) {
-    log(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
 })();

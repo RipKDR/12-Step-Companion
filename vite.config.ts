@@ -5,7 +5,10 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      jsxRuntime: 'automatic',
+      jsxImportSource: 'react',
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false, // We manually register in pwa.ts
@@ -40,6 +43,7 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@packages": path.resolve(import.meta.dirname, "packages"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),

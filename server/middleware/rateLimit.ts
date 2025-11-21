@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import type { Request, Response } from "express";
-import { log } from "../vite";
+import { log } from "../lib/logger";
 
 /**
  * Rate limiting middleware for API endpoints
@@ -50,4 +50,3 @@ export const authenticatedRateLimiter = rateLimit({
     });
   },
 });
-

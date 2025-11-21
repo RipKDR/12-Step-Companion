@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import type { ChatRequest } from "../routes";
+import type { ChatRequest } from "../types/chat";
 
 /**
  * Zod schema for ChatRequest validation
