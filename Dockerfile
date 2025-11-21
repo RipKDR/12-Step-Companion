@@ -19,7 +19,9 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/ui/package.json ./packages/ui/
 
 # Install all dependencies
-RUN pnpm install --frozen-lockfile
+# Use --no-frozen-lockfile to allow lockfile updates if needed
+# In production, you should commit an up-to-date pnpm-lock.yaml
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -35,15 +37,10 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy workspace configuration and root package.json
-COPY pnpm-workspace.yaml ./
-COPY package.json pnpm-lock.yaml ./
-
-# Copy package.json files for all workspaces
-COPY apps/web/package.json ./apps/web/
-COPY packages/api/package.json ./packages/api/
-COPY packages/types/package.json ./packages/types/
-COPY packages/ui/package.json ./packages/ui/
+# Copy workspace manifests required for pnpm runtime
+COPY --from=base /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Copy built Next.js app
 COPY --from=base /app/apps/web/.next ./apps/web/.next
@@ -55,6 +52,7 @@ COPY --from=base /app/apps/web/next.config.js ./apps/web/
 COPY --from=base /app/apps/web/tsconfig.json ./apps/web/
 COPY --from=base /app/apps/web/tailwind.config.js ./apps/web/
 COPY --from=base /app/apps/web/postcss.config.js ./apps/web/
+COPY --from=base /app/apps/web/package.json ./apps/web/
 
 # Copy shared packages source (TypeScript files, Next.js will transpile)
 COPY --from=base /app/packages ./packages

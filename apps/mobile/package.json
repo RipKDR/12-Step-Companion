@@ -10,30 +10,35 @@
   },
   "dependencies": {
     "expo": "~52.0.0",
-    "expo-router": "~4.5.0",
-    "expo-location": "~18.0.1",
-    "expo-notifications": "~1.28.0",
-    "expo-secure-store": "~14.0.1",
+    "expo-router": "^4.0.0",
+    "expo-location": "~18.0.0",
+    "expo-notifications": "~0.32.0",
+    "expo-secure-store": "~14.0.0",
     "expo-sqlite": "~15.0.0",
     "expo-task-manager": "~12.0.0",
-    "react": "19.2.0",
-    "react-dom": "^19.3.1",
-    "react-native": "1.74.0",
-    "react-native-safe-area-context": "5.10.1",
-    "react-native-screens": "~4.31.0",
+    "expo-network": "~7.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-native": "0.76.3",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "~4.18.0",
     "@trpc/client": "^11.7.1",
     "@trpc/react-query": "^11.7.1",
     "@tanstack/react-query": "^5.90.7",
     "@supabase/supabase-js": "^2.83.0",
-    "lucide-react-native": "^1.344.0",
+    "lucide-react-native": "^0.554.0",
     "date-fns": "^3.6.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "libsodium-wrappers": "^0.7.15",
+    "text-encoding": "^0.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@types/react": "~18.2.45",
-    "typescript": "^5.7.2"
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "@types/libsodium-wrappers": "^0.7.14",
+    "@types/text-encoding": "^0.0.39"
   },
   "private": true
 }
-

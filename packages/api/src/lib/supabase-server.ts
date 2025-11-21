@@ -9,7 +9,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../types/src/supabase";
+import type { Database } from "@12-step-companion/types";
 
 // Environment check - ensure this is server-side only
 if (typeof window !== "undefined") {
@@ -74,6 +74,12 @@ if (!supabaseAnonKey) {
  * @returns Supabase client scoped to the user
  */
 export function createUserClient(accessToken: string) {
+  if (!supabaseUrl) {
+    throw new Error("Missing env: SUPABASE_URL");
+  }
+  if (!supabaseAnonKey) {
+    throw new Error("Missing env: SUPABASE_ANON_KEY");
+  }
   return createClient<Database>(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: {

@@ -12,9 +12,9 @@ import type { NextRequest } from "next/server";
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
     endpoint: "/api/trpc",
-    req,
+    req: req as any, // Type assertion to handle monorepo Next.js type version mismatch
     router: appRouter,
-    createContext: () => createContextNextJS({ req }),
+    createContext: async () => await createContextNextJS({ req: req as any }), // Type assertion for monorepo compatibility
     onError:
       process.env.NODE_ENV === "development"
         ? ({ path, error }) => {

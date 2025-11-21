@@ -1,8 +1,14 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "buildCommand": "pnpm --filter './apps/web' build",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile",
+=======
+  "buildCommand": "cd apps/web && pnpm run build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+>>>>>>> fc78735e5ac3d68e6d72336eff87ba9659961b9c
   "framework": "nextjs",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web",
   "rewrites": [

@@ -4,7 +4,7 @@ const nextConfig = {
   transpilePackages: ["@12-step-companion/api", "@12-step-companion/types"],
   
   // Performance optimizations
-  swcMinify: true,
+  // Note: swcMinify is always enabled in Next.js 16, removed deprecated option
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? {
       exclude: ["error", "warn"]
@@ -45,25 +45,10 @@ const nextConfig = {
     ];
   },
   
-  // Webpack optimizations
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    
-    // Optimize bundle splitting
-    config.optimization = {
-      ...config.optimization,
-      moduleIds: 'deterministic',
-    };
-    
-    return config;
-  },
+  // Note: Webpack config removed for Next.js 16 compatibility
+  // Turbopack is the default bundler in Next.js 16
+  // The previous webpack config (fallbacks for fs/net/tls and moduleIds) 
+  // is handled automatically by Turbopack
 };
 
 module.exports = nextConfig;

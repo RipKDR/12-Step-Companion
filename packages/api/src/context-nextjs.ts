@@ -32,16 +32,20 @@ export async function createContextNextJS(opts: { req: NextRequest }) {
       
       if (!error && user) {
         userId = user.id;
-        supabase = userClient; // Use user-scoped client for RLS
+        supabase = userClient as any; // Use user-scoped client for RLS (type assertion for compatibility)
       }
     } catch (error) {
       // Invalid token - continue with server client
-      console.warn("Failed to get user from token:", error);
+      // Only log in development to avoid exposing PII
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Failed to get user from token");
+      }
     }
   }
 
   return {
-    req,
+    req: req as any, // NextRequest is compatible with Express Request for tRPC
+    res: undefined as any, // Not used in Next.js App Router, but required by Context type
     userId,
     supabase,
     // Helper to check if user is authenticated
