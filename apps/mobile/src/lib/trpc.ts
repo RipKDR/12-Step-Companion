@@ -13,7 +13,7 @@ export const trpc = createTRPCReact<AppRouter>();
  * Get tRPC client configuration
  */
 export function getTRPCClient() {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
   return trpc.createClient({
     links: [

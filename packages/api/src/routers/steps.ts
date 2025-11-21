@@ -52,6 +52,33 @@ export const stepsRouter = router({
   }),
 
   /**
+   * Get shared step entries for a sponsee
+   */
+  getSharedEntries: protectedProcedure
+    .input(z.object({ sponseeId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const { data: isSponsor } = await ctx.supabase.rpc("is_sponsor_of", {
+        sponsee_user_id: input.sponseeId,
+      });
+      if (!isSponsor) {
+        throw new Error("Unauthorized: Not an active sponsor");
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("step_entries")
+        .select("*, step:steps(title, step_number)")
+        .eq("user_id", input.sponseeId)
+        .eq("is_shared_with_sponsor", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch shared step entries: ${error.message}`);
+      }
+
+      return data;
+    }),
+
+  /**
    * Create or update step entry
    */
   upsertEntry: protectedProcedure
@@ -75,7 +102,7 @@ export const stepsRouter = router({
           user_id: ctx.userId,
           step_id: input.stepId,
           version,
-          content: input.content,
+          content: input.content as any, // Cast to Json type for Supabase compatibility
           is_shared_with_sponsor: input.isSharedWithSponsor ?? false,
         })
         .select()
@@ -108,4 +135,3 @@ export const stepsRouter = router({
       return data;
     }),
 });
-

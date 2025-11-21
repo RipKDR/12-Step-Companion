@@ -8,26 +8,22 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../packages/types/src/supabase";
+import type { Database } from "@12-step-companion/types";
 
 // Load environment variables
 import "../env";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl) {
-  throw new Error("Missing env: SUPABASE_URL");
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing env: ${name}`);
+  }
+  return value;
 }
 
-if (!supabaseServiceRoleKey) {
-  throw new Error("Missing env: SUPABASE_SERVICE_ROLE_KEY");
-}
-
-if (!supabaseAnonKey) {
-  throw new Error("Missing env: SUPABASE_ANON_KEY");
-}
+const supabaseUrl = requireEnv("SUPABASE_URL");
+const supabaseServiceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+const supabaseAnonKey = requireEnv("SUPABASE_ANON_KEY");
 
 // Verify service role key format
 // Service role keys are JWT tokens (200+ chars) that start with "eyJ"

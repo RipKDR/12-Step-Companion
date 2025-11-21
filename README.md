@@ -17,21 +17,45 @@ A privacy-first Progressive Web Application (PWA) designed to support individual
 
 ## Tech Stack
 
-- **Frontend**: React 18 + TypeScript, Vite, Wouter, Zustand, TanStack Query
-- **Backend**: Express.js, PostgreSQL (Neon), Drizzle ORM
-- **UI**: Tailwind CSS + shadcn/ui components
-- **PWA**: Service Worker, Web Manifest, offline support
+- **Web Frontend**: React 18 + TypeScript, Vite, Wouter, Zustand, TanStack Query
+- **Mobile App**: Expo (React Native), Expo Router, TypeScript
+- **Backend**: Express.js, PostgreSQL (Supabase), Drizzle ORM, tRPC
+- **UI**: Tailwind CSS + shadcn/ui components (web), React Native components (mobile)
+- **PWA**: Service Worker, Web Manifest, offline support (web)
+- **Mobile**: Expo SecureStore, SQLite, offline-first architecture
 
 ## Prerequisites
 
-- **Node.js 20+** and npm (check with `node --version` and `npm --version`)
+- **Node.js 20+** (check with `node --version`)
+- **pnpm 8+** (check with `pnpm --version`)
 - PostgreSQL database (optional, for cloud sync/auth)
 - Google Gemini API key (optional, for AI Sponsor feature)
 
 **Verify installation:**
 ```bash
 node --version  # Should show v20.x.x or higher
-npm --version   # Should show 9.x.x or higher
+pnpm --version  # Should show 8.x.x or higher
+```
+
+**Install pnpm if needed:**
+```bash
+npm install -g pnpm
+```
+
+## Project Structure
+
+```
+12-Step-Companion/
+├── apps/
+│   ├── mobile/          # Expo React Native mobile app
+│   └── web/             # Next.js web app (sponsor portal)
+├── packages/
+│   ├── api/             # tRPC routers (shared API)
+│   ├── types/           # Shared TypeScript types
+│   └── ui/              # Shared UI components
+├── client/              # Legacy React web frontend
+├── server/              # Express backend + migrations
+└── shared/              # Shared schemas and utilities
 ```
 
 ## Local Development Setup
@@ -41,10 +65,10 @@ npm --version   # Should show 9.x.x or higher
 ```bash
 git clone <repository-url>
 cd 12-Step-Companion
-npm install
+pnpm install
 ```
 
-**Note**: Installation may take a few minutes and show deprecation warnings. This is normal - the app will work fine. You can ignore warnings about deprecated packages.
+**Note**: This is a pnpm workspace monorepo. Use `pnpm` for all package management commands. Installation may take a few minutes and show deprecation warnings. This is normal - the app will work fine. You can ignore warnings about deprecated packages.
 
 ### 2. Environment Configuration
 
@@ -103,6 +127,32 @@ The app will be available at `http://localhost:3000` (or the port specified in `
 - Frontend: Served via Vite with HMR
 - Backend API: Available at `/api/*`
 - Static files: Served from `client/public`
+
+### Mobile App Development
+
+See [apps/mobile/README.md](./apps/mobile/README.md) for complete mobile app setup.
+
+**Quick Start:**
+```bash
+# Install dependencies
+npm install
+
+# Start Expo development server
+npm run mobile:dev
+# or
+cd apps/mobile && npm start
+
+# Run on iOS simulator (Mac only)
+npm run mobile:ios
+
+# Run on Android emulator
+npm run mobile:android
+```
+
+**Environment Variables:**
+- `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `EXPO_PUBLIC_API_URL` - Backend API URL (default: http://localhost:5000)
 
 ### 5. Build for Production
 

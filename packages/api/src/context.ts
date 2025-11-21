@@ -37,11 +37,14 @@ export async function createContext(opts: { req: Request; res: Response }) {
       
       if (!error && user) {
         userId = user.id;
-        supabase = userClient; // Use user-scoped client for RLS
+        supabase = userClient as any; // Use user-scoped client for RLS (type assertion for compatibility)
       }
     } catch (error) {
       // Invalid token - continue with server client
-      console.warn("Failed to get user from token:", error);
+      // Only log in development to avoid exposing PII
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Failed to get user from token");
+      }
     }
   }
 

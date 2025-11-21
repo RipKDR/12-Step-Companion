@@ -45,6 +45,33 @@ export const actionPlansRouter = router({
   }),
 
   /**
+   * Get shared action plans for a sponsee
+   */
+  getSharedPlans: protectedProcedure
+    .input(z.object({ sponseeId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const { data: isSponsor } = await ctx.supabase.rpc("is_sponsor_of", {
+        sponsee_user_id: input.sponseeId,
+      });
+      if (!isSponsor) {
+        throw new Error("Unauthorized: Not an active sponsor");
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("action_plans")
+        .select("*")
+        .eq("user_id", input.sponseeId)
+        .eq("is_shared_with_sponsor", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch shared action plans: ${error.message}`);
+      }
+
+      return data;
+    }),
+
+  /**
    * Get action plan by ID
    */
   getById: protectedProcedure
@@ -140,4 +167,3 @@ export const actionPlansRouter = router({
       return { success: true };
     }),
 });
-

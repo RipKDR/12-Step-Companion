@@ -5,6 +5,8 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import { SupabaseAdapter } from "@auth/supabase-adapter";
 import type { Adapter } from "next-auth/adapters";
+import type { Session, User } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import EmailProvider from "next-auth/providers/email";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -28,15 +30,15 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   }) as Adapter,
   callbacks: {
-    async session({ session, token }: any) {
-      if (token) {
+    async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
+      if (token && token.sub) {
         session.accessToken = token.supabaseAccessToken;
         session.user.id = token.sub;
       }
       return session;
     },
-    async jwt({ token, user, account }: any) {
-      if (account && user) {
+    async jwt({ token, user, account }: { token: JWT; user?: User; account?: { access_token?: string } | null }): Promise<JWT> {
+      if (account?.access_token && user) {
         token.supabaseAccessToken = account.access_token;
       }
       return token;

@@ -56,6 +56,33 @@ export const dailyEntriesRouter = router({
     }),
 
   /**
+   * Get shared daily entries for a sponsee
+   */
+  getSharedEntries: protectedProcedure
+    .input(z.object({ sponseeId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const { data: isSponsor } = await ctx.supabase.rpc("is_sponsor_of", {
+        sponsee_user_id: input.sponseeId,
+      });
+      if (!isSponsor) {
+        throw new Error("Unauthorized: Not an active sponsor");
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("daily_entries")
+        .select("*")
+        .eq("user_id", input.sponseeId)
+        .eq("share_with_sponsor", true)
+        .order("entry_date", { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch shared daily entries: ${error.message}`);
+      }
+
+      return data;
+    }),
+
+  /**
    * Get daily entry by date
    */
   getByDate: protectedProcedure
@@ -135,4 +162,3 @@ export const dailyEntriesRouter = router({
       return { success: true };
     }),
 });
-

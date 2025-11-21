@@ -9,6 +9,7 @@ import { authOptions } from "../../api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "../../../lib/supabase-server";
 import { SponsorDashboardClient } from "../../../components/SponsorDashboardClient";
+import type { Session } from "next-auth";
 
 export default async function SponsorDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -20,23 +21,38 @@ export default async function SponsorDashboardPage() {
   const supabase = createSupabaseServerClient();
   
   // Get sponsor relationships where current user is the sponsor
+  const sponsorId = session.user.id;
   const { data: relationships, error } = await supabase
     .from("sponsor_relationships")
-    .select("*, sponsee:profiles!sponsor_relationships_sponsee_id_fkey(*)")
-    .eq("sponsor_id", (session.user as any).id)
+    .select("id, sponsee_id, sponsee:profiles!sponsor_relationships_sponsee_id_fkey(handle)")
+    .eq("sponsor_id", sponsorId)
     .eq("status", "active");
 
   if (error) {
-    console.error("Failed to fetch sponsor relationships:", error);
+    // Log error without exposing PII
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to fetch sponsor relationships:", error);
+    }
   }
+
+  interface SponsorRelationship {
+    id: string;
+    sponsee_id: string;
+    sponsee?: {
+      handle?: string | null;
+    } | null;
+  }
+
+  // Type guard to ensure relationships match expected type
+  const typedRelationships = (relationships || []) as SponsorRelationship[];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Sponsor Dashboard</h1>
       
-      {relationships && relationships.length > 0 ? (
+      {typedRelationships && typedRelationships.length > 0 ? (
         <div className="space-y-6">
-          {relationships.map((relationship: any) => (
+          {typedRelationships.map((relationship: SponsorRelationship) => (
             <div key={relationship.id} className="border rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 {relationship.sponsee?.handle || "Sponsee"}

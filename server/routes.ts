@@ -1,12 +1,11 @@
 // API Routes - Standalone mode (no authentication required)
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import type { GoogleGenerativeAI } from "@google/generative-ai";
 import type { TypedRequest } from "./types/express";
 import { isStringArray, isNumberArray, isValidContextWindow } from "./types/guards";
-import { log } from "./vite";
+import { log } from "./lib/logger";
 import { authenticatedRateLimiter } from "./middleware/rateLimit";
 import { validateChatRequest } from "./middleware/validateRequest";
 import { sanitizeError } from "./utils/sanitizeError";
@@ -21,47 +20,7 @@ import {
   REQUEST_TIMEOUT_MS,
 } from "./constants";
 
-// Type definitions
-interface UserContext {
-  name?: string;
-  sobrietyDate?: string;
-  triggers?: Array<{
-    name?: string;
-    description?: string;
-    severity?: number;
-  }>;
-  recentJournals?: Array<{
-    date?: string;
-    content?: string;
-  }>;
-  stepProgress?: Record<string, {
-    completed?: boolean;
-    answers?: Record<string, unknown>;
-  }>;
-  conversationSummary?: string;
-}
-
-interface ContextWindow {
-  recentStepWork?: string[];
-  recentJournals?: string[];
-  activeScenes?: string[];
-  currentStreaks?: Record<string, number>;
-  recentMoodTrend?: number[];
-  recentCravingsTrend?: number[];
-}
-
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface ChatRequest {
-  message: string;
-  conversationHistory?: ChatMessage[];
-  userContext?: UserContext;
-  contextWindow?: ContextWindow;
-  promptType?: string;
-}
+import type { ChatRequest, ChatMessage, UserContext, ContextWindow } from "./types/chat";
 
 // Cache AI client instance with proper typing and expiration
 interface CachedAIClient {
@@ -270,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (userContext.triggers && Array.isArray(userContext.triggers) && userContext.triggers.length > 0) {
           personalContext += `\nKnown Triggers:\n`;
-          userContext.triggers.slice(0, MAX_TRIGGERS).forEach((trigger) => {
+          userContext.triggers.slice(0, MAX_TRIGGERS).forEach((trigger: { name?: string; description?: string; severity?: number }) => {
             const name = sanitizeText(trigger.name || '', 100);
             const description = trigger.description ? sanitizeText(trigger.description, 200) : '';
             const severity = trigger.severity && Number.isInteger(trigger.severity) && trigger.severity >= 1 && trigger.severity <= 10
@@ -283,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (userContext.recentJournals && Array.isArray(userContext.recentJournals) && userContext.recentJournals.length > 0) {
           personalContext += `\nRecent Journal Entries (Last ${Math.min(userContext.recentJournals.length, MAX_JOURNALS)}):\n`;
-          userContext.recentJournals.slice(0, MAX_JOURNALS).forEach((entry) => {
+          userContext.recentJournals.slice(0, MAX_JOURNALS).forEach((entry: { date?: string; content?: string }) => {
             try {
               const date = entry.date ? new Date(entry.date).toLocaleDateString() : 'Unknown date';
               const content = sanitizeText(entry.content || '', 200);

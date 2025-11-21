@@ -30,12 +30,18 @@ export const meetingsRouter = router({
         const response = await fetch(url);
         const data = await response.json();
 
+        // Define meeting type based on BMLT API structure
+        interface BMLTMeeting {
+          service_body_bigint?: string;
+          [key: string]: unknown;
+        }
+
         // Filter by program if specified
-        let meetings = data;
+        let meetings: BMLTMeeting[] = Array.isArray(data) ? data : [];
         if (input.program === "NA") {
-          meetings = data.filter((m: any) => m.service_body_bigint === "NA");
+          meetings = meetings.filter((m: BMLTMeeting) => m.service_body_bigint === "NA");
         } else if (input.program === "AA") {
-          meetings = data.filter((m: any) => m.service_body_bigint === "AA");
+          meetings = meetings.filter((m: BMLTMeeting) => m.service_body_bigint === "AA");
         }
 
         return meetings;

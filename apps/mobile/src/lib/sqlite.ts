@@ -57,8 +57,17 @@ export async function initDatabase() {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS mutation_queue (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      payload TEXT NOT NULL, -- JSON
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      retry_count INTEGER DEFAULT 0
+    );
+
     CREATE INDEX IF NOT EXISTS idx_daily_entries_user_date ON daily_entries(user_id, entry_date);
     CREATE INDEX IF NOT EXISTS idx_step_entries_user_step ON step_entries(user_id, step_id);
+    CREATE INDEX IF NOT EXISTS idx_mutation_queue_created_at ON mutation_queue(created_at);
   `);
 
   return db;
@@ -73,4 +82,3 @@ export function getDatabase() {
   }
   return db;
 }
-
