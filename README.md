@@ -17,12 +17,12 @@ A privacy-first Progressive Web Application (PWA) designed to support individual
 
 ## Tech Stack
 
-- **Web Frontend**: React 18 + TypeScript, Vite, Wouter, Zustand, TanStack Query
-- **Mobile App**: Expo (React Native), Expo Router, TypeScript
-- **Backend**: Express.js, PostgreSQL (Supabase), Drizzle ORM, tRPC
+- **Web Frontend**: Next.js 16, React 19, TypeScript, Turbopack, NextAuth, TanStack Query
+- **Mobile App**: Expo SDK 52, React Native 0.76, Expo Router, TypeScript
+- **Backend**: Express.js + tRPC 11, PostgreSQL (Supabase), Drizzle ORM
 - **UI**: Tailwind CSS + shadcn/ui components (web), React Native components (mobile)
-- **PWA**: Service Worker, Web Manifest, offline support (web)
-- **Mobile**: Expo SecureStore, SQLite, offline-first architecture
+- **Build Tools**: pnpm workspaces (monorepo), Turbo, Vitest
+- **Deployment**: Vercel (web), EAS Build (mobile), Railway/Docker (backend)
 
 ## Prerequisites
 
@@ -47,15 +47,21 @@ npm install -g pnpm
 ```
 12-Step-Companion/
 ├── apps/
-│   ├── mobile/          # Expo React Native mobile app
-│   └── web/             # Next.js web app (sponsor portal)
+│   ├── mobile/          # Expo React Native mobile app (iOS/Android)
+│   └── web/             # Next.js 16 web app (sponsor portal)
 ├── packages/
-│   ├── api/             # tRPC routers (shared API)
-│   ├── types/           # Shared TypeScript types
-│   └── ui/              # Shared UI components
-├── client/              # Legacy React web frontend
-├── server/              # Express backend + migrations
-└── shared/              # Shared schemas and utilities
+│   ├── api/             # tRPC routers (shared type-safe API)
+│   ├── types/           # Shared TypeScript types & Supabase types
+│   └── ui/              # Shared UI components (minimal)
+├── docs/                # 📚 All documentation (organized by category)
+│   ├── architecture/    # System architecture & technical design
+│   ├── features/        # Product features & specifications
+│   ├── guides/          # Setup, deployment, and operational guides
+│   ├── research/        # Research prompts & brainstorming
+│   └── status/          # Status updates & historical logs
+├── server/              # Express backend (legacy, coexists with tRPC)
+├── shared/              # Shared schemas (Drizzle ORM) and utilities
+└── migrations/          # Database migrations
 ```
 
 ## Local Development Setup
@@ -116,17 +122,28 @@ If you want to use cloud sync or authentication:
 npm run db:push
 ```
 
-### 4. Run Development Server
+### 4. Run Development Servers
 
+**Web App (Next.js):**
 ```bash
-npm run dev
+pnpm run dev:web
+# or
+pnpm --filter 12-step-companion-web dev
+```
+Opens at `http://localhost:3000`
+
+**Mobile App (Expo):**
+```bash
+pnpm run mobile:dev
+# or
+cd apps/mobile && pnpm start
 ```
 
-The app will be available at `http://localhost:3000` (or the port specified in `PORT` env variable)
-
-- Frontend: Served via Vite with HMR
-- Backend API: Available at `/api/*`
-- Static files: Served from `client/public`
+**Backend Server (Express + tRPC):**
+```bash
+pnpm run dev
+```
+Runs on `http://localhost:5000`
 
 ### Mobile App Development
 
@@ -156,102 +173,120 @@ npm run mobile:android
 
 ### 5. Build for Production
 
+**Web App:**
 ```bash
-npm run build
-npm start
+pnpm run build:web
+# or
+pnpm --filter 12-step-companion-web build
 ```
 
-The production build will:
+**Mobile App (iOS/Android):**
+```bash
+# Install EAS CLI
+npm install -g eas-cli
 
-- Build the React frontend to `dist/public`
-- Bundle the Express server to `dist/index.js`
-- Serve both from a single Node.js process
+# Build for iOS
+eas build --platform ios --profile production
+
+# Build for Android
+eas build --platform android --profile production
+```
+
+**Backend:**
+```bash
+pnpm run build
+pnpm start
+```
+
+## 📚 Documentation
+
+All documentation has been organized in the [`docs/`](./docs/) directory:
+
+- **[Getting Started](./docs/guides/QUICK_START.md)** - Quick setup guide
+- **[Architecture](./docs/architecture/ARCHITECTURE.md)** - System architecture overview
+- **[Deployment](./docs/guides/DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[Code Review Summary](./docs/guides/CODE_REVIEW_CLEANUP_SUMMARY.md)** - Latest cleanup & improvements
+- **[Features](./docs/features/)** - Product features & specifications
+- **[Technical Details](./docs/architecture/TECHNICAL_ARCHITECTURE.md)** - In-depth technical documentation
 
 ## Available Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run check` - Type-check TypeScript files
-- `npm run db:push` - Push database schema changes
-- `npm run db:generate` - Generate database migrations
-- `npm run db:migrate` - Run database migrations
+**Development:**
+- `pnpm run dev:web` - Start Next.js web app
+- `pnpm run mobile:dev` - Start Expo mobile app
+- `pnpm run dev` - Start Express backend server
+- `pnpm run dev:turbo` - Start all services with Turbo
 
-## Project Structure
+**Build:**
+- `pnpm run build:web` - Build web app for production
+- `pnpm run build:turbo` - Build all packages with Turbo
+- `pnpm run build` - Build Express backend
 
-```
-12-Step-Companion/
-├── client/              # React frontend
-│   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── routes/      # Page components
-│   │   ├── lib/         # Utilities
-│   │   └── store/       # Zustand state management
-│   └── public/          # Static assets
-├── server/              # Express backend
-│   ├── index.ts        # Server entry point
-│   ├── routes.ts       # API routes
-│   ├── replitAuth.ts   # Optional auth (disabled by default)
-│   └── vite.ts         # Vite dev server integration
-├── shared/              # Shared TypeScript types
-│   └── schema.ts       # Database schema
-├── dist/                # Build output (generated)
-└── package.json         # Dependencies and scripts
-```
+**Database:**
+- `pnpm run db:push` - Push database schema changes
+- `pnpm run db:generate` - Generate database migrations
+- `pnpm run db:migrate` - Run database migrations
+
+**Testing:**
+- `pnpm run test` - Run Vitest tests
+- `pnpm run type-check` - TypeScript type checking
 
 ## Deployment
 
-### Recommended: Railway / Render / Fly.io
+### Web App (Vercel)
 
-These platforms support full-stack Node.js apps with Express:
+The web app is configured for Vercel deployment with `vercel.json`:
+
+```bash
+# Deploy to production
+vercel --prod
+
+# Or push to main branch (auto-deploys)
+git push origin main
+```
+
+**Required Environment Variables:**
+- `SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_URL` - Public Supabase URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `NEXTAUTH_SECRET` - NextAuth secret (generate with `openssl rand -base64 32`)
+- `NEXTAUTH_URL` - Your production URL
+
+See [docs/guides/DEPLOYMENT_CHECKLIST.md](./docs/guides/DEPLOYMENT_CHECKLIST.md) for complete deployment guide.
+
+### Mobile App (EAS Build)
+
+Build and submit to app stores using EAS:
+
+```bash
+# Build for iOS
+eas build --platform ios --profile production
+eas submit --platform ios
+
+# Build for Android (AAB for Play Store)
+eas build --platform android --profile production
+eas submit --platform android
+```
+
+**Required:**
+- Apple Developer Account (iOS)
+- Google Play Console Account (Android)
+- EAS credentials configured
+
+### Backend (Railway / Docker)
+
+The backend can be deployed to Railway, Render, or any Docker-compatible platform:
 
 **Railway:**
-
-1. Connect your GitHub repository
+1. Connect GitHub repository
 2. Set environment variables
-3. Railway auto-detects Node.js and runs `npm start`
+3. Auto-deploys on push
 
-**Render:**
-
-1. Create a new Web Service
-2. Connect your repository
-3. Build command: `npm run build`
-4. Start command: `npm start`
-5. Set environment variables
-
-**Fly.io:**
-
-1. Install Fly CLI: `npm install -g @fly/cli`
-2. Run: `fly launch`
-3. Set secrets: `fly secrets set KEY=value`
-4. Deploy: `fly deploy`
-
-### Vercel (Frontend Only)
-
-Vercel is optimized for frontend apps. For full API support:
-
-1. Deploy frontend to Vercel (uses `vercel.json`)
-2. Deploy backend separately to Railway/Render
-3. Update frontend API URLs to point to backend
-
-Or use Vercel Serverless Functions (requires refactoring API routes).
-
-### Netlify
-
-1. Connect repository to Netlify
-2. Build command: `npm run build`
-3. Publish directory: `dist/public`
-4. For API: Use Netlify Functions or deploy backend separately
-
-### Environment Variables
-
-Set these in your hosting platform:
-
-- `PORT` (usually auto-set by platform)
-- `NODE_ENV=production`
-- `GEMINI_API_KEY` (optional)
-- `DATABASE_URL` (optional, for cloud sync)
-- `SESSION_SECRET` (optional, for auth)
+**Docker:**
+```bash
+docker build -t 12-step-companion .
+docker run -p 5000:5000 --env-file .env 12-step-companion
+```
 
 ## Authentication
 
@@ -277,18 +312,18 @@ Authentication is **optional** and disabled by default for local development. To
 
 ## Troubleshooting
 
-> 💡 **Quick Help**: See [INSTALL_TROUBLESHOOTING.md](./INSTALL_TROUBLESHOOTING.md) for detailed installation troubleshooting.
+> 💡 **Quick Help**: See [docs/guides/CONFIGURATION_CHECK.md](./docs/guides/CONFIGURATION_CHECK.md) for configuration reference.
 
-### npm install Shows Warnings
+### pnpm install Shows Warnings
 
 **This is normal!** You may see warnings like:
-- `npm warn deprecated inflight@1.0.6`
-- `npm warn deprecated glob@7.2.3`
-- Security vulnerabilities
+- Deprecated packages (inflight, glob, etc.)
+- Peer dependency warnings for React 19
+- Unsupported engine warnings
 
-**These are safe to ignore** - they're warnings about transitive dependencies (dependencies of dependencies) and don't affect functionality. The app will work perfectly fine.
+**These are safe to ignore** - they're warnings about transitive dependencies and don't affect functionality. The app will work perfectly fine.
 
-**If installation completes successfully** (shows "added X packages"), you're good to go!
+**If installation completes successfully**, you're good to go!
 
 ### Port Already in Use
 
@@ -298,40 +333,34 @@ Change the port in `.env`:
 PORT=3000
 ```
 
-### npm install Issues
+### pnpm install Issues
 
-**If npm install fails or hangs:**
+**If pnpm install fails or hangs:**
 
-1. **Clear npm cache:**
+1. **Clear pnpm cache:**
    ```bash
-   npm cache clean --force
+   pnpm store prune
    ```
 
 2. **Delete lock files and reinstall:**
    ```bash
    # Windows PowerShell
-   Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
-   npm install
-   
+   Remove-Item -Recurse -Force node_modules, pnpm-lock.yaml -ErrorAction SilentlyContinue
+   pnpm install
+
    # Mac/Linux
-   rm -rf node_modules package-lock.json
-   npm install
+   rm -rf node_modules pnpm-lock.yaml
+   pnpm install
    ```
 
 3. **Try with different registry (if behind firewall):**
    ```bash
-   npm install --registry https://registry.npmjs.org/
-   ```
-
-4. **Use yarn as alternative:**
-   ```bash
-   npm install -g yarn
-   yarn install
+   pnpm install --registry https://registry.npmjs.org/
    ```
 
 **Common warnings (safe to ignore):**
-- Deprecation warnings about `inflight`, `glob`, `sourcemap-codec` - these are transitive dependencies
-- Security vulnerabilities in dev dependencies - usually not critical for development
+- Deprecation warnings - these are transitive dependencies
+- Peer dependency warnings for React 19 - packages will be updated over time
 - These warnings don't prevent the app from running
 
 ### Build Fails
@@ -340,24 +369,24 @@ PORT=3000
 
 ```bash
 # Windows PowerShell
-Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
-npm install
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+pnpm install
 
 # Mac/Linux
-rm -rf node_modules package-lock.json
-npm install
+rm -rf node_modules
+pnpm install
 ```
 
-2. Clear build cache:
+2. Clear Next.js build cache:
 
 ```bash
 # Windows PowerShell
-Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue
-npm run build
+Remove-Item -Recurse -Force apps/web/.next -ErrorAction SilentlyContinue
+pnpm run build:web
 
 # Mac/Linux
-rm -rf dist
-npm run build
+rm -rf apps/web/.next
+pnpm run build:web
 ```
 
 ### Database Connection Issues
