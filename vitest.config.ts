@@ -6,8 +6,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: "jsdom", // Changed from "node" to support React component testing
-    setupFiles: ["./client/src/__tests__/setup.ts"],
+    environment: "jsdom",
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -24,8 +23,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./client/src"),
       "@shared": path.resolve(__dirname, "./shared"),
+      "@packages": path.resolve(__dirname, "./packages"),
     },
   },
 });
