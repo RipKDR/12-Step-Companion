@@ -1,10 +1,11 @@
 /**
  * Sponsor Router
- * 
+ *
  * Handles sponsor relationships and sharing
  */
 
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { router, protectedProcedure } from "../trpc";
 
 export const sponsorRouter = router({
@@ -12,15 +13,13 @@ export const sponsorRouter = router({
    * Generate sponsor code for current user
    */
   generateCode: protectedProcedure.mutation(async ({ ctx }) => {
-    // Generate a secure random code (8 characters, alphanumeric)
-    const code = Array.from({ length: 8 }, () =>
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[
-        Math.floor(Math.random() * 36)
-      ]
-    ).join("");
+    // Generate a cryptographically secure random code (8 characters, alphanumeric)
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const bytes = randomBytes(8);
+    const code = Array.from(bytes, (byte) => chars[byte % chars.length]).join("");
 
-    // Store code in user's profile (or a separate codes table)
-    // For now, we'll return it - in production, store it with expiration
+    // TODO: Store code in a dedicated sponsor_codes table with expiration
+    // For now, we'll return it - this is a placeholder implementation
     return { code };
   }),
 
