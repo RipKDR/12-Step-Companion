@@ -7,7 +7,6 @@
     "node": ">=20.0.0 <21.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
@@ -26,9 +25,9 @@
     "verify": "tsx scripts/verify-setup.ts",
     "validate": "tsx scripts/validate-build.ts",
     "prebuild": "pnpm run type-check",
-    "build:web": "pnpm --filter web build",
+    "build:web": "pnpm --filter 12-step-companion-web build",
     "build:turbo": "turbo run build",
-    "dev:web": "pnpm --filter web dev",
+    "dev:web": "pnpm --filter 12-step-companion-web dev",
     "dev:turbo": "turbo run dev",
     "mobile:dev": "pnpm --filter mobile start",
     "mobile:ios": "pnpm --filter mobile ios",
