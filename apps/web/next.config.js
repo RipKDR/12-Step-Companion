@@ -1,8 +1,15 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@12-step-companion/api", "@12-step-companion/types"],
-  
+
+  // Turbopack monorepo configuration
+  turbopack: {
+    root: path.resolve(__dirname, '../..'),
+  },
+
   // Performance optimizations
   // Note: swcMinify is always enabled in Next.js 16, removed deprecated option
   compiler: {
@@ -10,14 +17,14 @@ const nextConfig = {
       exclude: ["error", "warn"]
     } : false,
   },
-  
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
   },
-  
+
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
