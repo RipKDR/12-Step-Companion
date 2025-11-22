@@ -21,6 +21,7 @@
     "target": "ES2022",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
     "lib": [
       "esnext",
       "dom",
@@ -45,13 +46,13 @@
         "./packages/*"
       ],
       "@12-step-companion/api": [
-        "./packages/api/src/trpc.ts"
+        "./packages/api/src"
       ],
       "@12-step-companion/api/*": [
         "./packages/api/src/*"
       ],
       "@12-step-companion/types": [
-        "./packages/types/src/supabase.ts"
+        "./packages/types/src"
       ],
       "@12-step-companion/types/*": [
         "./packages/types/src/*"
