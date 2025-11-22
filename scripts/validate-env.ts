@@ -220,6 +220,7 @@ function main() {
   console.log('✅ All required environment variables are set!');
 }
 
-// Always run when script is executed directly
-main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
 
