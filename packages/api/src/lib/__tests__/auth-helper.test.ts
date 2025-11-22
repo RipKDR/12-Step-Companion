@@ -61,17 +61,17 @@ describe("Auth Helper", () => {
       const originalEnv = process.env.NODE_ENV;
 
       // Test production (no logging)
-      process.env.NODE_ENV = "production";
+      (process.env as any).NODE_ENV = "production";
       const shouldLogProduction = process.env.NODE_ENV === "development";
       expect(shouldLogProduction).toBe(false);
 
       // Test development (logging allowed)
-      process.env.NODE_ENV = "development";
+      (process.env as any).NODE_ENV = "development";
       const shouldLogDevelopment = process.env.NODE_ENV === "development";
       expect(shouldLogDevelopment).toBe(true);
 
       // Restore
-      process.env.NODE_ENV = originalEnv;
+      (process.env as any).NODE_ENV = originalEnv;
     });
   });
 
