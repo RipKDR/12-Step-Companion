@@ -1,6 +1,7 @@
 {
   "include": [
     "apps/web/src/**/*",
+    "apps/mobile/src/**/*",
     "shared/**/*",
     "server/**/*",
     "packages/**/*"

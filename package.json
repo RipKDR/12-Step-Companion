@@ -4,7 +4,7 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "node": ">=20.0.0 <23.0.0",
+    "node": ">=20.0.0 <21.0.0",
     "pnpm": ">=8.0.0"
   },
   "scripts": {
@@ -24,16 +24,25 @@
     "test:setup": "tsx scripts/test-setup.ts",
     "verify": "tsx scripts/verify-setup.ts",
     "validate": "tsx scripts/validate-build.ts",
-    "prebuild": "pnpm run type-check",
+    "validate:env": "tsx scripts/validate-env.ts",
+    "prebuild": "pnpm run type-check:all",
     "build:web": "pnpm --filter 12-step-companion-web build",
     "build:turbo": "turbo run build",
+    "build:production": "tsx scripts/build-production.ts",
     "dev:web": "pnpm --filter 12-step-companion-web dev",
     "dev:turbo": "turbo run dev",
-    "mobile:dev": "pnpm --filter mobile start",
-    "mobile:ios": "pnpm --filter mobile ios",
-    "mobile:android": "pnpm --filter mobile android",
-    "mobile:web": "pnpm --filter mobile web",
-    "type-check": "pnpm exec tsc --noEmit -p apps/web/tsconfig.json"
+    "mobile:dev": "pnpm --filter 12-step-companion-mobile start",
+    "mobile:ios": "pnpm --filter 12-step-companion-mobile ios",
+    "mobile:android": "pnpm --filter 12-step-companion-mobile android",
+    "mobile:web": "pnpm --filter 12-step-companion-mobile web",
+    "type-check": "pnpm exec tsc --noEmit",
+    "type-check:web": "pnpm exec tsc --noEmit -p apps/web/tsconfig.json",
+    "type-check:mobile": "pnpm exec tsc --noEmit -p apps/mobile/tsconfig.json",
+    "type-check:server": "pnpm exec tsc --noEmit -p server/tsconfig.json || pnpm exec tsc --noEmit --project tsconfig.json --include 'server/**/*'",
+    "type-check:packages": "pnpm exec tsc --noEmit --project tsconfig.json --include 'packages/**/*'",
+    "type-check:all": "pnpm run type-check:web && pnpm run type-check:mobile && pnpm run type-check:server && pnpm run type-check:packages",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.11.1",
@@ -136,7 +145,9 @@
     "ws": "^8.18.3",
     "zod": "^3.25.76",
     "zod-validation-error": "^3.5.4",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "expo": "~52.0.47",
+    "react-native": "0.76.9"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",

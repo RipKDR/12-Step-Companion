@@ -4,9 +4,10 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", ".expo/**"],
       "env": [
         "NEXT_PUBLIC_*",
+        "EXPO_PUBLIC_*",
         "SUPABASE_*",
         "DATABASE_URL"
       ]

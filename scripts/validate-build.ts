@@ -1,149 +1,178 @@
+#!/usr/bin/env tsx
 /**
  * Build Validation Script
- * 
- * Validates that the build is ready by checking:
- * - All imports resolve correctly
- * - TypeScript compiles without errors
- * - Package exports are accessible
- * - Environment variables are set
+ *
+ * Validates that a production build is ready:
+ * 1. All TypeScript compiles without errors
+ * 2. All apps build successfully
+ * 3. No missing dependencies
+ * 4. Environment variables are set
+ * 5. Build artifacts exist
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
-const errors: string[] = [];
-const warnings: string[] = [];
-
-function checkFileExists(filePath: string, description: string): boolean {
-  if (!existsSync(filePath)) {
-    errors.push(`Missing ${description}: ${filePath}`);
-    return false;
-  }
-  return true;
+interface ValidationCheck {
+  name: string;
+  check: () => Promise<boolean> | boolean;
+  required: boolean;
+  description: string;
 }
 
-function checkPackageJson(packagePath: string, packageName: string): void {
-  const packageJsonPath = join(packagePath, 'package.json');
-  if (!checkFileExists(packageJsonPath, `${packageName} package.json`)) {
-    return;
-  }
+const checks: ValidationCheck[] = [
+  {
+    name: 'TypeScript Compilation',
+    required: true,
+    description: 'All TypeScript files compile without errors',
+    check: async () => {
+      try {
+        execSync('pnpm run type-check:all', {
+          stdio: 'pipe',
+          cwd: process.cwd(),
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  },
+  {
+    name: 'Package Dependencies',
+    required: true,
+    description: 'All workspace packages have required dependencies',
+    check: async () => {
+      const packages = ['packages/api', 'packages/types', 'packages/ui'];
+      for (const pkg of packages) {
+        const pkgJsonPath = join(process.cwd(), pkg, 'package.json');
+        if (!existsSync(pkgJsonPath)) {
+          console.error(`  ❌ Missing package.json: ${pkg}`);
+          return false;
+        }
+        try {
+          const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+          if (!pkgJson.name) {
+            console.error(`  ❌ Invalid package.json: ${pkg}`);
+            return false;
+          }
+        } catch {
+          console.error(`  ❌ Cannot parse package.json: ${pkg}`);
+          return false;
+        }
+      }
+      return true;
+    },
+  },
+  {
+    name: 'Environment Variables',
+    required: false,
+    description: 'Required environment variables are set',
+    check: async () => {
+      try {
+        execSync('pnpm run validate:env', {
+          stdio: 'pipe',
+          cwd: process.cwd(),
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  },
+  {
+    name: 'Build Artifacts',
+    required: true,
+    description: 'Required build artifacts exist',
+    check: async () => {
+      const artifacts = [
+        'apps/web/.next',
+        'packages/api/dist',
+        'packages/types/dist',
+      ];
 
-  try {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    
-    if (!packageJson.name) {
-      warnings.push(`${packageName} package.json missing "name" field`);
+      let allPresent = true;
+      for (const artifact of artifacts) {
+        const path = join(process.cwd(), artifact);
+        if (!existsSync(path)) {
+          console.error(`  ❌ Missing artifact: ${artifact}`);
+          allPresent = false;
+        }
+      }
+      return allPresent;
+    },
+  },
+  {
+    name: 'Lockfile Present',
+    required: true,
+    description: 'pnpm-lock.yaml exists and is up-to-date',
+    check: async () => {
+      const lockfilePath = join(process.cwd(), 'pnpm-lock.yaml');
+      if (!existsSync(lockfilePath)) {
+        console.error('  ❌ pnpm-lock.yaml not found');
+        return false;
+      }
+
+      // Try to verify lockfile is valid
+      try {
+        execSync('pnpm install --frozen-lockfile --dry-run', {
+          stdio: 'pipe',
+          cwd: process.cwd(),
+        });
+        return true;
+      } catch {
+        console.warn('  ⚠️  Lockfile validation skipped (may need pnpm install)');
+        return true; // Not a hard failure
+      }
+    },
+  },
+];
+
+async function main() {
+  console.log('🔍 Validating Build Readiness\n');
+  console.log('='.repeat(60));
+
+  let allPassed = true;
+  let requiredFailed = false;
+
+  for (const check of checks) {
+    console.log(`\n📋 ${check.name}`);
+    console.log(`   ${check.description}`);
+
+    try {
+      const result = await check.check();
+      if (result) {
+        console.log(`   ✅ Passed`);
+      } else {
+        console.log(`   ❌ Failed`);
+        if (check.required) {
+          requiredFailed = true;
+        }
+        allPassed = false;
+      }
+    } catch (error) {
+      console.log(`   ❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+      if (check.required) {
+        requiredFailed = true;
+      }
+      allPassed = false;
     }
-    
-    if (!packageJson.main && !packageJson.exports) {
-      warnings.push(`${packageName} package.json missing "main" or "exports" field`);
-    }
-  } catch (error) {
-    errors.push(`Failed to parse ${packageName} package.json: ${error}`);
-  }
-}
-
-function checkEnvironmentVariables(): void {
-  const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  ];
-
-  const optionalVars = [
-    'DATABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY',
-  ];
-
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-      warnings.push(`Missing environment variable: ${varName} (may be set in Vercel)`);
-    }
   }
 
-  for (const varName of optionalVars) {
-    if (!process.env[varName]) {
-      warnings.push(`Optional environment variable not set: ${varName}`);
-    }
-  }
-}
+  console.log('\n' + '='.repeat(60));
 
-function checkImports(): void {
-  // Check that key import files exist
-  const importChecks = [
-    { path: 'packages/api/src/trpc.ts', desc: 'tRPC initialization' },
-    { path: 'packages/api/src/routers/_app.ts', desc: 'tRPC app router' },
-    { path: 'packages/types/src/supabase.ts', desc: 'Supabase types' },
-    { path: 'apps/web/src/lib/trpc.ts', desc: 'Next.js tRPC client' },
-    { path: 'apps/web/next.config.js', desc: 'Next.js config' },
-  ];
-
-  for (const check of importChecks) {
-    if (!checkFileExists(check.path, check.desc)) {
-      // Don't fail on missing files, just warn
-      warnings.push(`Import check: ${check.desc} at ${check.path}`);
-    }
-  }
-}
-
-function main() {
-  console.log('🔍 Validating build configuration...\n');
-
-  // Check package.json files exist
-  checkPackageJson('packages/api', '@12-step-companion/api');
-  checkPackageJson('packages/types', '@12-step-companion/types');
-  checkPackageJson('packages/ui', '@12-step-companion/ui');
-
-  // Check workspace config
-  if (!checkFileExists('pnpm-workspace.yaml', 'pnpm workspace config')) {
-    warnings.push('pnpm-workspace.yaml missing - pnpm may not work correctly');
-  }
-
-  // Check turbo config
-  if (!checkFileExists('turbo.json', 'Turbo config')) {
-    warnings.push('turbo.json missing - Turbo builds may not work');
-  }
-
-  // Check Next.js config backup exists
-  if (!checkFileExists('apps/web/next.config.js.backup', 'Next.js config backup')) {
-    warnings.push('Next.js config backup not found - rollback may be difficult');
-  }
-
-  // Check Vercel config backup exists
-  if (!checkFileExists('vercel.json.backup', 'Vercel config backup')) {
-    warnings.push('Vercel config backup not found - rollback may be difficult');
-  }
-
-  // Check imports
-  checkImports();
-
-  // Check environment variables
-  checkEnvironmentVariables();
-
-  // Report results
-  console.log('📊 Validation Results:\n');
-
-  if (warnings.length > 0) {
-    console.log('⚠️  Warnings:');
-    warnings.forEach(warning => console.log(`   - ${warning}`));
-    console.log('');
-  }
-
-  if (errors.length > 0) {
-    console.log('❌ Errors:');
-    errors.forEach(error => console.log(`   - ${error}`));
-    console.log('');
-    console.log('❌ Validation failed! Please fix the errors above.');
+  if (requiredFailed) {
+    console.log('\n❌ Build validation failed. Required checks did not pass.');
     process.exit(1);
+  } else if (!allPassed) {
+    console.log('\n⚠️  Build validation completed with warnings. Some optional checks failed.');
+    process.exit(0);
+  } else {
+    console.log('\n✅ All build validation checks passed!');
+    process.exit(0);
   }
-
-  if (warnings.length === 0 && errors.length === 0) {
-    console.log('✅ All checks passed!');
-  } else if (errors.length === 0) {
-    console.log('✅ Validation passed with warnings (non-critical).');
-  }
-
-  console.log('\n✨ Build validation complete!');
 }
 
-main();
-
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

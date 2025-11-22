@@ -22,6 +22,7 @@ config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
 // Ensure Metro can resolve workspace packages
 config.resolver.extraNodeModules = {
   '@12-step-companion/types': path.resolve(workspaceRoot, 'packages/types/src'),
+  '@12-step-companion/api': path.resolve(workspaceRoot, 'packages/api/src'),
 };
 
 // Note: Expo's default config already includes 'ts' and 'tsx' in sourceExts
