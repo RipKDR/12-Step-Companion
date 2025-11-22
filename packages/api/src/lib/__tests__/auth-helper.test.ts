@@ -4,7 +4,7 @@
  * Tests for the shared authentication helper used across tRPC contexts
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 describe("Auth Helper", () => {
   describe("authenticateFromToken", () => {
@@ -58,20 +58,17 @@ describe("Auth Helper", () => {
 
   describe("development logging", () => {
     it("should only log in development environment", () => {
-      const originalEnv = process.env.NODE_ENV;
-
       // Test production (no logging)
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
       const shouldLogProduction = process.env.NODE_ENV === "development";
       expect(shouldLogProduction).toBe(false);
+      vi.unstubAllEnvs();
 
       // Test development (logging allowed)
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       const shouldLogDevelopment = process.env.NODE_ENV === "development";
       expect(shouldLogDevelopment).toBe(true);
-
-      // Restore
-      process.env.NODE_ENV = originalEnv;
+      vi.unstubAllEnvs();
     });
   });
 

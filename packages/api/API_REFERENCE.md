@@ -30,6 +30,7 @@ The token is obtained through Supabase Auth (email/password, OAuth, etc.).
 ### Row Level Security (RLS)
 
 The API respects PostgreSQL Row Level Security policies. When a valid user token is provided:
+
 - Queries are scoped to the authenticated user's data
 - Users can only access their own records
 - Sponsor relationships allow limited cross-user access
@@ -54,27 +55,30 @@ Get all steps for a specific program.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
-  program: "NA" | "AA"
+  program: "NA" | "AA";
 }
 ```
 
 **Output:**
+
 ```typescript
 Array<{
-  id: string
-  program: "NA" | "AA"
-  step_number: number
-  title: string
-  description: string
-  questions: string[]
-  created_at: string
-  updated_at: string
-}>
+  id: string;
+  program: "NA" | "AA";
+  step_number: number;
+  title: string;
+  description: string;
+  questions: string[];
+  created_at: string;
+  updated_at: string;
+}>;
 ```
 
 **Example:**
+
 ```typescript
 const steps = await trpc.steps.getAll.query({ program: "NA" });
 ```
@@ -89,13 +93,15 @@ Get a specific step by ID.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
-  id: string (UUID)
+  id: string(UUID);
 }
 ```
 
 **Output:**
+
 ```typescript
 {
   id: string
@@ -119,24 +125,26 @@ Get user's step entries (work completed on each step).
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
-  program: "NA" | "AA"
+  program: "NA" | "AA";
 }
 ```
 
 **Output:**
+
 ```typescript
 Array<{
-  id: string
-  user_id: string
-  step_id: string
-  version: number
-  content: Record<string, any> // Answers to step questions
-  shared_with_sponsor: boolean
-  created_at: string
-  updated_at: string
-}>
+  id: string;
+  user_id: string;
+  step_id: string;
+  version: number;
+  content: Record<string, any>; // Answers to step questions
+  shared_with_sponsor: boolean;
+  created_at: string;
+  updated_at: string;
+}>;
 ```
 
 ---
@@ -149,6 +157,7 @@ Save or update step work progress.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
   stepId: string (UUID)
@@ -158,20 +167,22 @@ Save or update step work progress.
 ```
 
 **Output:**
+
 ```typescript
 {
-  id: string
-  user_id: string
-  step_id: string
-  version: number
-  content: Record<string, any>
-  shared_with_sponsor: boolean
-  created_at: string
-  updated_at: string
+  id: string;
+  user_id: string;
+  step_id: string;
+  version: number;
+  content: Record<string, any>;
+  shared_with_sponsor: boolean;
+  created_at: string;
+  updated_at: string;
 }
 ```
 
 **Behavior:**
+
 - Creates a new version if content changes
 - Increments version number automatically
 - Preserves history of previous versions
@@ -192,6 +203,7 @@ Get all daily entries for the authenticated user.
 **Input:** None
 
 **Output:**
+
 ```typescript
 Array<{
   id: string
@@ -218,6 +230,7 @@ Get entries within a specific date range.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
   startDate: string (ISO date)
@@ -237,6 +250,7 @@ Create a new daily entry.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
   entryDate: string (ISO date)
@@ -252,6 +266,7 @@ Create a new daily entry.
 **Output:** Created entry object
 
 **Validation:**
+
 - `moodRating` must be between 1-10
 - `entryDate` must be valid ISO date
 - Arrays cannot be empty
@@ -267,6 +282,7 @@ Update an existing daily entry.
 **RLS:** User can only update their own entries
 
 **Input:**
+
 ```typescript
 {
   id: string (UUID)
@@ -289,7 +305,7 @@ Manages sponsor-sponsee relationships and sharing.
 
 #### `sponsor.generateCode`
 
-Generate a unique code for sponsor connection.
+Generate a unique code for sponsor connection with 24-hour expiration.
 
 **Type:** Mutation
 **Auth:** Required
@@ -297,16 +313,28 @@ Generate a unique code for sponsor connection.
 **Input:** None
 
 **Output:**
+
 ```typescript
 {
-  code: string // 8-character alphanumeric code
+  code: string; // 8-character alphanumeric code
+  expiresAt: string; // ISO timestamp when code expires (24 hours from generation)
 }
 ```
 
 **Security:**
+
 - Uses cryptographically secure random generation
-- Code is single-use (should be implemented)
-- Code should expire after 24 hours (TODO)
+- Code expires after 24 hours
+- Single-use: Code is marked as used after successful connection
+- Automatically invalidates any existing active codes for the user
+- Unique code generation with collision detection
+
+**Behavior:**
+
+- Invalidates any existing active codes for the current user
+- Generates a cryptographically secure 8-character alphanumeric code
+- Stores code in database with 24-hour expiration
+- Returns code and expiration timestamp
 
 ---
 
@@ -318,28 +346,50 @@ Connect to a sponsor using their code.
 **Auth:** Required
 
 **Input:**
+
 ```typescript
 {
-  code: string (length: 8)
+  code: string (length: 8, alphanumeric only, regex: /^[A-Z0-9]{8}$/)
 }
 ```
 
 **Output:**
+
 ```typescript
 {
-  id: string
-  sponsor_id: string
-  sponsee_id: string
-  status: "pending"
-  created_at: string
-  updated_at: string
+  id: string;
+  sponsor_id: string;
+  sponsee_id: string;
+  status: "pending";
+  created_at: string;
+  updated_at: string;
 }
 ```
 
+**Validations:**
+
+- Code must be exactly 8 characters
+- Code must be alphanumeric (A-Z, 0-9)
+- Code must not be expired
+- Code must not have been used already
+- User cannot sponsor themselves
+- Relationship must not already exist
+
+**Error Responses:**
+
+- `NOT_FOUND`: Invalid sponsor code
+- `BAD_REQUEST`: Code expired, already used, self-sponsorship attempt, or duplicate relationship
+
 **Behavior:**
+
+- Validates code format and existence
+- Checks code expiration (24-hour limit)
+- Checks if code has been used
+- Prevents self-sponsorship
+- Prevents duplicate relationships
 - Creates relationship in "pending" status
+- Marks code as used after successful connection
 - Sponsor must accept before activation
-- Sponsee cannot sponsor themselves
 
 ---
 
@@ -353,18 +403,20 @@ Get all sponsor relationships for the authenticated user.
 **Input:** None
 
 **Output:**
+
 ```typescript
 Array<{
-  id: string
-  sponsor_id: string
-  sponsee_id: string
-  status: "pending" | "active" | "revoked"
-  created_at: string
-  updated_at: string
-}>
+  id: string;
+  sponsor_id: string;
+  sponsee_id: string;
+  status: "pending" | "active" | "revoked";
+  created_at: string;
+  updated_at: string;
+}>;
 ```
 
 **Includes:**
+
 - Relationships where user is the sponsor
 - Relationships where user is the sponsee
 
@@ -379,9 +431,10 @@ Accept a pending sponsor relationship (sponsor only).
 **Authorization:** Must be the sponsor
 
 **Input:**
+
 ```typescript
 {
-  relationshipId: string (UUID)
+  relationshipId: string(UUID);
 }
 ```
 
@@ -398,9 +451,10 @@ Revoke an active relationship (either party).
 **Authorization:** Must be sponsor or sponsee
 
 **Input:**
+
 ```typescript
 {
-  relationshipId: string (UUID)
+  relationshipId: string(UUID);
 }
 ```
 
@@ -533,18 +587,47 @@ All tRPC procedures throw errors with the following structure:
 
 ## Rate Limiting
 
-Currently not implemented. Future implementation will use:
-- 100 requests per minute per user (authenticated)
-- 20 requests per minute per IP (anonymous)
+**Status:** ✅ Implemented
+
+Rate limiting is automatically applied to all API endpoints:
+
+- **Authenticated Users:** 100 requests per minute
+- **Unauthenticated Users:** 20 requests per minute
+
+**Response Headers:**
+
+- `X-RateLimit-Limit`: Maximum requests allowed
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: ISO timestamp when rate limit resets
+
+**Error Response:**
+
+```typescript
+{
+  code: "TOO_MANY_REQUESTS",
+  message: "Rate limit exceeded. Please try again in X seconds."
+}
+```
 
 ---
 
 ## Versioning
 
-API version is managed through package version. Breaking changes will be communicated through:
+**Status:** ✅ Implemented
+
+API version is managed through package version and exposed via headers:
+
+**Response Headers:**
+
+- `X-API-Version`: Current API version (e.g., "1.0.0")
+- `X-API-Deprecated`: "false" (set to "true" when deprecating)
+
+Breaking changes will be communicated through:
+
 1. Major version bump
 2. Migration guide
 3. Deprecation warnings (minimum 3 months)
+4. `X-API-Deprecated` header set to "true"
 
 ---
 
@@ -553,8 +636,8 @@ API version is managed through package version. Breaking changes will be communi
 Use the tRPC testing utilities:
 
 ```typescript
-import { appRouter } from '@12-step-companion/api';
-import { createContext } from '@12-step-companion/api/context';
+import { appRouter } from "@12-step-companion/api";
+import { createContext } from "@12-step-companion/api/context";
 
 const caller = appRouter.createCaller(await createContext(mockRequest));
 const steps = await caller.steps.getAll({ program: "NA" });

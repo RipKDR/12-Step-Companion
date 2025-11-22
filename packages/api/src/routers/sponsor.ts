@@ -7,56 +7,165 @@
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { router, protectedProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const sponsorRouter = router({
   /**
    * Generate sponsor code for current user
+   * Code expires in 24 hours
    */
   generateCode: protectedProcedure.mutation(async ({ ctx }) => {
+    // Invalidate any existing active codes for this user
+    // Note: sponsor_codes table is not yet in TypeScript types, using type assertion
+    await (ctx.supabase as any)
+      .from("sponsor_codes")
+      .update({ used_at: new Date().toISOString() })
+      .eq("user_id", ctx.userId)
+      .is("used_at", null);
+
     // Generate a cryptographically secure random code (8 characters, alphanumeric)
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const bytes = randomBytes(8);
-    const code = Array.from(bytes, (byte) => chars[byte % chars.length]).join("");
+    let code: string;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    // TODO: Store code in a dedicated sponsor_codes table with expiration
-    // For now, we'll return it - this is a placeholder implementation
-    return { code };
+    // Ensure code is unique
+    do {
+      const bytes = randomBytes(8);
+      code = Array.from(bytes, (byte) => chars[byte % chars.length]).join("");
+      attempts++;
+
+      if (attempts >= maxAttempts) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate unique sponsor code. Please try again.",
+        });
+      }
+
+      // Check if code already exists
+      const { data: existing } = await (ctx.supabase as any)
+        .from("sponsor_codes")
+        .select("id")
+        .eq("code", code)
+        .is("used_at", null)
+        .single();
+
+      if (!existing) {
+        break; // Code is unique
+      }
+    } while (attempts < maxAttempts);
+
+    // Create code with 24-hour expiration
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    const { data, error } = await (ctx.supabase as any)
+      .from("sponsor_codes")
+      .insert({
+        user_id: ctx.userId,
+        code,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Failed to create sponsor code: ${error.message}`,
+      });
+    }
+
+    return {
+      code: data.code,
+      expiresAt: data.expires_at,
+    };
   }),
 
   /**
    * Connect to sponsor using code
    */
   connect: protectedProcedure
-    .input(z.object({ code: z.string().length(8) }))
+    .input(z.object({ code: z.string().length(8).regex(/^[A-Z0-9]{8}$/) }))
     .mutation(async ({ ctx, input }) => {
-      // Look up sponsor by code
-      // This is a simplified version - in production, use a codes table
-      const { data: sponsorProfile, error: profileError } = await ctx.supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("handle", input.code) // Simplified: using handle as code
+      // Look up sponsor code
+      const { data: sponsorCode, error: codeError } = await (ctx.supabase as any)
+        .from("sponsor_codes")
+        .select("user_id, expires_at, used_at")
+        .eq("code", input.code.toUpperCase())
         .single();
 
-      if (profileError || !sponsorProfile) {
-        throw new Error("Invalid sponsor code");
+      if (codeError || !sponsorCode) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invalid sponsor code",
+        });
+      }
+
+      // Check if code is expired
+      if (new Date(sponsorCode.expires_at) < new Date()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Sponsor code has expired. Please ask your sponsor for a new code.",
+        });
+      }
+
+      // Check if code has already been used
+      if (sponsorCode.used_at) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Sponsor code has already been used. Please ask your sponsor for a new code.",
+        });
+      }
+
+      // Prevent self-sponsorship
+      if (sponsorCode.user_id === ctx.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot sponsor yourself",
+        });
+      }
+
+      // Check if relationship already exists
+      const { data: existingRelationship } = await ctx.supabase
+        .from("sponsor_relationships")
+        .select("id, status")
+        .eq("sponsor_id", sponsorCode.user_id)
+        .eq("sponsee_id", ctx.userId)
+        .single();
+
+      if (existingRelationship) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Sponsor relationship already exists",
+        });
       }
 
       // Create sponsor relationship
-      const { data, error } = await ctx.supabase
+      const { data: relationship, error: relationshipError } = await ctx.supabase
         .from("sponsor_relationships")
         .insert({
-          sponsor_id: sponsorProfile.user_id,
+          sponsor_id: sponsorCode.user_id,
           sponsee_id: ctx.userId,
           status: "pending",
         })
         .select()
         .single();
 
-      if (error) {
-        throw new Error(`Failed to create sponsor relationship: ${error.message}`);
+      if (relationshipError) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to create sponsor relationship: ${relationshipError.message}`,
+        });
       }
 
-      return data;
+      // Mark code as used
+      await (ctx.supabase as any)
+        .from("sponsor_codes")
+        .update({ used_at: new Date().toISOString() })
+        .eq("code", input.code.toUpperCase());
+
+      return relationship;
     }),
 
   /**

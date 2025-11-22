@@ -14,7 +14,7 @@ import type { Database } from "@12-step-companion/types";
 import "../env";
 
 // Re-export centralized Supabase clients from API package
-export { supabaseServer, createUserClient } from "@12-step-companion/api/src/lib/supabase-server";
+export { supabaseServer, createUserClient } from "@12-step-companion/api/lib/supabase-server";
 
 /**
  * Get Supabase client for anonymous operations

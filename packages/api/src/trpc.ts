@@ -1,12 +1,15 @@
 /**
  * tRPC Initialization
- * 
+ *
  * Sets up tRPC with context, error handling, and transformers
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { ZodError } from "zod";
 import type { Context } from "./context";
+import { rateLimitMiddleware } from "./middleware/rateLimit";
+import { loggerMiddleware } from "./middleware/logger";
+import { versioningMiddleware } from "./middleware/versioning";
 
 /**
  * Initialize tRPC with context
@@ -30,12 +33,24 @@ const t = initTRPC.context<Context>().create({
  * Base router and procedure exports
  */
 export const router = t.router;
-export const publicProcedure = t.procedure;
+
+/**
+ * Base procedure with common middleware (logging, versioning, rate limiting)
+ */
+const baseProcedure = t.procedure
+  .use(versioningMiddleware())
+  .use(loggerMiddleware())
+  .use(rateLimitMiddleware());
+
+/**
+ * Public procedure - no authentication required
+ */
+export const publicProcedure = baseProcedure;
 
 /**
  * Protected procedure - requires authentication
  */
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   if (!ctx.isAuthenticated()) {
     throw new TRPCError({
       code: "UNAUTHORIZED",

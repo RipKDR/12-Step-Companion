@@ -379,6 +379,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active: boolean
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sponsor_relationships: {
         Row: {
           created_at: string | null
@@ -521,9 +551,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      sponsor_codes_public: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          used_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      cleanup_expired_sponsor_codes: { Args: never; Returns: number }
       is_sponsor_of: { Args: { sponsee_user_id: string }; Returns: boolean }
     }
     Enums: {

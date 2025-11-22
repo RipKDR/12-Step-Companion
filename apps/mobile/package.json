@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "verify": "pnpm exec tsx scripts/verify-expo-setup.ts"
   },
   "dependencies": {
     "expo": "~52.0.0",
@@ -29,6 +30,8 @@
     "lucide-react-native": "^0.554.0",
     "date-fns": "^3.6.0",
     "zod": "^3.25.76",
+    "react-hook-form": "^7.66.0",
+    "@hookform/resolvers": "^5.2.2",
     "libsodium-wrappers": "^0.7.15",
     "text-encoding": "^0.7.0"
   },
