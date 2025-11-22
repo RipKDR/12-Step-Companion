@@ -1,0 +1,14 @@
+# robots.txt for 12-Step Recovery Companion Web App
+
+User-agent: *
+Allow: /
+
+# Disallow admin/sponsor routes from search engines
+Disallow: /sponsor/
+Disallow: /api/
+
+# Allow public pages
+Allow: /
+
+Sitemap: https://your-domain.com/sitemap.xml
+

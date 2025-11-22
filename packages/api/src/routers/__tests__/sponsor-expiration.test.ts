@@ -39,7 +39,11 @@ describe("Sponsor Code Expiration", () => {
 
   describe("Code Usage", () => {
     it("should mark codes as used after connection", () => {
-      const code = {
+      const code: {
+        code: string;
+        used_at: string | null;
+        expires_at: string;
+      } = {
         code: "ABC12345",
         used_at: null,
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
