@@ -50,3 +50,16 @@ export function useUpsertStepEntry() {
   return mutation;
 }
 
+export function useStepEntryVersions(stepId: string | null) {
+  const { entries } = useStepEntries();
+
+  const versions = entries
+    .filter((e) => e.step_id === stepId)
+    .sort((a, b) => b.version - a.version);
+
+  return {
+    versions,
+    isLoading: false,
+  };
+}
+

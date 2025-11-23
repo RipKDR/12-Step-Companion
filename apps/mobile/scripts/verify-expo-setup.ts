@@ -183,6 +183,90 @@ function checkEnvExample(): void {
   });
 }
 
+// Check 7: Verify Android build configuration (JDK, SDK, Gradle, Kotlin)
+function checkAndroidBuildConfig(): void {
+  const buildGradlePath = join(projectRoot, 'android', 'build.gradle');
+  const appBuildGradlePath = join(projectRoot, 'android', 'app', 'build.gradle');
+  const gradlePropertiesPath = join(projectRoot, 'android', 'gradle.properties');
+  const gradleWrapperPath = join(projectRoot, 'android', 'gradle', 'wrapper', 'gradle-wrapper.properties');
+
+  // Check build.gradle exists
+  if (!existsSync(buildGradlePath)) {
+    checks.push({
+      name: 'Android: build.gradle exists',
+      passed: false,
+      message: 'android/build.gradle not found',
+    });
+    return;
+  }
+
+  const buildGradle = readFileSync(buildGradlePath, 'utf-8');
+  const appBuildGradle = existsSync(appBuildGradlePath)
+    ? readFileSync(appBuildGradlePath, 'utf-8')
+    : '';
+  const gradleProperties = existsSync(gradlePropertiesPath)
+    ? readFileSync(gradlePropertiesPath, 'utf-8')
+    : '';
+
+  // Check JDK 17 configuration
+  const hasJdk17Config =
+    buildGradle.includes('JavaVersion.VERSION_17') ||
+    appBuildGradle.includes('JavaVersion.VERSION_17') ||
+    appBuildGradle.includes("jvmTarget = '17'");
+  checks.push({
+    name: 'Android: JDK 17 configured',
+    passed: hasJdk17Config,
+    message: hasJdk17Config
+      ? 'JDK 17 configuration found'
+      : 'JDK 17 configuration missing (required for Expo SDK 52)',
+  });
+
+  // Check Kotlin version (should be 2.0.21 or compatible)
+  const kotlinVersionMatch = buildGradle.match(/kotlinVersion.*?:.*?['"]([\d.]+)['"]/);
+  const kotlinVersion = kotlinVersionMatch ? kotlinVersionMatch[1] : null;
+  const kotlinVersionOk = kotlinVersion && parseFloat(kotlinVersion) >= 2.0;
+  checks.push({
+    name: 'Android: Kotlin version',
+    passed: !!kotlinVersionOk,
+    message: kotlinVersion
+      ? `Kotlin ${kotlinVersion} ${kotlinVersionOk ? '(compatible)' : '(should be 2.0.21+)'}`
+      : 'Kotlin version not found',
+  });
+
+  // Check Android SDK versions
+  const compileSdkMatch = buildGradle.match(/compileSdkVersion.*?:.*?(\d+)/);
+  const compileSdk = compileSdkMatch ? parseInt(compileSdkMatch[1]) : null;
+  const compileSdkOk = compileSdk && compileSdk >= 34;
+  checks.push({
+    name: 'Android: compileSdkVersion',
+    passed: !!compileSdkOk,
+    message: compileSdk
+      ? `compileSdkVersion ${compileSdk} ${compileSdkOk ? '(compatible)' : '(should be 34+)'}`
+      : 'compileSdkVersion not found',
+  });
+
+  // Check Gradle wrapper version
+  if (existsSync(gradleWrapperPath)) {
+    const gradleWrapper = readFileSync(gradleWrapperPath, 'utf-8');
+    const gradleVersionMatch = gradleWrapper.match(/gradle-([\d.]+)-/);
+    const gradleVersion = gradleVersionMatch ? gradleVersionMatch[1] : null;
+    const gradleVersionOk = gradleVersion && parseFloat(gradleVersion) >= 8.0;
+    checks.push({
+      name: 'Android: Gradle version',
+      passed: !!gradleVersionOk,
+      message: gradleVersion
+        ? `Gradle ${gradleVersion} ${gradleVersionOk ? '(compatible)' : '(should be 8.0+)'}`
+        : 'Gradle version not found',
+    });
+  } else {
+    checks.push({
+      name: 'Android: Gradle wrapper',
+      passed: false,
+      message: 'gradle-wrapper.properties not found',
+    });
+  }
+}
+
 // Run all checks
 checkRequiredPackages();
 checkMetroConfig();
@@ -190,6 +274,7 @@ checkExpoConfig();
 checkTypeScriptConfig();
 checkWorkspacePackages();
 checkEnvExample();
+checkAndroidBuildConfig();
 
 // Print results
 console.log('\n📱 Expo Setup Verification\n');

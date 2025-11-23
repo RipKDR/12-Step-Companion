@@ -71,7 +71,8 @@ export const meetingsRouter = router({
           meetings = data;
         } else if (data && typeof data === "object") {
           // Some BMLT endpoints return objects with arrays
-          const meetingsArray = (data as any).meetings || (data as any).results || [];
+          const dataObj = data as Record<string, unknown>;
+          const meetingsArray = (dataObj.meetings || dataObj.results) as BMLTMeeting[] | undefined;
           if (Array.isArray(meetingsArray)) {
             meetings = meetingsArray;
           }
@@ -154,7 +155,8 @@ export const meetingsRouter = router({
           return data[0] || null;
         }
         if (data && typeof data === "object") {
-          const meetings = (data as any).meetings || (data as any).results || [];
+          const dataObj = data as Record<string, unknown>;
+          const meetings = (dataObj.meetings || dataObj.results || []) as BMLTMeeting[];
           return Array.isArray(meetings) ? meetings[0] || null : null;
         }
 

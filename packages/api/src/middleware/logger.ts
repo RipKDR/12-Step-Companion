@@ -6,6 +6,27 @@
 
 import type { Context } from "../context";
 
+// Optional Sentry import - only used if SENTRY_DSN is set
+let Sentry: typeof import("@sentry/node") | null = null;
+
+// Initialize Sentry if available
+if (process.env.SENTRY_DSN) {
+  try {
+    import("@sentry/node").then((module) => {
+      Sentry = module;
+      Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.NODE_ENV || "development",
+        tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+      });
+    }).catch(() => {
+      // Sentry not available, will use console logging
+    });
+  } catch {
+    // Sentry not available, will use console logging
+  }
+}
+
 interface LogEntry {
   timestamp: string;
   userId: string | null;
@@ -17,7 +38,7 @@ interface LogEntry {
 }
 
 /**
- * Simple logger (can be replaced with proper logging service)
+ * Simple logger with Sentry integration
  */
 function logRequest(entry: LogEntry) {
   const logLevel = entry.error ? "error" : "info";
@@ -25,10 +46,35 @@ function logRequest(entry: LogEntry) {
 
   if (logLevel === "error") {
     console.error(message);
+
+    // Send to Sentry if available
+    if (Sentry && entry.error) {
+      Sentry.captureException(new Error(entry.error), {
+        tags: {
+          userId: entry.userId || "anonymous",
+          path: entry.path,
+          method: entry.method,
+        },
+        extra: {
+          ip: entry.ip,
+          duration: entry.duration,
+        },
+      });
+    }
   } else if (process.env.NODE_ENV === "development") {
     console.log(message);
+  } else if (process.env.NODE_ENV === "production") {
+    // In production, log structured JSON for log aggregation services
+    console.log(JSON.stringify({
+      timestamp: entry.timestamp,
+      level: logLevel,
+      method: entry.method,
+      path: entry.path,
+      userId: entry.userId,
+      ip: entry.ip,
+      duration: entry.duration,
+    }));
   }
-  // In production, send to logging service (Sentry, DataDog, etc.)
 }
 
 /**

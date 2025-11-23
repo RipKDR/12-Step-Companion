@@ -33,9 +33,9 @@ export async function createContext(opts: { req: Request; res: Response }) {
     req,
     res: opts.res,
     userId,
-    supabase,
+    supabase, // Can be null for unauthenticated requests
     // Helper to check if user is authenticated
-    isAuthenticated: () => userId !== null,
+    isAuthenticated: () => userId !== null && supabase !== null,
   };
 }
 

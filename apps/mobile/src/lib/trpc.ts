@@ -4,7 +4,7 @@
 
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "../../../packages/api/src/routers/_app";
+import type { AppRouter } from "@12-step-companion/api/routers/_app";
 import { getAccessToken } from "./secure-store";
 
 export const trpc = createTRPCReact<AppRouter>();

@@ -4,45 +4,53 @@
   "main": "expo-router",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
-    "verify": "pnpm exec tsx scripts/verify-expo-setup.ts"
+    "verify": "tsx scripts/verify-expo-setup.ts",
+    "install:fix": "npx expo install --fix"
   },
   "dependencies": {
-    "expo": "~52.0.0",
-    "expo-router": "^4.0.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@react-native-community/datetimepicker": "^8.2.0",
+    "@supabase/supabase-js": "^2.83.0",
+    "@tanstack/react-query": "^5.90.7",
+    "@trpc/client": "^11.7.1",
+    "@trpc/react-query": "^11.7.1",
+    "date-fns": "^3.6.0",
+    "expo": "~52.0.47",
     "expo-location": "~18.0.0",
+    "expo-modules-core": "~2.2.3",
+    "expo-network": "~7.0.0",
     "expo-notifications": "~0.29.14",
+    "expo-router": "^4.0.0",
     "expo-secure-store": "~14.0.0",
     "expo-sqlite": "~15.1.4",
     "expo-task-manager": "~12.0.0",
-    "expo-network": "~7.0.0",
+    "libsodium-wrappers": "^0.7.15",
+    "lucide-react-native": "^0.554.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-hook-form": "^7.66.0",
     "react-native": "0.76.9",
-    "react-native-web": "^0.19.13",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
-    "@trpc/client": "^11.7.1",
-    "@trpc/react-query": "^11.7.1",
-    "@tanstack/react-query": "^5.90.7",
-    "@supabase/supabase-js": "^2.83.0",
-    "lucide-react-native": "^0.554.0",
-    "date-fns": "^3.6.0",
-    "zod": "^3.25.76",
-    "react-hook-form": "^7.66.0",
-    "@hookform/resolvers": "^5.2.2",
-    "libsodium-wrappers": "^0.7.15",
-    "text-encoding": "^0.7.0"
+    "react-native-web": "^0.19.13",
+    "text-encoding": "^0.7.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/libsodium-wrappers": "^0.7.14",
     "@types/react": "~18.3.12",
     "@types/react-dom": "~18.3.1",
-    "typescript": "^5.7.2",
-    "@types/libsodium-wrappers": "^0.7.14",
-    "@types/text-encoding": "^0.0.39"
+    "@types/text-encoding": "^0.0.39",
+    "typescript": "^5.7.2"
+  },
+  "expo": {
+    "install": {
+      "exclude": []
+    }
   },
   "private": true
 }

@@ -16,6 +16,15 @@ Privacy-first mobile companion app built with Expo and React Native for iOS and 
 ## Prerequisites
 
 - **Node.js 20+** and npm
+- **JDK 17** (required for Expo SDK 52 and Android builds)
+  - Download from [Oracle JDK](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) or [OpenJDK](https://adoptium.net/temurin/releases/?version=17)
+  - Verify installation: `java -version` (should show version 17.x.x)
+  - Set `JAVA_HOME` environment variable to JDK 17 installation path
+- **Android SDK** (for Android development)
+  - Android SDK Platform 35 (compileSdkVersion)
+  - Android SDK Build-Tools 35.0.0
+  - Android SDK Platform-Tools
+  - Set `ANDROID_HOME` environment variable to Android SDK path
 - **Expo CLI**: `npm install -g expo-cli` or use `npx expo`
 - **Expo Go** app (for development) - [iOS](https://apps.apple.com/app/expo-go/id982107779) | [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
 - **EAS CLI** (for builds): `npm install -g eas-cli`
@@ -205,6 +214,32 @@ npx tsc --noEmit
 
 ## Troubleshooting
 
+### JDK and Android SDK Issues
+
+**JDK Version Error:**
+- **Problem**: Build fails with "Unsupported Java version" or "Java 17 required"
+- **Solution**: 
+  1. Install JDK 17 from [Oracle](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) or [Adoptium](https://adoptium.net/temurin/releases/?version=17)
+  2. Set `JAVA_HOME` environment variable: `set JAVA_HOME=C:\Program Files\Java\jdk-17` (Windows) or `export JAVA_HOME=/usr/lib/jvm/java-17-openjdk` (Linux/Mac)
+  3. Verify: `java -version` should show version 17.x.x
+  4. If using Android Studio, configure JDK 17 in File → Project Structure → SDK Location
+
+**Android SDK Not Found:**
+- **Problem**: "SDK location not found" or "Android SDK not installed"
+- **Solution**:
+  1. Install Android Studio or standalone Android SDK
+  2. Set `ANDROID_HOME` environment variable: `set ANDROID_HOME=C:\Users\YourName\AppData\Local\Android\Sdk` (Windows) or `export ANDROID_HOME=$HOME/Library/Android/sdk` (Mac)
+  3. Add to PATH: `%ANDROID_HOME%\platform-tools` and `%ANDROID_HOME%\tools`
+  4. Install required SDK components via Android Studio SDK Manager or `sdkmanager` CLI
+
+**Gradle Build Failures:**
+- **Problem**: Gradle sync fails or build errors
+- **Solution**:
+  1. Verify Gradle version: Check `android/gradle/wrapper/gradle-wrapper.properties` (should be 8.10.2+)
+  2. Clear Gradle cache: `cd android && ./gradlew clean` (or `gradlew.bat clean` on Windows)
+  3. Delete `.gradle` folder in `android/` directory
+  4. Verify Kotlin version in `android/build.gradle` (should be 2.0.21+)
+
 ### Environment Variables Not Loading
 
 1. **Restart Expo**: Stop and restart `expo start`
@@ -226,6 +261,30 @@ npx tsc --noEmit
    - Missing environment variables
    - Invalid app.json/app.config.js
    - Asset files missing (icon.png, splash.png)
+   - JDK version mismatch (must be JDK 17)
+   - Android SDK version mismatch (compileSdkVersion should be 35)
+
+### Dependency Installation Issues
+
+**React Version Conflicts:**
+- The mobile app uses React 18.3.1 (required for Expo SDK 52)
+- The root workspace may use React 19 (for web app) - this is fine in a monorepo
+- If npm complains about peer dependencies, use `--legacy-peer-deps`:
+  ```bash
+  cd apps/mobile
+  npm install --legacy-peer-deps
+  npx expo install --fix --legacy-peer-deps
+  ```
+
+**pnpm Installation Issues:**
+- If pnpm is not installed: `npm install -g pnpm@8.15.0`
+- Or use npm instead: `npm install --legacy-peer-deps`
+- pnpm is recommended for monorepos but npm works fine
+
+**Expo SDK Version:**
+- This project uses Expo SDK 52 (`expo@~52.0.47`)
+- Do NOT upgrade to Expo 54 without following the migration guide
+- Run `npx expo install --fix` to ensure all dependencies match SDK 52
 
 ### Metro Bundler Issues
 

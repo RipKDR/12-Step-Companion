@@ -2,11 +2,34 @@
  * Rate Limiting Middleware for tRPC
  *
  * Implements rate limiting using in-memory store (for single-instance deployments)
- * For multi-instance, consider Redis-based rate limiting
+ * For multi-instance deployments, use Redis by setting REDIS_URL environment variable
  */
 
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../context";
+
+// Optional Redis import - only used if REDIS_URL is set
+let Redis: typeof import("ioredis").default | null = null;
+let redisClient: import("ioredis").Redis | null = null;
+
+// Initialize Redis if REDIS_URL is available
+if (process.env.REDIS_URL) {
+  try {
+    // Dynamic import to avoid requiring ioredis if not using Redis
+    import("ioredis").then((module) => {
+      Redis = module.default;
+      redisClient = new Redis(process.env.REDIS_URL!);
+      redisClient.on("error", (err) => {
+        console.error("Redis connection error:", err);
+        redisClient = null; // Fall back to in-memory
+      });
+    }).catch(() => {
+      console.warn("Redis not available, falling back to in-memory rate limiting");
+    });
+  } catch {
+    // Redis not available, will use in-memory fallback
+  }
+}
 
 interface RateLimitStore {
   [key: string]: {
@@ -56,9 +79,53 @@ function getRateLimitKey(ctx: Context): string {
 }
 
 /**
- * Check if request should be rate limited
+ * Check rate limit using Redis (if available)
  */
-function checkRateLimit(key: string, isAuthenticated: boolean): {
+async function checkRateLimitRedis(
+  key: string,
+  isAuthenticated: boolean
+): Promise<{
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
+}> {
+  if (!redisClient) {
+    // Fall back to in-memory
+    return checkRateLimitMemory(key, isAuthenticated);
+  }
+
+  const limits = isAuthenticated
+    ? RATE_LIMITS.authenticated
+    : RATE_LIMITS.unauthenticated;
+
+  try {
+    const windowSeconds = Math.floor(limits.windowMs / 1000);
+    const count = await redisClient.incr(key);
+
+    if (count === 1) {
+      // First request in window, set expiration
+      await redisClient.expire(key, windowSeconds);
+    }
+
+    const ttl = await redisClient.ttl(key);
+    const resetAt = Date.now() + (ttl * 1000);
+
+    return {
+      allowed: count <= limits.max,
+      remaining: Math.max(0, limits.max - count),
+      resetAt,
+    };
+  } catch (error) {
+    // Redis error, fall back to in-memory
+    console.warn("Redis rate limit error, falling back to in-memory:", error);
+    return checkRateLimitMemory(key, isAuthenticated);
+  }
+}
+
+/**
+ * Check rate limit using in-memory store
+ */
+function checkRateLimitMemory(key: string, isAuthenticated: boolean): {
   allowed: boolean;
   remaining: number;
   resetAt: number;
@@ -106,7 +173,11 @@ export function rateLimitMiddleware() {
   return async ({ ctx, next }: { ctx: Context; next: () => Promise<any> }) => {
     const isAuthenticated = ctx.isAuthenticated();
     const key = getRateLimitKey(ctx);
-    const result = checkRateLimit(key, isAuthenticated);
+
+    // Use Redis if available, otherwise fall back to in-memory
+    const result = redisClient
+      ? await checkRateLimitRedis(key, isAuthenticated)
+      : checkRateLimitMemory(key, isAuthenticated);
 
     if (!result.allowed) {
       const resetSeconds = Math.ceil((result.resetAt - Date.now()) / 1000);

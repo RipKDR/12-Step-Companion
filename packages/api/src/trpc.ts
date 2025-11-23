@@ -51,7 +51,7 @@ export const publicProcedure = baseProcedure;
  * Protected procedure - requires authentication
  */
 export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
-  if (!ctx.isAuthenticated()) {
+  if (!ctx.isAuthenticated() || !ctx.supabase) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "You must be logged in to access this resource",
@@ -62,6 +62,7 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
     ctx: {
       ...ctx,
       userId: ctx.userId!, // Now guaranteed to be non-null
+      supabase: ctx.supabase, // Now guaranteed to be non-null
     },
   });
 });

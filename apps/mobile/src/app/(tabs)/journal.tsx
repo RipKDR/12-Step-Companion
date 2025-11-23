@@ -1,143 +1,126 @@
 /**
  * Journal Tab - Mobile App
- * 
+ *
  * Daily recovery log screen using tRPC
  */
 
-import { useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput } from "react-native";
-import { useTodaysEntry, useWeeklyEntries, useUpsertDailyEntry } from "../../hooks/useDailyEntries";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
+import { useTodaysEntry, useWeeklyEntries } from "../../hooks/useDailyEntries";
 import { useProfile } from "../../hooks/useProfile";
 import { format } from "date-fns";
+import { Card } from "../../components/Card";
+import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
 
 export default function JournalScreen() {
+  const router = useRouter();
   const { profile } = useProfile();
   const { entry: todayEntry, isLoading } = useTodaysEntry(profile?.timezone || "UTC");
   const { entries: weeklyEntries } = useWeeklyEntries(profile?.timezone || "UTC");
-  const upsertMutation = useUpsertDailyEntry();
-
-  const [showEditor, setShowEditor] = useState(false);
-  const [gratitude, setGratitude] = useState(todayEntry?.gratitude || "");
-  const [notes, setNotes] = useState(todayEntry?.notes || "");
-
-  const handleSave = async () => {
-    try {
-      await upsertMutation.mutateAsync({
-        gratitude: gratitude || null,
-        notes: notes || null,
-      });
-      setShowEditor(false);
-    } catch (error) {
-      console.error("Failed to save entry:", error);
-    }
-  };
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
+  const today = new Date();
+  const todayFormatted = format(today, "yyyy-MM-dd");
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {/* Today's Entry */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Today's Entry</Text>
-          {todayEntry ? (
-            <View>
-              {todayEntry.gratitude && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>Gratitude</Text>
-                  <Text style={styles.sectionText}>{todayEntry.gratitude}</Text>
-                </View>
-              )}
-              {todayEntry.notes && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>Notes</Text>
-                  <Text style={styles.sectionText}>{todayEntry.notes}</Text>
-                </View>
-              )}
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => setShowEditor(true)}
-              >
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View>
-              <Text style={styles.emptyText}>No entry for today</Text>
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={() => setShowEditor(true)}
-              >
-                <Text style={styles.createButtonText}>Create Entry</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <Button
+            title="Quick Craving Log"
+            onPress={() => router.push("/(tabs)/journal/quick-craving")}
+            variant="primary"
+            style={styles.quickActionButton}
+          />
+          <Button
+            title="Full Entry"
+            onPress={() => router.push(`/(tabs)/journal/${todayFormatted}`)}
+            variant="outline"
+            style={styles.quickActionButton}
+          />
         </View>
 
-        {/* Editor */}
-        {showEditor && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Edit Entry</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="What are you grateful for today?"
-              value={gratitude}
-              onChangeText={setGratitude}
-              multiline
-            />
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="How are you feeling today?"
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-            />
-            <View style={styles.editorActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowEditor(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleSave}
-                disabled={upsertMutation.isPending}
-              >
-                <Text style={styles.saveButtonText}>
-                  {upsertMutation.isPending ? "Saving..." : "Save"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+        {/* Today's Entry */}
+        <Card
+          variant="interactive"
+          onPress={() => router.push(`/(tabs)/journal/${todayFormatted}`)}
+          style={styles.card}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Today's Entry</Text>
+            {todayEntry && <Badge label="Saved" variant="success" size="small" />}
           </View>
-        )}
+          {todayEntry ? (
+            <View>
+              {todayEntry.cravings_intensity !== null && (
+                <View style={styles.entryRow}>
+                  <Text style={styles.entryLabel}>Cravings:</Text>
+                  <Text style={styles.entryValue}>
+                    {todayEntry.cravings_intensity}/10
+                  </Text>
+                </View>
+              )}
+              {todayEntry.gratitude && (
+                <Text style={styles.gratitudeText} numberOfLines={2}>
+                  {todayEntry.gratitude}
+                </Text>
+              )}
+              {todayEntry.notes && (
+                <Text style={styles.notesText} numberOfLines={2}>
+                  {todayEntry.notes}
+                </Text>
+              )}
+            </View>
+          ) : (
+            <Text style={styles.emptyText}>No entry for today. Tap to create one.</Text>
+          )}
+        </Card>
 
         {/* Weekly Entries */}
-        <View style={styles.card}>
+        <Card style={styles.card}>
           <Text style={styles.cardTitle}>This Week</Text>
           {weeklyEntries.length > 0 ? (
-            weeklyEntries.map((entry) => (
-              <View key={entry.id} style={styles.entryItem}>
-                <Text style={styles.entryDate}>
-                  {format(new Date(entry.entry_date), "MMM d")}
-                </Text>
-                {entry.gratitude && (
-                  <Text style={styles.entryText} numberOfLines={1}>
-                    {entry.gratitude}
-                  </Text>
-                )}
-              </View>
-            ))
+            weeklyEntries.map((entry: { id: string; entry_date: string | Date }) => {
+              const entryDate = format(new Date(entry.entry_date), "yyyy-MM-dd");
+              return (
+                <TouchableOpacity
+                  key={entry.id}
+                  style={styles.entryItem}
+                  onPress={() => router.push(`/(tabs)/journal/${entryDate}`)}
+                >
+                  <View style={styles.entryHeader}>
+                    <Text style={styles.entryDate}>
+                      {format(new Date(entry.entry_date), "MMM d")}
+                    </Text>
+                    {entry.cravings_intensity !== null && (
+                      <Badge
+                        label={`${entry.cravings_intensity}/10`}
+                        variant={entry.cravings_intensity > 5 ? "danger" : "info"}
+                        size="small"
+                      />
+                    )}
+                  </View>
+                  {entry.gratitude && (
+                    <Text style={styles.entryText} numberOfLines={1}>
+                      {entry.gratitude}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <Text style={styles.emptyText}>No entries this week</Text>
           )}
-        </View>
+        </Card>
       </View>
     </ScrollView>
   );
@@ -151,107 +134,77 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
+  quickActions: {
+    flexDirection: "row",
+    gap: 12,
     marginBottom: 16,
+  },
+  quickActionButton: {
+    flex: 1,
+  },
+  card: {
+    marginBottom: 16,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 12,
+    color: "#000",
   },
-  section: {
-    marginBottom: 12,
+  entryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
-  sectionLabel: {
-    fontSize: 12,
+  entryLabel: {
+    fontSize: 14,
     color: "#8E8E93",
-    marginBottom: 4,
   },
-  sectionText: {
+  entryValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+  },
+  gratitudeText: {
     fontSize: 14,
     color: "#000",
+    marginTop: 8,
+  },
+  notesText: {
+    fontSize: 14,
+    color: "#8E8E93",
+    marginTop: 8,
+    fontStyle: "italic",
   },
   emptyText: {
     color: "#8E8E93",
     fontStyle: "italic",
-    marginBottom: 12,
-  },
-  editButton: {
-    marginTop: 12,
-    padding: 8,
-    backgroundColor: "#007AFF",
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  editButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  createButton: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: "#34C759",
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  createButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 14,
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
-  editorActions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: "#f5f5f5",
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#000",
-    fontWeight: "600",
-  },
-  saveButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: "#007AFF",
-    alignItems: "center",
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontWeight: "600",
   },
   entryItem: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f5f5f5",
   },
-  entryDate: {
-    fontSize: 12,
-    color: "#8E8E93",
+  entryHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4,
+  },
+  entryDate: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
   },
   entryText: {
     fontSize: 14,
-    color: "#000",
+    color: "#8E8E93",
+    marginTop: 4,
   },
 });
 

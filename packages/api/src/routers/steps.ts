@@ -1,6 +1,6 @@
 /**
  * Steps Router
- * 
+ *
  * Handles step definitions and user step work entries
  */
 
@@ -102,7 +102,7 @@ export const stepsRouter = router({
           user_id: ctx.userId,
           step_id: input.stepId,
           version,
-          content: input.content as any, // Cast to Json type for Supabase compatibility
+          content: input.content as unknown as Record<string, unknown>, // JSONB type
           is_shared_with_sponsor: input.isSharedWithSponsor ?? false,
         })
         .select()

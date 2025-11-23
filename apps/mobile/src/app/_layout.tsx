@@ -1,6 +1,6 @@
 /**
  * Root Layout - Expo Router
- * 
+ *
  * Sets up navigation and providers
  */
 
@@ -10,6 +10,8 @@ import { initDatabase } from "../../lib/sqlite";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SyncManager } from "../components/SyncManager";
+import { setupNotificationHandler } from "../../lib/smart-notifications";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
@@ -22,6 +24,9 @@ export default function RootLayout() {
         console.error("Failed to initialize database:", error);
         setDbReady(true); // Continue anyway
       });
+
+    // Setup notification handler
+    setupNotificationHandler();
   }, []);
 
   if (!dbReady) {
@@ -33,12 +38,14 @@ export default function RootLayout() {
   }
 
   return (
-    <TRPCProvider>
-      <SyncManager />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </TRPCProvider>
+    <ErrorBoundary>
+      <TRPCProvider>
+        <SyncManager />
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </TRPCProvider>
+    </ErrorBoundary>
   );
 }

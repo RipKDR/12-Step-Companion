@@ -12,6 +12,7 @@ import type { Database } from "@12-step-companion/types";
 
 // Load environment variables
 import "../env";
+import { env } from "../env";
 
 // Re-export centralized Supabase clients from API package
 export { supabaseServer, createUserClient } from "@12-step-companion/api/lib/supabase-server";
@@ -20,16 +21,8 @@ export { supabaseServer, createUserClient } from "@12-step-companion/api/lib/sup
  * Get Supabase client for anonymous operations
  * Uses anon key - RLS policies will be enforced
  */
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing env: ${name}`);
-  }
-  return value;
-}
-
-const supabaseUrl = requireEnv("SUPABASE_URL");
-const supabaseAnonKey = requireEnv("SUPABASE_ANON_KEY");
+const supabaseUrl = env.SUPABASE_URL;
+const supabaseAnonKey = env.SUPABASE_ANON_KEY;
 
 export const supabaseAnon = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {

@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = '12StepRecoveryCompanion'
+rootProject.name = '12stepcompanion'
 
 dependencyResolutionManagement {
   versionCatalogs {

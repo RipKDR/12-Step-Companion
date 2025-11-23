@@ -1,1 +1,9 @@
 # Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+
+# ProGuard configuration files in node_modules (misinterpreted by linter as IDL code)
+**/node_modules/**/*.pro
+**/node_modules/**/proguard-rules.pro
+
+# Node modules (already ignored but explicit)
+node_modules/
+**/node_modules/

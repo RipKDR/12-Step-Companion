@@ -25,12 +25,12 @@ export async function createContextNextJS(opts: { req: NextRequest }) {
   const { userId, supabase } = await authenticateFromToken(token);
 
   return {
-    req: req as any, // NextRequest is compatible with Express Request for tRPC
-    res: undefined as any, // Not used in Next.js App Router, but required by Context type
+    req: req as unknown as Request, // NextRequest is compatible with Express Request for tRPC
+    res: undefined as unknown as Response, // Not used in Next.js App Router, but required by Context type
     userId,
-    supabase,
+    supabase, // Can be null for unauthenticated requests
     // Helper to check if user is authenticated
-    isAuthenticated: () => userId !== null,
+    isAuthenticated: () => userId !== null && supabase !== null,
   };
 }
 

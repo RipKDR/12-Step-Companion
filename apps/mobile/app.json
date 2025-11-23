@@ -4,12 +4,18 @@
     "slug": "12-step-companion",
     "version": "1.0.0",
     "orientation": "portrait",
+    "newArchEnabled": true,
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9821eb32-dbf0-48f0-89d1-ef837cf1bd31"
+      }
     },
     "assetBundlePatterns": [
       "**/*"
@@ -55,4 +61,3 @@
     ]
   }
 }
-

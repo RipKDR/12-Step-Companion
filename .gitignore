@@ -71,6 +71,10 @@ out/
 # Vite
 .vite/
 
+# Expo
+.expo/
+.expo-shared/
+
 # Rollup
 .rollup.cache/
 

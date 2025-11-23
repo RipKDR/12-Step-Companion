@@ -1,6 +1,6 @@
 /**
  * More Tab - Mobile App
- * 
+ *
  * Settings and additional features
  */
 
@@ -46,28 +46,64 @@ export default function MoreScreen() {
         {/* Settings */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Settings</Text>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/settings/notifications")}
+          >
             <Text style={styles.settingText}>Notifications</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/settings/privacy")}
+          >
             <Text style={styles.settingText}>Privacy</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/settings/data-export")}
+          >
             <Text style={styles.settingText}>Data Export</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/settings/trigger-locations")}
+          >
+            <Text style={styles.settingText}>Trigger Locations</Text>
           </TouchableOpacity>
         </View>
 
         {/* Actions */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/sponsor")}
+          >
             <Text style={styles.settingText}>Sponsor Connection</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/action-plans")}
+          >
             <Text style={styles.settingText}>Action Plans</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/routines")}
+          >
             <Text style={styles.settingText}>Routines</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/support")}
+          >
+            <Text style={styles.settingText}>Support Card</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/(tabs)/streaks")}
+          >
+            <Text style={styles.settingText}>Streaks & Achievements</Text>
           </TouchableOpacity>
         </View>
 
@@ -108,6 +144,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f5f5f5",
+  },
+  settingItemLast: {
+    borderBottomWidth: 0,
   },
   settingText: {
     fontSize: 16,

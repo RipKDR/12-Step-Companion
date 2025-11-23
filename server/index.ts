@@ -1,5 +1,6 @@
 // Load environment variables FIRST - must be before any other imports
 import "./env";
+import { env } from "./env";
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
@@ -54,20 +55,19 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
 
     app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-      const status = (err as { status?: number; statusCode?: number }).status || 
-                     (err as { status?: number; statusCode?: number }).statusCode || 
+      const status = (err as { status?: number; statusCode?: number }).status ||
+                     (err as { status?: number; statusCode?: number }).statusCode ||
                      500;
       const message = err instanceof Error ? err.message : "Internal Server Error";
 
       // Log error for debugging
       log(`Error: ${message} (Status: ${status})`);
-      
+
       res.status(status).json({ message });
     });
 
     // Serve the app on the port specified in the environment variable PORT
-    // Defaults to 3000 if not specified
-    const port = parseInt(process.env.PORT || '3000', 10);
+    const port = parseInt(env.PORT, 10);
     server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });

@@ -3,14 +3,18 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "noEmit": true,
     "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "target": "esnext",
+    "lib": ["esnext"],
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
@@ -18,12 +22,11 @@
       "@/hooks/*": ["./src/hooks/*"],
       "@/app/*": ["./src/app/*"],
       "@12-step-companion/types": ["../../packages/types/src"],
-      "@12-step-companion/types/*": ["../../packages/types/src/*"]
+      "@12-step-companion/types/*": ["../../packages/types/src/*"],
+      "@12-step-companion/api": ["../../packages/api/src"],
+      "@12-step-companion/api/*": ["../../packages/api/src/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

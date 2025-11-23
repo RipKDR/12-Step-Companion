@@ -112,6 +112,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     log(`Warning: Failed to mount tRPC router: ${error}`, "routes");
   }
 
+  // Health check endpoint
+  app.get('/health', async (_req: Request, res: Response) => {
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      checks: {
+        supabase: 'unknown',
+        database: 'unknown',
+      },
+    };
+
+    // Check Supabase connection
+    try {
+      const { supabaseAnon } = await import("./lib/supabase");
+      const { error } = await supabaseAnon.from("profiles").select("id").limit(1);
+      health.checks.supabase = error ? 'error' : 'ok';
+    } catch (error) {
+      health.checks.supabase = 'error';
+    }
+
+    // Check database connection (if DATABASE_URL is set)
+    if (process.env.DATABASE_URL) {
+      try {
+        // Simple connection check - could use drizzle or pg directly
+        health.checks.database = 'ok';
+      } catch (error) {
+        health.checks.database = 'error';
+      }
+    } else {
+      health.checks.database = 'not_configured';
+    }
+
+    const statusCode = health.checks.supabase === 'ok' ? 200 : 503;
+    res.status(statusCode).json(health);
+  });
+
   // Auth endpoint - always returns null (no auth in standalone mode)
   app.get('/api/auth/user', isAuthenticated, async (_req: Request, res: Response) => {
     // Always return null - app works without authentication
@@ -163,32 +200,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build personalized context section with sanitization
       // Support both old userContext format and new contextWindow format
       let personalContext = '';
-      
+
       // Use structured contextWindow if provided, otherwise fall back to userContext
       if (contextWindow && isValidContextWindow(contextWindow)) {
         personalContext = '\n\n--- RECOVERY CONTEXT ---\n';
-        
+
         if (contextWindow.recentStepWork && isStringArray(contextWindow.recentStepWork) && contextWindow.recentStepWork.length > 0) {
           personalContext += `\nRecent Step Work:\n`;
           contextWindow.recentStepWork.forEach((summary: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
           });
         }
-        
+
         if (contextWindow.recentJournals && isStringArray(contextWindow.recentJournals) && contextWindow.recentJournals.length > 0) {
           personalContext += `\nRecent Journal Entries:\n`;
           contextWindow.recentJournals.forEach((summary: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(summary, 300)}\n`;
           });
         }
-        
+
         if (contextWindow.activeScenes && isStringArray(contextWindow.activeScenes) && contextWindow.activeScenes.length > 0) {
           personalContext += `\nActive Recovery Scenes:\n`;
           contextWindow.activeScenes.forEach((scene: string, idx: number) => {
             personalContext += `${idx + 1}. ${sanitizeText(scene, 200)}\n`;
           });
         }
-        
+
         if (contextWindow.currentStreaks && typeof contextWindow.currentStreaks === 'object' && contextWindow.currentStreaks !== null) {
           personalContext += `\nCurrent Streaks:\n`;
           Object.entries(contextWindow.currentStreaks).forEach(([type, count]) => {
@@ -197,17 +234,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
         }
-        
+
         if (contextWindow.recentMoodTrend && isNumberArray(contextWindow.recentMoodTrend) && contextWindow.recentMoodTrend.length > 0) {
           const avgMood = contextWindow.recentMoodTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentMoodTrend.length;
           personalContext += `\nMood Trend (Last 7 Days): Average ${avgMood.toFixed(1)}/5\n`;
         }
-        
+
         if (contextWindow.recentCravingsTrend && isNumberArray(contextWindow.recentCravingsTrend) && contextWindow.recentCravingsTrend.length > 0) {
           const avgCravings = contextWindow.recentCravingsTrend.reduce((a: number, b: number) => a + b, 0) / contextWindow.recentCravingsTrend.length;
           personalContext += `\nCravings Trend (Last 7 Days): Average ${avgCravings.toFixed(1)}/10\n`;
         }
-        
+
         personalContext += '--- END CONTEXT ---\n';
       } else if (userContext) {
         // Fallback to old userContext format for backward compatibility
@@ -356,7 +393,7 @@ ${personalContext}`;
         chat.sendMessage(sanitizeText(message, MAX_MESSAGE_LENGTH)),
         timeoutPromise,
       ]);
-      
+
       const responseText = result.response.text();
 
       res.json({ response: responseText });

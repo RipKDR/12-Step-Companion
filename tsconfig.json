@@ -15,17 +15,19 @@
   ],
   "compilerOptions": {
     "incremental": true,
-    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo",
     "noEmit": true,
     "module": "ESNext",
     "target": "ES2022",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable"
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -58,5 +60,6 @@
         "./packages/types/src/*"
       ]
     }
-  }
+  },
+  "extends": "expo/tsconfig.base"
 }
