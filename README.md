@@ -17,21 +17,61 @@ A privacy-first Progressive Web Application (PWA) designed to support individual
 
 ## Tech Stack
 
-- **Frontend**: React 18 + TypeScript, Vite, Wouter, Zustand, TanStack Query
-- **Backend**: Express.js, PostgreSQL (Neon), Drizzle ORM
-- **UI**: Tailwind CSS + shadcn/ui components
-- **PWA**: Service Worker, Web Manifest, offline support
+- **Web Frontend**: React 18 + TypeScript, Vite, Wouter, Zustand, TanStack Query
+- **Mobile App**: Expo (React Native), Expo Router, TypeScript
+- **Backend**: Express.js, PostgreSQL (Supabase), Drizzle ORM, tRPC
+- **UI**: Tailwind CSS + shadcn/ui components (web), React Native components (mobile)
+- **PWA**: Service Worker, Web Manifest, offline support (web)
+- **Mobile**: Expo SecureStore, SQLite, offline-first architecture
 
 ## Prerequisites
 
-- **Node.js 20+** and npm (check with `node --version` and `npm --version`)
+### Web Development
+- **Node.js 20+** (check with `node --version`)
+- **pnpm 8+** (check with `pnpm --version`)
 - PostgreSQL database (optional, for cloud sync/auth)
 - Google Gemini API key (optional, for AI Sponsor feature)
 
+### Mobile Development (Android)
+- **JDK 17** (required for Expo SDK 52)
+  - Download from [Oracle JDK](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) or [Adoptium OpenJDK](https://adoptium.net/temurin/releases/?version=17)
+  - Set `JAVA_HOME` environment variable to JDK 17 installation path
+- **Android SDK** (for Android development)
+  - Android SDK Platform 35
+  - Android SDK Build-Tools 35.0.0
+  - Android SDK Platform-Tools
+  - Set `ANDROID_HOME` environment variable to Android SDK path
+- **Gradle 8.10.2+** (managed via Gradle Wrapper)
+- **Kotlin 2.0.21+** (configured in build.gradle)
+
 **Verify installation:**
 ```bash
-node --version  # Should show v20.x.x or higher
-npm --version   # Should show 9.x.x or higher
+node --version     # Should show v20.x.x or higher
+pnpm --version    # Should show 8.x.x or higher
+java -version     # Should show version 17.x.x (for mobile development)
+```
+
+**Install pnpm if needed:**
+```bash
+npm install -g pnpm
+```
+
+**For complete mobile setup instructions, see [apps/mobile/README.md](./apps/mobile/README.md)**
+
+## Project Structure
+
+```
+12-Step-Companion/
+├── apps/
+│   ├── mobile/          # Expo React Native mobile app
+│   └── web/             # Next.js web app (sponsor portal)
+├── packages/
+│   ├── api/             # tRPC routers (shared API)
+│   ├── types/           # Shared TypeScript types
+│   └── ui/              # Shared UI components
+├── client/              # Legacy React web frontend
+├── server/              # Express backend + migrations
+└── shared/              # Shared schemas and utilities
 ```
 
 ## Local Development Setup
@@ -41,10 +81,10 @@ npm --version   # Should show 9.x.x or higher
 ```bash
 git clone <repository-url>
 cd 12-Step-Companion
-npm install
+pnpm install
 ```
 
-**Note**: Installation may take a few minutes and show deprecation warnings. This is normal - the app will work fine. You can ignore warnings about deprecated packages.
+**Note**: This is a pnpm workspace monorepo. Use `pnpm` for all package management commands. Installation may take a few minutes and show deprecation warnings. This is normal - the app will work fine. You can ignore warnings about deprecated packages.
 
 ### 2. Environment Configuration
 
@@ -103,6 +143,45 @@ The app will be available at `http://localhost:3000` (or the port specified in `
 - Frontend: Served via Vite with HMR
 - Backend API: Available at `/api/*`
 - Static files: Served from `client/public`
+
+### Mobile App Development
+
+See [apps/mobile/README.md](./apps/mobile/README.md) for complete mobile app setup.
+
+**Quick Start:**
+```bash
+# 1. Install dependencies (in project root)
+# IMPORTANT: We use 'node-linker=hoisted' in .npmrc to fix Windows path length issues
+pnpm install
+
+# 2. Setup environment
+# Check apps/mobile/.env exists (generated automatically or copy from example)
+
+# 3. Run on Android (Emulator or Device)
+cd apps/mobile
+npx expo run:android
+
+# 4. Run on iOS (Mac only)
+cd apps/mobile
+npx expo run:ios
+```
+
+**Troubleshooting Windows Build:**
+If you encounter "Filename too long" errors:
+1. Delete all `node_modules` folders.
+2. Ensure `.npmrc` contains `node-linker=hoisted`.
+3. Reinstall dependencies with `pnpm install`.
+
+**Mobile Development Prerequisites:**
+Before running mobile builds, ensure:
+1. JDK 17 is installed and `JAVA_HOME` is set
+2. Android SDK is installed and `ANDROID_HOME` is set
+3. Run verification script: `cd apps/mobile && npm run verify`
+
+**Environment Variables:**
+- `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `EXPO_PUBLIC_API_URL` - Backend API URL (default: http://localhost:5000)
 
 ### 5. Build for Production
 

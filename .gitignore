@@ -3,6 +3,10 @@ node_modules/
 .pnp
 .pnp.js
 
+# Lockfiles (using pnpm, ignore npm/yarn lockfiles)
+package-lock.json
+yarn.lock
+
 # Build outputs
 dist/
 build/
@@ -66,6 +70,10 @@ out/
 
 # Vite
 .vite/
+
+# Expo
+.expo/
+.expo-shared/
 
 # Rollup
 .rollup.cache/

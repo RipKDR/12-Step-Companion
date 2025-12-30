@@ -1,0 +1,40 @@
+/**
+ * tRPC Client for Next.js
+ */
+
+"use client";
+
+import { createTRPCReact } from "@trpc/react-query";
+import { httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "@12-step-companion/api/routers/_app";
+import { getSession } from "next-auth/react";
+
+export const trpc = createTRPCReact<AppRouter>();
+
+export function getTRPCClient() {
+  return trpc.createClient({
+    links: [
+      httpBatchLink({
+        url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/trpc`,
+        async headers() {
+          // Only run on client side
+          if (typeof window === "undefined") {
+            return {};
+          }
+          
+          try {
+            const session = await getSession();
+            const accessToken = session?.accessToken as string | undefined;
+            return {
+              ...(accessToken && { authorization: `Bearer ${accessToken}` }),
+            };
+          } catch (error) {
+            // Handle error gracefully during SSR/hydration
+            return {};
+          }
+        },
+      }),
+    ],
+  });
+}
+
