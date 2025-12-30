@@ -7,8 +7,13 @@
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web vercel.json package.json pnpm-lock.yaml pnpm-workspace.yaml",
   "rewrites": [
     {
+<<<<<<< HEAD
       "source": "/api/(.*)",
       "destination": "/api/$1"
+=======
+      "source": "/(.*)",
+      "destination": "/index.html"
+>>>>>>> parent of c1bac7f (Add Vercel serverless functions for API routes)
     }
   ],
   "headers": [
