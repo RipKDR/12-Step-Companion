@@ -1,13 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "framework": null,
+  "buildCommand": "pnpm --filter 12-step-companion-web build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web vercel.json package.json pnpm-lock.yaml pnpm-workspace.yaml",
   "rewrites": [
     {
+<<<<<<< HEAD
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+=======
       "source": "/(.*)",
       "destination": "/index.html"
+>>>>>>> parent of c1bac7f (Add Vercel serverless functions for API routes)
     }
   ],
   "headers": [
@@ -22,4 +28,3 @@
     }
   ]
 }
-
